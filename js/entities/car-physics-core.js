@@ -41,13 +41,29 @@
     ambulancia: { type: 'van', accel: 15, vmax: 150, service: 'samu' },
     bombeiros: { type: 'truck', accel: 10, vmax: 125, service: 'bombeiros' },
     bus_belem: { type: 'bus' }, bus_sinoscap: { type: 'bus' }, bus_sao_jose: { type: 'bus' },
-    honda_biz: { cat: 'scooter' }, moto_rocam: { cat: 'bike' }
+    honda_biz: { cat: 'scooter', bikeType: 'scooter' }, moto_rocam: { cat: 'bike', bikeType: 'police' }
   };
   /* motos: modelo próprio (inalterado) */
   const BIKES = {
     scooter: { bike: true, mass: 185, hp: 24, redline: 8200, idle: 1500, gears: [3.5, 2.1, 1.45, 1.05], rev: 0, final: 4.4, cdA: 0.55, crr: 0.016, cg: 0.55, fb: 0.46, drive: 'rear', travel: 0.10, sag: 0.05, grip: 1.2, brake: 1.0, steer0: 0.6, steerV: 8, lean: 0.7, leanK: 150, leanD: 17 },
     bike: { bike: true, mass: 330, hp: 135, redline: 9000, idle: 1300, gears: [2.8, 1.95, 1.5, 1.2, 1.0, 0.86], rev: 0, final: 3.0, cdA: 0.62, crr: 0.014, cg: 0.6, fb: 0.5, drive: 'rear', travel: 0.16, sag: 0.07, grip: 1.35, brake: 1.2, steer0: 0.55, steerV: 8, lean: 0.8, leanK: 170, leanD: 19 }
   };
+  /* tipos de moto (o modelo tem nome/ID de moto de rua, esportiva, trilha...); o handling do SA, quando existe, ajusta potência, máxima e aderência */
+  const BIKE_TYPES = {
+    scooter: { base: 'scooter', mass: 125, hp: 10, vmax: 95, grip: 1.15, lean: 0.62 },
+    street: { base: 'bike', mass: 165, hp: 26, vmax: 135, grip: 1.2, lean: 0.7, final: 3.7 },
+    sport: { base: 'bike', mass: 200, hp: 125, vmax: 250, grip: 1.35, lean: 0.85 },
+    dirt: { base: 'bike', mass: 130, hp: 45, vmax: 150, grip: 1.15, lean: 0.75, offroad: 1, travel: 0.24, final: 3.6 },
+    custom: { base: 'bike', mass: 290, hp: 75, vmax: 180, grip: 1.2, lean: 0.6, steer0: 0.48, leanK: 140 },
+    police: { base: 'bike', mass: 230, hp: 95, vmax: 210, grip: 1.3, lean: 0.8 }
+  };
+  const bikeType = (id, svc) => /faggio|pizzaboy|scooter|biz/.test(id) ? 'scooter' : /cop|pm_sp|pmerj|rocam/.test(id) || svc === 'policia' ? 'police' : /sanchez|trilha|xre|xt6|cross|dirt/.test(id) ? 'dirt' : /freeway|custom|wayfarer|chopper/.test(id) ? 'custom' : /bf400|cg1|fan|street|titan/.test(id) ? 'street' : 'sport';
+  function deriveBike(id, pc, man) {
+    const t = BIKE_TYPES[(man && man.bikeType) || bikeType(id, pc.service)], H = pc.sa, cfg = Object.assign({}, BIKES[t.base], t);
+    if (H) { cfg.hp = t.hp * clamp((H.accel || 50) / 50, 0.75, 1.3); cfg.vmax = clamp((H.vmax || 200) * 0.95, t.vmax * 0.7, t.vmax * 1.15); cfg.grip = t.grip * clamp(1 + ((H.traction || 1.6) - 1.6) * 0.25, 0.9, 1.1); }
+    cfg.vmax = cfg.vmax / 3.6; cfg.category = t === BIKE_TYPES.scooter ? 'scooter' : 'bike'; cfg.bikeType = Object.keys(BIKE_TYPES).find(k => BIKE_TYPES[k] === t);
+    cfg.torque = cfg.hp * 745.7 / (0.707 * cfg.redline * 0.85 * 2 * Math.PI / 60); cfg.eff = 0.88; return cfg;
+  }
   const CATEGORY = Object.assign({}, TYPES, BIKES), PRESETS = CATEGORY;
 
   /* tipo pelo tamanho, quando não há nada melhor */
@@ -104,11 +120,7 @@
   function configFor(c, options) {
     const pc = c.physicsCfg || {}, man = MODEL[c.modelId || ''];
     const bikeCat = (man && man.cat) || (pc.cat === 'bike' || pc.cat === 'scooter' ? pc.cat : null) || (c.kind === 'bike' ? 'bike' : null);
-    if (bikeCat) {                                                                          // moto: modelo antigo
-      const cfg = Object.assign({}, BIKES[bikeCat] || BIKES.bike, pc.cat ? { mass: pc.mass || undefined, hp: pc.hp || undefined } : {}, options || {});
-      Object.keys(cfg).forEach(k => cfg[k] === undefined && delete cfg[k]);
-      cfg.category = bikeCat; cfg.torque = cfg.hp * 745.7 / (0.707 * cfg.redline * 0.85 * 2 * Math.PI / 60); cfg.eff = 0.88; return cfg;
-    }
+    if (bikeCat) return Object.assign(deriveBike(c.modelId || '', pc, man), options || {});   // moto: perfil pelo tipo + handling
     const d = c.dims || {}, type = (man && man.type) || (pc.sa ? null : (pc.cat && TYPES[pc.cat] && pc.cat !== 'compact' ? pc.cat : guessType(c, d)));
     const H = Object.assign({}, TYPES[type] || TYPES.sedan, pc.sa || {}, man || {});
     if (!pc.sa && !man && pc.mass && type !== 'bus' && type !== 'truck') H.mass = Math.max(pc.mass, TYPES[type].mass * 0.8);
@@ -201,7 +213,7 @@
     let F = 0;
     if (active && !(p.cutT > 0)) {
       F = sgn * Math.abs(thr) * k.torque * Tn * ratio * k.eff / wheelR;
-      const maxV = input.maxSpeed || 99;
+      const maxV = Math.min(input.maxSpeed || 99, k.vmax || 99);
       if (v > maxV) F *= Math.max(0, 1 - (v - maxV) / 2.5);
     }
     if (!active && Math.abs(thr) < 0.05 && p.gear > 0 && v > 0.5) F -= Math.sign(forward) * 0.045 * k.mass * G * smooth(0.5, 6, v) * (ratio / 12);
@@ -354,7 +366,7 @@
     let forward = p.vx * sh + p.vz * ch, lat = p.vx * ch - p.vz * sh; const v = Math.abs(forward);
     const fW = p.wheels.find(w => w.front) || p.wheels[0], rW = p.wheels.find(w => !w.front) || p.wheels[1];
     const gF = sample(c.x + sh * (fW.z - p.centerZ), c.z + ch * (fW.z - p.centerZ)), gR = sample(c.x + sh * (rW.z - p.centerZ), c.z + ch * (rW.z - p.centerZ)), gC = sample(c.x, c.z);
-    const mu = k.grip * (gC.grip === undefined ? 1 : gC.grip), contact = p.y - k.cg <= gC.height + 0.12;
+    const mu = k.grip * (gC.grip === undefined ? 1 : k.offroad ? 1 - (1 - gC.grip) * 0.4 : gC.grip), contact = p.y - k.cg <= gC.height + 0.12;
     const delta = (input.steer || 0) * k.steer0 / (1 + Math.pow(v / k.steerV, 1.5));
     const leanMax = Math.min(k.lean, Math.atan(mu * 1.1));
     const leanTarget = -clamp(input.steer || 0, -1, 1) * leanMax * smooth(1.0, 5.5, v) / (1 + Math.pow(v / 60, 2));

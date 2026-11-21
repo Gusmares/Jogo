@@ -52,15 +52,23 @@ function bench(M) {
   { const T = flat(0.7, 'terra'); c = make(M, T, 60 / 3.6); let g = 0, cnt = 0; run(c, 4, (t, cc) => ({ throttle: hold(cc, 60 / 3.6), steer: 1 }), T, (t, cc) => { if (t > 2) { g += Math.abs(cc.physics.yawV * cc.speed) / 9.81; cnt++; } }); r.gDirt = g / cnt; }
   r.cfg = c.physics.cfg; return r;
 }
+function benchBike(M) {
+  const S = flat(), r = {}; let c = make(M, S), t100 = null;
+  run(c, 40, () => ({ throttle: 1 }), S, (t, cc) => { if (t100 === null && cc.speed * 3.6 >= 100) t100 = t; }); r.t100 = t100; r.vtop = c.speed;
+  c = make(M, S, 100 / 3.6); let dist = 0, stop = null; run(c, 12, () => ({ brake: 1 }), S, (t, cc) => { if (stop === null) { dist += cc.speed * CP.STEP; if (cc.speed < 0.3) stop = t; } }); r.brake100 = dist;
+  for (const v of [25, 60]) { c = make(M, S, v / 3.6); let y = 0, n = 0; run(c, 4, (t, cc) => ({ throttle: hold(cc, v / 3.6), steer: 1 }), S, (t, cc) => { if (t > 2) { y += Math.abs(cc.physics.yawV); n++; } }); r['r' + v] = c.speed / (y / n); r['g' + v] = (y / n) * c.speed / 9.81; r['lean' + v] = Math.abs(c.physics.roll); }
+  r.cfg = c.physics.cfg; return r;
+}
 const ids = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const all = process.argv.includes('--all');
-const REF = ['vw_gol', 'vw_fusca', 'palio_rp', 'br_sultan', 'br_voodoo', 'br_admiral', 'br_infernus', 'br_sentinel', 'hilux_tor', 'br_sadler', 'br_bus', 'br_linerun'];
-const list = all ? fs.readdirSync(path.join(root, 'assets/models')).filter(id => { try { const m = JSON.parse(fs.readFileSync(path.join(root, 'assets/models', id, 'model.json'))); return m.kind !== 'prop' && m.kind !== 'bike' && m.wheels && m.wheels.length >= 3; } catch (e) { return false; } }) : (ids.length ? ids : REF).filter(id => fs.existsSync(path.join(root, 'assets/models', id, 'model.json')));
+const REF = ['honda_biz', 'moto_rocam', 'moto_moto_esportiva', 'br_pcj600', 'br_faggio', 'br_sanchez', 'moto_moto_custom', 'pmsp_moto_pm_sp', 'vw_gol', 'vw_fusca', 'palio_rp', 'br_sultan', 'br_voodoo', 'br_admiral', 'br_infernus', 'br_sentinel', 'hilux_tor', 'br_sadler', 'br_bus', 'br_linerun'];
+const list = all ? fs.readdirSync(path.join(root, 'assets/models')).filter(id => { try { const m = JSON.parse(fs.readFileSync(path.join(root, 'assets/models', id, 'model.json'))); return m.kind !== 'prop' && m.wheels && m.wheels.length >= 2; } catch (e) { return false; } }) : (ids.length ? ids : REF).filter(id => fs.existsSync(path.join(root, 'assets/models', id, 'model.json')));
 const bad = [];
-console.log('id'.padEnd(26) + 'cat     kg   tr  0-100  máx  fr100  g60  g100 β100  raio  resp  βsolta βpé  freioMão slalomβ terra');
+console.log('id'.padEnd(26) + 'cat     kg   tr  0-100  máx  fr100  g60  g100 β100  raio  resp  βsolta βpé  freioMão slalomβ terra rolagem');
 for (const id of list) {
-  const M = load(id); if (M.kind === 'bike') continue; const r = bench(M), k = r.cfg;
-  console.log(id.slice(0, 25).padEnd(26) + String(k.category).padEnd(6) + String(Math.round(k.mass)).padStart(6) + ' ' + k.drive[0] + '  ' + (r.t100 ? f(r.t100).padStart(5) : '  -- ') + kmh(r.vtop).padStart(6) + f(r.brake100, 0).padStart(6) + 'm' + f(r.g60, 2).padStart(6) + f(r.g100, 2).padStart(6) + (deg(r.b100) + '°').padStart(5) + (f(r.radius, 1) + 'm').padStart(7) + (r.resp ? f(r.resp, 2) : '--').padStart(6) + (deg(r.liftBeta) + '°').padStart(7) + (deg(r.powerBeta) + '°').padStart(5) + (deg(r.hb) + '°').padStart(9) + (deg(r.slalomBeta) + '°').padStart(8) + f(r.gDirt, 2).padStart(6));
+  const M = load(id); if (M.kind === 'bike') { const r = benchBike(M), k = r.cfg; console.log(id.slice(0, 25).padEnd(26) + ('moto/' + k.bikeType).padEnd(14) + String(Math.round(k.mass)).padStart(5) + 'kg ' + Math.round(k.hp) + 'cv  0-100 ' + (r.t100 ? f(r.t100) + 's' : '--') + '  máx ' + kmh(r.vtop) + '  freio100 ' + f(r.brake100, 0) + 'm  raio@25 ' + f(r.r25, 1) + 'm  g@60 ' + f(r.g60, 2) + '  inclinação@60 ' + deg(r.lean60) + '°'); continue; }
+  const r = bench(M), k = r.cfg;
+  console.log(id.slice(0, 25).padEnd(26) + String(k.category).padEnd(6) + String(Math.round(k.mass)).padStart(6) + ' ' + k.drive[0] + '  ' + (r.t100 ? f(r.t100).padStart(5) : '  -- ') + kmh(r.vtop).padStart(6) + f(r.brake100, 0).padStart(6) + 'm' + f(r.g60, 2).padStart(6) + f(r.g100, 2).padStart(6) + (deg(r.b100) + '°').padStart(5) + (f(r.radius, 1) + 'm').padStart(7) + (r.resp ? f(r.resp, 2) : '--').padStart(6) + (deg(r.liftBeta) + '°').padStart(7) + (deg(r.powerBeta) + '°').padStart(5) + (deg(r.hb) + '°').padStart(9) + (deg(r.slalomBeta) + '°').padStart(8) + f(r.gDirt, 2).padStart(6) + (deg(r.roll) + '°').padStart(7));
   if (r.liftBeta > 0.6 || r.slalomBeta > 0.5 || r.g60 < 0.5 || r.radius > 14 || !(r.vtop > 15)) bad.push(id);
 }
 if (bad.length) console.log('\nATENÇÃO (rodou, não vira ou não anda):', bad.join(', '));
