@@ -1,8 +1,11 @@
 /* NEON COAST — Atualização: jogador a pé, carros, pedestres */
 'use strict';
 /* ============================ ATUALIZAÇÃO ============================ */
+/* chão do jogador: terreno + calçadas (lajes das quadras), ponte etc. — o mesmo chão dos pedestres e dos carros */
+const footGround=(x,z)=>carGroundHeight(x,z);
+const STEP_UP=0.45;                                                   // sobe meio-fio/degrau sem pular
 function updateFoot(dt){
-  const gy0=Hq(player.x,player.z),wasGround=player.y<=gy0+0.04;
+  const gy0=footGround(player.x,player.z),wasGround=player.y<=gy0+0.04;
   if(player.dead){player.vx=player.vz=0;player.mesh.rotation.x=-1.45;player.mesh.position.set(player.x,player.y+0.25,player.z);if(typeof updatePlayerActor==='function')updatePlayerActor(dt,0,true,gy0);return;}
   const stunned=player.stun>0;
   const sa=Math.sin(cam.a),ca=Math.cos(cam.a),mx=stunned?0:(keys.KeyW?1:0)-(keys.KeyS?1:0),mz=stunned?0:(keys.KeyD?1:0)-(keys.KeyA?1:0);
@@ -16,13 +19,13 @@ function updateFoot(dt){
   if(stunned){player.vx=player.vz=0;}else{player.vx+=(tx-player.vx)*k;player.vz+=(tz-player.vz)*k;}
   const ox=player.x,oz=player.z;let nx=ox+player.vx*dt,nz=oz+player.vz*dt;
   const step=Math.hypot(nx-ox,nz-oz);
-  if(step>1e-5&&wasGround&&(Hq(nx,nz)-gy0)>0.95*step){nx=ox;nz=oz;player.vx=player.vz=0;}
+  if(step>1e-5&&wasGround){const rise=footGround(nx,nz)-gy0;if(rise>STEP_UP&&rise>0.95*step){nx=ox;nz=oz;player.vx=player.vz=0;}}
   if(Hq(nx,nz)<-1.6){nx=ox;nz=oz;}
   const p={x:nx,z:nz};pushOut(p,0.5,nearby(p.x,p.z));
   for(const c of cars)for(const[cx,cz]of carCircles(c)){const ddx=p.x-cx,ddz=p.z-cz,d=Math.hypot(ddx,ddz),rr_=0.5+c.cr;if(d<rr_&&d>1e-4){p.x+=ddx/d*(rr_-d);p.z+=ddz/d*(rr_-d);}}
   if(typeof forNear==='function')forNear(p.x,p.z,1.2,o=>{if(o.ph==='hit'||o.ph==='dead'||o.ph==='down')return;const dx=p.x-o.x,dz=p.z-o.z,d=Math.hypot(dx,dz),min=0.5+(o.r||0.34);if(d<min&&d>1e-4){const w=(o.fixed||o.anchored)?1:0.5;p.x+=dx/d*(min-d)*w;p.z+=dz/d*(min-d)*w;}});
   player.x=p.x;player.z=p.z;
-  const gy=Hq(player.x,player.z);let jumped=false;
+  const gy=footGround(player.x,player.z);let jumped=false;
   if(keys.Space&&wasGround&&!stunned){player.vy=7.5;jumped=true;}
   player.vy-=24*dt;player.y+=player.vy*dt;
   if(player.y<gy||(wasGround&&!jumped&&player.vy<=0&&player.y-gy<0.5)){player.y=gy;player.vy=0;}

@@ -250,6 +250,10 @@ Tudo que veio dos mods fica em `assets/mods/`, num balde por situação:
 - Bancada: `node tools/test-car-physics.js` (carros de referência), `... br_sultan vw_gol` ou `--all` (frota inteira): 0-100, máxima, frenagem 100-0, g laterais, raio de giro, resposta da direção, tendência de rodar, freio de mão, saída de traseira, slalom e terra.
 - Câmera do carro: distância/altura pelo tamanho do veículo e puxa um pouco para a direção real do movimento (derrapagem fica legível).
 
+## Personagem: calçada e armas em descanso
+- O jogador usa o mesmo chão dos pedestres e carros (`footGround` em `js/gameplay/update.js`): terreno + calçadas/lajes. Sobe meio-fio e degraus de até 45 cm sem pular.
+- Armas sem mirar: pistola, taser, Desert Eagle, Uzi, Tec-9 e cano serrado ficam na mão, apontando para o chão ao lado do corpo, com a locomoção normal; fuzis, escopetas e MP5 vão nas duas mãos, atravessados na frente do peito, com o grupo "armed" do SA (`IDLE_armed`, `WALK_armed`, `run_armed`) e a mão esquerda no guarda-mão (IK). Só ao mirar (botão direito), atirar ou recarregar o personagem levanta a arma; a troca é suave (`restWeaponPose` em `js/gameplay/weapons.js`).
+
 ## Créditos
 - Viatura "Hilux SW4 Rota": mod para GTA San Andreas. Sistema de luzes: LM3D, Patifuck. Créditos: S4K4N4S, Abreu_3D, Abner_3D,
   Bruno Silva e LukasR (`assets/mods/*/hilux-rota/Créditos.txt`). https://gtamontesclaros-mg.blogspot.com.br/

@@ -66,6 +66,19 @@ function equipWeapon(i) {
   if (item) { weapons.mesh = new THREE.Mesh(item.type.geo.body, item.type.mats); weapons.mesh.castShadow = false; weapons.mesh.frustumCulled = false; weapons.gripPos = null; attachWeapon(); toast(item.name + (wAnim(item).melee ? ' · Clique golpeia' : ' · Botão direito mirar · Clique atirar · T recarregar'), 3000); }
   else toast('Desarmado', 1000);
 }
+/* orientação da arma em descanso, em coordenadas de mundo, mantendo o cabo na mão (o "cano" da arma é o eixo -X do modelo) */
+const _rq1 = new THREE.Quaternion(), _rq2 = new THREE.Quaternion(), _rv1 = new THREE.Vector3(), _rv2 = new THREE.Vector3(), _rvx = new THREE.Vector3(-1, 0, 0);
+function restWeaponPose(a, A, k) {
+  const hand = a.bones[a.index.rhand]; if (!hand) return;
+  a.group.updateMatrixWorld(true); hand.getWorldQuaternion(_rq1);
+  const h = player.h, fx = Math.sin(h), fz = Math.cos(h), lx = Math.cos(h), lz = -Math.sin(h);            // frente e esquerda do personagem
+  if (A.twoHand) _rv2.set(fx * 0.6 + lx * 0.66, -0.52, fz * 0.6 + lz * 0.66).normalize();             // "pronto-baixo": atravessado no peito
+  else _rv2.set(fx * 0.32, -1, fz * 0.32).normalize();                                                  // pistola/SMG apontando para o chão, à frente do pé
+  _rv1.copy(_rvx).applyQuaternion(weapons.gripQ).applyQuaternion(_rq1).normalize();                    // cano atual (pose de mira) no mundo
+  _rq2.setFromUnitVectors(_rv1, _rv2);
+  const local = _rq1.clone().invert().multiply(_rq2).multiply(_rq1).multiply(weapons.gripQ);            // de volta para o espaço da mão
+  weapons.mesh.quaternion.slerp(local, k);
+}
 /* mirando: botão direito, ou logo depois de atirar (a pose de mira se mantém por um instante) */
 function weaponAim() { return weapons.selected >= 0 && !player.car && !player.dead && !paused && !(typeof selectionWheel !== 'undefined' && selectionWheel.open) && !player.trans && (!!keys.MouseRight || weapons.trigger || weapons.aimT > 0); }
 function reloadWeapon() { const w = weapons.items[weapons.selected]; if (w && !weapons.reloading && w.ammo < w.capacity && !player.car) { weapons.reloading = w.reload; weapons.aimT = Math.max(weapons.aimT, w.reload); } }
@@ -199,6 +212,9 @@ function updateWeapons(dt) {
     if (weapons.mesh.visible && weapons.gripPos) {                    // coice: a arma recua e o cano sobe um pouco e volta
       const A = wAnim(w), back = weapons.sinceShot < 0.12 ? 0.05 * (1 - weapons.sinceShot / 0.12) : 0, up = weapons.sinceShot < 0.16 ? (A.holdFire ? 0.13 : 0.05) * (1 - weapons.sinceShot / 0.16) : 0;
       weapons.mesh.position.set(weapons.gripPos.x + back, weapons.gripPos.y, weapons.gripPos.z); weapons.mesh.quaternion.copy(weapons.gripQ); weapons.mesh.rotateZ(-up);
+      // arma em descanso (sem mirar): cano para baixo ao lado do corpo (uma mão) ou atravessada na frente do peito (duas mãos); transição suave para a mira
+      const rest = !aiming && weapons.reloading <= 0 && !A.melee ? 1 : 0; weapons.restK = (weapons.restK || 0) + (rest - (weapons.restK || 0)) * Math.min(1, dt * 10);
+      if (weapons.restK > 0.01 && pa) restWeaponPose(pa, A, weapons.restK);
     }
   }
   if (active && weapons.trigger) { if (wAnim(w).auto || !weapons.fired) fireWeapon(); weapons.fired = true; }

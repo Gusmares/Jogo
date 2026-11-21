@@ -69,7 +69,7 @@ function rotateBoneWorld(bone, q) { bone.parent.getWorldQuaternion(_pq); const t
 function leftHandIK(a, A) {
   const us = a.bones[a.index.lupperarm], fo = a.bones[a.index.lforearm], lh = a.bones[a.index.lhand], rh = a.bones[a.index.rhand]; if (!us || !fo || !lh || !rh || !weapons.gripPos) return;
   a.group.updateMatrixWorld(true);
-  _im.compose(weapons.gripPos, weapons.gripQ, _one3).premultiply(rh.matrixWorld); _it.set(A.lhand[0], A.lhand[1], A.lhand[2]).applyMatrix4(_im);
+  _im.compose(weapons.mesh.position, weapons.mesh.quaternion, _one3).premultiply(rh.matrixWorld);   /* pose atual da arma (mira ou descanso) */ _it.set(A.lhand[0], A.lhand[1], A.lhand[2]).applyMatrix4(_im);
   _is.setFromMatrixPosition(us.matrixWorld); _ie.setFromMatrixPosition(fo.matrixWorld); _iw.setFromMatrixPosition(lh.matrixWorld);
   const L1 = _ie.distanceTo(_is), L2 = _iw.distanceTo(_ie); _iu.copy(_it).sub(_is); let d = _iu.length(); if (d < 1e-4) return; _iu.divideScalar(d); d = clamp(d, Math.abs(L1 - L2) + 0.02, L1 + L2 - 0.005);
   _ip.copy(_ie).sub(_is); _ip.addScaledVector(_iu, -_ip.dot(_iu)); if (_ip.lengthSq() < 1e-6) _ip.set(0, -1, 0); _ip.normalize();      // cotovelo continua para o mesmo lado em que a animação o deixou
@@ -93,7 +93,7 @@ function updatePlayerActor(dt, spd, onGround, gy) {
   a.group.position.set(p.x, (player.dead ? player.y : p.y) + a.footOffset, p.z); a.group.rotation.y = player.mesh.rotation.y;
   const air = player.y > gy + 0.2;
   if (spd > 0.5 || air || player.stun > 0 || player.dead) emoteOn = null;
-  let clip, loop = true, rate = 1, restart = false, overlay = null, ovT = 0, hold = false;
+  let clip, loop = true, rate = 1, restart = false, overlay = null, ovT = 0, hold = false, restHold = false;
   const ws = (typeof weapons !== 'undefined' && weapons.selected >= 0) ? weapons.items[weapons.selected] : null, armed = !!ws && !player.dead && player.stun <= 0 && !air;
   if (player.dead) { clip = 'KO_shot_front'; loop = false; }
   else if (player.stun > 0) { clip = 'HIT_front'; }
@@ -103,8 +103,18 @@ function updatePlayerActor(dt, spd, onGround, gy) {
     clip = weapons.meleeClip; loop = false; if (weapons.meleeId !== lastMeleeSeen) { lastMeleeSeen = weapons.meleeId; restart = true; }
     player.h += wrap(cam.a - player.h) * Math.min(1, dt * 14); a.group.rotation.y = player.h; player.mesh.rotation.y = player.h;
   }
+  else if (armed && !wAnim(ws).melee && !weaponAim() && weapons.reloading <= 0) {
+    // arma em descanso (sem mirar): pistola/SMG de uma mão fica na mão, ao lado do corpo, com a locomoção normal;
+    // fuzil/escopeta/MP5 vão nas duas mãos com o grupo "armed" do SA (IDLE_armed, WALK_armed, run_armed)
+    const A = wAnim(ws); restHold = true;
+    if (A.twoHand) { clip = spd > 2.8 ? 'run_armed' : spd > 0.5 ? 'WALK_armed' : 'IDLE_armed'; rate = spd > 2.8 ? clamp(spd / 4.6, 0.7, 1.8) : spd > 0.5 ? clamp(spd / 1.8, 0.6, 1.6) : 1; }
+    else if (spd > 6.5) { clip = 'sprint_civi'; rate = clamp(spd / 7.5, 0.6, 1.5); }
+    else if (spd > 2.8) { clip = 'run_player'; rate = clamp(spd / 4.8, 0.6, 1.5); }
+    else if (spd > 0.5) { clip = 'WALK_player'; rate = clamp(spd / 1.8, 0.6, 1.6); }
+    else clip = 'IDLE_stance';
+  }
   else if (armed && !wAnim(ws).melee) {
-    // armado (mirando ou não): a pose é sempre a da empunhadura em que a arma foi calibrada. Mirando, o corpo acompanha a câmera; andar de lado/de costas usa GunMove_*; o tiro dá o recuo (parado: clipe inteiro; andando: só nos braços)
+    // armado e mirando/atirando/recarregando: a pose é sempre a da empunhadura em que a arma foi calibrada. Mirando, o corpo acompanha a câmera; andar de lado/de costas usa GunMove_*; o tiro dá o recuo (parado: clipe inteiro; andando: só nos braços)
     const A = wAnim(ws); if (weaponAim()) { player.h += wrap(cam.a - player.h) * Math.min(1, dt * 18); a.group.rotation.y = player.h; player.mesh.rotation.y = player.h; }
     const fwd = player.vx * Math.sin(player.h) + player.vz * Math.cos(player.h), side = player.vx * Math.cos(player.h) - player.vz * Math.sin(player.h);
     const oh = !!(A.oneHand || A.twoHand); let ovc = A.fire, ovt = A.pose || 0;
@@ -131,8 +141,8 @@ function updatePlayerActor(dt, spd, onGround, gy) {
   if (a.ap) { if (overlay && findClip(overlay)) { a.ap.setOverlay(overlay, overlay === "Drive_L" ? ARM_BONE_IDS : UPPER_BONE_IDS); a.ap.overlay.time = Math.min(ovT, findClip(overlay).duration); } else if (a.ap.overlay) a.ap.setOverlay(null); }
   if (!ok) animateProcedural(a, dt, spd > 2.8 ? 'run' : spd > 0.5 ? 'walk' : 'idle', spd);
   else a.ap.update(dt);
-  if (ok) applyAimPitch(a, (armed && typeof weapons !== 'undefined' && !wAnim(ws).melee) ? weapons.pitch : 0);
-  if (ok && armed && ws && weapons.reloading <= 0 && !wAnim(ws).melee) alignWeaponArm(a, wAnim(ws));
+  if (ok) applyAimPitch(a, (armed && !restHold && typeof weapons !== 'undefined' && !wAnim(ws).melee) ? weapons.pitch : 0);
+  if (ok && armed && ws && weapons.reloading <= 0 && !wAnim(ws).melee) { const A = wAnim(ws); if (!restHold) alignWeaponArm(a, A); else if (A.twoHand && A.lhand) leftHandIK(a, A); }
   if (ok) plantActor(a, player.dead ? player.y : p.y);
 }
 loadPlayerOutfit(0, false);
