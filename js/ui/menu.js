@@ -14,10 +14,10 @@ function applySettings(){
 function showMenu(panel){
  gameMenu.panel=panel;$('overlay').style.display='flex';document.body.classList.add('in-menu');$('overlay').dataset.panel=panel;
  for(const name of ['home','skin','settings'])$(name+'Panel').hidden=name!==panel;
- $('play').innerHTML=started?'Continuar <small>VOLTAR PARA A CIDADE</small>':'Iniciar <small>ESCOLHA SEU PERSONAGEM</small>';
- $('changeSkin').hidden=!started;$('menuEyebrow').textContent=started?'RESPIRA. A CIDADE ESPERA.':'A CIDADE É SUA.';
+ $('play').querySelector('span').textContent=started?'Continuar':'Iniciar';
+ $('changeSkin').hidden=!started;$('menuEyebrow').textContent=started?'PAUSADO':'';$('menuEyebrow').hidden=!started;
  $('confirmSkin').textContent=started?'Usar esta skin':'Entrar na cidade';
- $('menuFooterHint').textContent=panel==='home'?'TECLADO + MOUSE':'ESC PARA VOLTAR';
+ $('menuFooterHint').textContent=panel==='home'?'':'ESC · Voltar';
  if(panel==='settings')applySettings();
  if(panel==='skin'){renderSkinList();if(!gameMenu.selected&&gameMenu.skins.length){let id;try{id=localStorage.getItem('neon-skin');}catch{}selectMenuSkin(id||PLAYER_SKINS[player.outfit]||PLAYER_SKINS[0]);}}
  requestAnimationFrame(()=>{const el=panel==='home'?$('play'):panel==='skin'?$('skinSearch'):$('settingVolume');el.focus({preventScroll:true});});

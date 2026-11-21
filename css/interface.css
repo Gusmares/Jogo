@@ -17,3 +17,53 @@ button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:de
 @media(max-height:700px){#overlay{padding-top:18px;padding-bottom:16px}.menu-top{padding-bottom:14px}#overlay h1{font-size:76px;margin:14px 0}.menu-panel{padding:18px 0}.home-panel{padding:12px 0}.home-panel .eyebrow{font-size:10px}#overlay .menu-intro{font-size:14px;margin:0 0 13px}.main-actions button{padding:8px 16px;font-size:16px}#overlay #play{padding:12px 16px;font-size:17px}.home-notes{margin-top:14px}.panel-heading{margin-bottom:16px}.skin-layout{gap:20px}.skin-caption{padding:12px 20px}.skin-caption .eyebrow{font-size:10px}#overlay h3{font-size:20px}#skinPreview{height:calc(100% - 130px);min-height:100px}#overlay #skinStatus{margin:4px 0 9px}.settings-grid{padding:22px;gap:30px}.settings-controls{gap:10px}.settings-controls input[type=range]{margin-bottom:4px}#overlay .controls-card p{margin:11px 0}.wheel-heading h2{font-size:19px}.wheel-heading{top:3vh}.wheel-footer{bottom:3vh}}
 @media(max-width:1000px){#overlay{padding-left:4vw;padding-right:4vw}.skin-layout{grid-template-columns:1.1fr 1fr}.skin-filters{grid-template-columns:1fr 1fr;gap:6px}.skin-filters input,.skin-filters select{padding:10px 8px;font-size:12px}.skin-card{gap:8px;padding:8px;min-height:64px}.skin-badge{display:none}.settings-grid{gap:20px}.controls-card{padding-left:20px}.home-notes{font-size:9px}.menu-top,.menu-footer{font-size:10px}.wheel-footer{font-size:11px;gap:16px}}
 @media(max-width:650px){.skin-layout{grid-template-columns:1fr 1fr;gap:10px}#skinList{grid-template-columns:1fr}.skin-filters{grid-template-columns:1fr}.menu-top>span:last-child,.home-notes,.coast-caption{display:none}.skin-caption{padding:10px}.skin-caption .primary{font-size:14px}.settings-grid{grid-template-columns:1fr;overflow:auto}.controls-card{border:0;padding:0}.menu-footer{font-size:8px}.wheel-footer{max-width:90%;flex-wrap:wrap;justify-content:center}.wheel-disc{width:96vw}.skin-card b{font-size:12px}}
+
+/* Menu cinematográfico: poucas ações, cenário em movimento, sem slogans. */
+#overlay{background:#0a1220;isolation:isolate}
+#menuAtmosphere{position:absolute;inset:0;width:100%;height:100%;z-index:-3;pointer-events:none;opacity:0;transition:opacity .45s}
+#overlay[data-panel="home"] #menuAtmosphere{opacity:1}
+.menu-shade{position:absolute;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(90deg,#060b19f5 0%,#080f20db 23%,#080e2070 47%,#080e2010 72%),linear-gradient(0deg,#060a177a,transparent 30%,#090f2520)}
+.menu-shade::after{content:"";position:absolute;inset:0;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' opacity='.4' d='M0 0h160v160H0z'/%3E%3C/svg%3E")}
+#overlay[data-panel="home"]{padding:0 8vw;justify-content:center}
+#overlay[data-panel="home"] .menu-top,#overlay[data-panel="home"] .menu-footer{display:none}
+#overlay .menu-top{border:0;padding-bottom:12px;color:#d3dbea}
+#overlay .menu-footer{border:0;justify-content:flex-end;font-size:11px;font-weight:500;letter-spacing:.1em;color:#8e9aae}
+#overlay .home-panel{flex:0 1 auto;justify-content:center;width:min(470px,40vw);max-width:none;padding:0;gap:0}
+#overlay .home-panel h1{font-family:'Arial Black','Segoe UI',sans-serif;font-size:clamp(76px,8vw,145px);letter-spacing:-.065em;line-height:.8;margin:0 0 48px;transform:skewY(-5deg);filter:drop-shadow(0 8px 18px #0005);animation:logo-arrive .85s cubic-bezier(.16,1,.3,1) both}
+#overlay .home-panel h1 span{display:block}
+#overlay .logo-neon{color:#edf3ff;text-shadow:2px 2px 0 #8996c0,-1px -1px 0 #fff}
+#overlay .home-panel h1 .logo-coast{margin-top:.09em;color:#ed7cb8;background:linear-gradient(180deg,#ffcfde 0%,#fc93c4 35%,#e066a8 60%,#b65c9f 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 #653b73);padding-bottom:.1em}
+#overlay .home-panel h1::after{content:"";position:absolute;left:3px;right:12%;bottom:-11px;height:2px;background:linear-gradient(90deg,#f3accc,#ec75b96b,transparent);box-shadow:0 0 20px #ef6eaa30;transform-origin:left;animation:logo-line 1.1s .25s cubic-bezier(.16,1,.3,1) both}
+#overlay .home-panel #menuEyebrow{position:absolute;top:-40px;font-size:11px;font-weight:500;letter-spacing:.32em;color:#adb9d1;animation:menu-item-in .6s both}
+#overlay .main-actions{gap:8px;width:min(330px,100%);margin-top:10px}
+#overlay .main-actions button{position:relative;isolation:isolate;display:flex;align-items:center;gap:18px;width:100%;min-height:57px;box-sizing:border-box;margin:0;padding:15px 20px;border:1px solid transparent;border-radius:3px;text-align:left;overflow:hidden;background:transparent;color:#b8c3d8;font-size:16px;font-weight:550;letter-spacing:.025em;transition:color .2s,background .2s,border-color .2s,transform .2s,box-shadow .2s;animation:menu-item-in .65s cubic-bezier(.16,1,.3,1) both}
+#overlay .main-actions button:nth-child(1){animation-delay:.12s}
+#overlay .main-actions button:nth-child(2){animation-delay:.19s}
+#overlay .main-actions button:nth-child(3){animation-delay:.26s}
+#overlay .main-actions button:nth-child(4){animation-delay:.33s}
+#overlay .main-actions button svg{width:21px;height:21px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.7;transition:transform .22s,opacity .22s}
+#overlay .main-actions button span{position:relative;z-index:1}
+#overlay .main-actions button i{margin-left:auto;width:4px;height:4px;transform:rotate(45deg) scale(0);background:currentColor;opacity:.5;transition:transform .2s}
+#overlay .main-actions button::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,transparent 10%,#ffffff1a 50%,transparent 85%);transform:translateX(-130%);transition:transform .55s ease}
+#overlay .main-actions button::after{content:"";position:absolute;left:0;top:23%;bottom:23%;width:2px;background:#ed92bf;transform:scaleY(0);transition:transform .2s;box-shadow:0 0 16px #ef6eaa70}
+#overlay .main-actions button:hover,#overlay .main-actions button:focus-visible{color:#fff;background:#b3c4ed0d;border-color:#d0dfff24;transform:translateX(7px);outline:0}
+#overlay .main-actions button:hover::before,#overlay .main-actions button:focus-visible::before{transform:translateX(110%)}
+#overlay .main-actions button:hover::after,#overlay .main-actions button:focus-visible::after{transform:scaleY(1)}
+#overlay .main-actions button:hover svg,#overlay .main-actions button:focus-visible svg{transform:scale(1.1);opacity:1}
+#overlay .main-actions button:hover i,#overlay .main-actions button:focus-visible i{transform:rotate(45deg) scale(1)}
+#overlay #play{background:linear-gradient(110deg,#eff3ff,#d5e0f5);border-color:#e1eaff;color:#172139;font-size:18px;font-weight:700;box-shadow:0 8px 30px #02071335}
+#overlay #play svg{fill:currentColor;stroke-width:1;opacity:.9}
+#overlay #play::after{background:#ed75b7;transform:scaleY(1);top:0;bottom:0;width:3px;box-shadow:none}
+#overlay #play:hover,#overlay #play:focus-visible{background:linear-gradient(110deg,#fff,#ebdbee);border-color:#fff;color:#161d32;box-shadow:0 8px 35px #dd8ebb19;transform:translateX(7px)}
+#overlay .main-actions button:active,#overlay #play:active{transform:translateX(7px) scale(.975);transition-duration:.08s}
+#overlay #quitButton{color:#8a97b0}
+#overlay #quitButton:hover,#overlay #quitButton:focus-visible{color:#f3c1d3}
+#overlay .menu-panel:not(.home-panel){animation:panel-arrive .35s ease both}
+@keyframes menu-item-in{from{opacity:0;translate:-18px 0}to{opacity:1;translate:0 0}}
+@keyframes logo-arrive{from{opacity:0;translate:0 20px;filter:blur(5px)}to{opacity:1;translate:0 0;filter:blur(0)}}
+@keyframes logo-line{from{scale:0 1}to{scale:1 1}}
+@keyframes panel-arrive{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
+body:not(.in-menu) #overlay *,body:not(.in-menu) #overlay *::after{animation-play-state:paused}
+@media(max-height:700px){#overlay .home-panel h1{font-size:clamp(65px,10vh,90px);margin-bottom:28px}#overlay .home-panel #menuEyebrow{top:-28px}#overlay .main-actions{gap:4px;width:285px}#overlay .main-actions button{min-height:45px;padding:10px 16px;font-size:15px}#overlay #play{padding:12px 16px;font-size:16px}#overlay .main-actions{margin-top:6px}}
+@media(max-width:700px){#overlay[data-panel="home"]{padding:0 9vw}.menu-shade{background:linear-gradient(90deg,#060b19ed,#080e2060),linear-gradient(0deg,#060a17ad,transparent)}#overlay .home-panel{width:min(360px,80vw)}#overlay .home-panel h1{font-size:clamp(70px,16vw,110px)}#overlay .main-actions{width:min(300px,100%)}}
+@media(prefers-reduced-motion:reduce){#overlay *,#overlay *::before,#overlay *::after{animation:none!important;transition:none!important}#overlay .main-actions button:hover,#overlay .main-actions button:focus-visible,#overlay #play:hover,#overlay #play:focus-visible{transform:none}}
