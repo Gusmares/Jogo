@@ -1,0 +1,195 @@
+{
+  "vehicles": [
+    {
+      "id": "honda_biz",
+      "name": "Honda Biz",
+      "kind": "bike",
+      "dff": "mods/Honda_Biz_SA_Style/Honda Biz SA Style/wayfarer.dff",
+      "txd": "mods/Honda_Biz_SA_Style/Honda Biz SA Style/wayfarer.txd",
+      "emergency": false,
+      "trafficWeight": 3,
+      "seats": {
+        "driver": [
+          0,
+          1.02,
+          -0.22
+        ]
+      },
+      "driveClip": "WF_Ride",
+      "handling": {
+        "maxSpeed": 25,
+        "acceleration": 9,
+        "brake": 22,
+        "wheelbase": 1.5,
+        "cruise": [
+          8,
+          12
+        ]
+      }
+    },
+    {
+      "id": "vw_gol",
+      "name": "VW Gol G2",
+      "dff": "mods/VW_Gol_G2_1.0_Plus___40_bola__41__by_Den_3D/VW Gol G2 1.0 Plus (bola) by Den 3D/blistac.dff",
+      "txd": "mods/VW_Gol_G2_1.0_Plus___40_bola__41__by_Den_3D/VW Gol G2 1.0 Plus (bola) by Den 3D/blistac.txd",
+      "emergency": false,
+      "trafficWeight": 6,
+      "handling": {
+        "maxSpeed": 39,
+        "acceleration": 12,
+        "brake": 27,
+        "wheelbase": 2.5,
+        "cruise": [
+          9,
+          14
+        ]
+      }
+    },
+    {
+      "id": "vw_fusca",
+      "name": "VW Fusca 1963",
+      "dff": "mods/VW_Fusca_1963/VW Fusca 1963/hermes.dff",
+      "txd": "mods/VW_Fusca_1963/VW Fusca 1963/hermes.txd",
+      "emergency": false,
+      "trafficWeight": 4,
+      "handling": {
+        "maxSpeed": 31,
+        "acceleration": 9,
+        "brake": 23,
+        "wheelbase": 2.4,
+        "cruise": [
+          8,
+          12
+        ]
+      }
+    },
+    {
+      "id": "peugeot_206",
+      "name": "Peugeot 206 GTI",
+      "dff": "mods/Peugeot_206_GTI/Peugeot 206 GTI/flash.dff",
+      "txd": "mods/Peugeot_206_GTI/Peugeot 206 GTI/flash.txd",
+      "emergency": false,
+      "trafficWeight": 4,
+      "handling": {
+        "maxSpeed": 49,
+        "acceleration": 18,
+        "brake": 31,
+        "wheelbase": 2.5,
+        "cruise": [
+          11,
+          16
+        ]
+      }
+    },
+    {
+      "id": "bus_belem",
+      "name": "Comil Svelto · Belém",
+      "kind": "bus",
+      "dff": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/bus.dff",
+      "txd": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/Belém/bus.txd",
+      "emergency": false,
+      "trafficWeight": 1,
+      "handling": {
+        "maxSpeed": 28,
+        "acceleration": 6,
+        "brake": 19,
+        "wheelbase": 5.6,
+        "cruise": [
+          7,
+          10
+        ]
+      },
+      "resetFrameRotation": [
+        "wheel_rf",
+        "door_rf_ok",
+        "bump_front_ok",
+        "bump_rear_ok",
+        "wing_lf_ok",
+        "bonnet_ok",
+        "windscreen_ok"
+      ]
+    },
+    {
+      "id": "bus_sinoscap",
+      "name": "Comil Svelto · Sinoscap",
+      "kind": "bus",
+      "dff": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/bus.dff",
+      "txd": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/Sinoscap/bus.txd",
+      "emergency": false,
+      "trafficWeight": 1,
+      "handling": {
+        "maxSpeed": 28,
+        "acceleration": 6,
+        "brake": 19,
+        "wheelbase": 5.6,
+        "cruise": [
+          7,
+          10
+        ]
+      },
+      "resetFrameRotation": [
+        "wheel_rf",
+        "door_rf_ok",
+        "bump_front_ok",
+        "bump_rear_ok",
+        "wing_lf_ok",
+        "bonnet_ok",
+        "windscreen_ok"
+      ]
+    },
+    {
+      "id": "bus_sao_jose",
+      "name": "Comil Svelto · São José",
+      "kind": "bus",
+      "dff": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/bus.dff",
+      "txd": "mods/Mercedes Benz OF-1618 (Comil Svelto 1993)/São José/bus.txd",
+      "emergency": false,
+      "trafficWeight": 1,
+      "handling": {
+        "maxSpeed": 28,
+        "acceleration": 6,
+        "brake": 19,
+        "wheelbase": 5.6,
+        "cruise": [
+          7,
+          10
+        ]
+      },
+      "resetFrameRotation": [
+        "wheel_rf",
+        "door_rf_ok",
+        "bump_front_ok",
+        "bump_rear_ok",
+        "wing_lf_ok",
+        "bonnet_ok",
+        "windscreen_ok"
+      ]
+    }
+  ],
+  "weapons": [
+    {
+      "id": "fn_fal",
+      "name": "FN FAL",
+      "dff": "mods/IMBEL_IA2_FN_FAL/IMBEL IA2 & FN FAL/ak47.dff",
+      "txd": "mods/IMBEL_IA2_FN_FAL/IMBEL IA2 & FN FAL/ak47.txd",
+      "capacity": 20,
+      "interval": 0.13,
+      "reload": 2.5,
+      "clip": "RIFLE_fire"
+    },
+    {
+      "id": "taurus_247",
+      "name": "Taurus 24/7",
+      "dff": "mods/Taurus_24_7_PT_58/Taurus 24 7/colt45.dff",
+      "txd": "mods/Taurus_24_7_PT_58/Taurus 24 7/colt45.txd",
+      "capacity": 15,
+      "interval": 0.25,
+      "reload": 1.6,
+      "clip": "COLT45_fire"
+    }
+  ],
+  "disabled": [
+    "Mod_de_ser_assaltado",
+    "SA_-_Proper_Shaders_09-26___40_b5tyubu3t__41_"
+  ]
+}

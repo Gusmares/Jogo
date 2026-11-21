@@ -1,0 +1,79 @@
+[
+  {
+    "id": "rp_lapd",
+    "name": "RP (Radiopatrulha) 1",
+    "unit": "rp",
+    "dff": "mods/pmesp/FARDAMENTOS/RP/lapd1.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/RP/lapd1.txd"
+  },
+  {
+    "id": "rp_lvpd",
+    "name": "RP (Radiopatrulha) 2",
+    "unit": "rp",
+    "dff": "mods/pmesp/FARDAMENTOS/RP/lvpd1.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/RP/lvpd1.txd"
+  },
+  {
+    "id": "rocam",
+    "name": "ROCAM",
+    "unit": "rocam",
+    "dff": "mods/pmesp/FARDAMENTOS/ROCAM/lapdm1.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/ROCAM/lapdm1.txd"
+  },
+  {
+    "id": "ft",
+    "name": "Força Tática",
+    "unit": "ft",
+    "dff": "mods/pmesp/FARDAMENTOS/FT/sfpd1.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/FT/sfpd1.txd"
+  },
+  {
+    "id": "civil",
+    "name": "Polícia Civil",
+    "unit": "civil",
+    "dff": "mods/pmesp/FARDAMENTOS/POLICIA CIVIL/dsher.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/POLICIA CIVIL/dsher.txd"
+  },
+  {
+    "id": "rota_fbi",
+    "name": "ROTA 1",
+    "unit": "rota",
+    "dff": "mods/pmesp/FARDAMENTOS/ROTA/fbi.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/ROTA/fbi.txd"
+  },
+  {
+    "id": "rota_swat",
+    "name": "ROTA 2",
+    "unit": "rota",
+    "dff": "mods/pmesp/FARDAMENTOS/ROTA/swat.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/ROTA/swat.txd"
+  },
+  {
+    "id": "tor",
+    "name": "TOR",
+    "unit": "tor",
+    "dff": "mods/pmesp/FARDAMENTOS/TOR/csher.dff",
+    "txd": "mods/pmesp/FARDAMENTOS/TOR/csher.txd"
+  },
+  {
+    "id": "player_argentina",
+    "name": "Jogador — terno (Argentina)",
+    "unit": "player",
+    "dff": "mods/player-skins/argentina/male01.dff",
+    "txd": "mods/player-skins/argentina/male01.txd"
+  },
+  {
+    "id": "player_bbthin",
+    "name": "Jogador — bbthin",
+    "unit": "player",
+    "dff": "mods/player-skins/bbthin/bbthin.dff",
+    "txd": "mods/player-skins/bbthin/bbthin.txd"
+  },
+  {
+    "id": "player_emmet",
+    "name": "Jogador — Emmet",
+    "unit": "player",
+    "dff": "mods/player-skins/emmet/emmet.dff",
+    "txd": "mods/player-skins/emmet/emmet.txd"
+  }
+]

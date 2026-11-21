@@ -1,0 +1,28 @@
+{
+  "name": "neon-coast",
+  "productName": "NEON COAST",
+  "version": "1.0.0",
+  "description": "Jogo 3D de mundo aberto: cidade, praias, colinas, pântano com jacarés e polícia.",
+  "main": "electron/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "serve": "node tools/serve.js",
+    "build": "node tools/build-exe.js",
+    "assets:import": "node tools/import-assets.js",
+    "test:assets": "node tools/test-assets.js",
+    "test:game": "electron . --asset-selftest",
+    "test:interface": "electron tools/test-interface.js",
+    "assets:interface": "node tools/prepare-interface-assets.js",
+    "test:physics": "node tools/test-car-physics.js",
+    "test:physics-world": "electron . --physics-selftest",
+    "mods": "node tools/mods-inventory.js --organizar"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.4.1",
+    "meshoptimizer": "^1.3.0",
+    "pngjs": "^7.0.0",
+    "three": "^0.128.0"
+  }
+}

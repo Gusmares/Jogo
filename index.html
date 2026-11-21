@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>NEON COAST</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/interface.css">
+</head>
+<body class="in-menu">
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+
+<div id="hud">
+  <div id="topRight">
+    <div id="money">$0</div>
+    <div id="clock">17:30</div>
+    <div id="zone">Cidade</div>
+    <div id="wanted"></div>
+    <div id="units"></div>
+  </div>
+  <div id="objective"><div id="objTitle">ENTREGA</div><div id="objInfo">-</div></div>
+  <div id="help">
+    <b>WASD</b> mover &nbsp; <b>Shift</b> correr (gasta estamina) &nbsp; <b>Espaço</b> pular / freio de mão<br>
+    <b>Mouse</b> ou <b>setas</b> câmera &nbsp; <b>F</b> entrar / sair do carro &nbsp; <b>L</b> sirene (viatura) &nbsp; <b>G</b> gestos &nbsp; <b>O / Shift+O</b> trocar roupa<br>
+    Segure <b>Alt</b> roda de estações &nbsp; <b>M</b> ligar/desligar &nbsp; <b>[ ]</b> volume<br>
+    Segure <b>Tab</b> roda de armas &nbsp; <b>Botão direito</b> mirar &nbsp; <b>Clique</b> atirar &nbsp; <b>T</b> recarregar &nbsp; <b>H</b> ajuda
+  </div>
+  <div id="mmWrap"><canvas id="mm" width="200" height="200"></canvas></div>
+  <div id="vitals"><div class="bar"><i id="hpBar"></i><span id="hpTxt">100</span></div><div class="bar st"><i id="stBar"></i></div></div>
+  <div id="speedo"><span id="spd">0</span><small>km/h</small></div>
+  <div id="radioHud" hidden><div class="radio-label"><span id="radioGenre"></span><span class="equalizer"><i></i><i></i><i></i><i></i></span></div><b id="radioStation"></b><span id="radioTrack"></span><small><kbd>ALT</kbd> Estações <span class="volume-label">VOL <i id="radioVolume"></i></span></small></div>
+  <div id="weaponHud" hidden><span id="weaponType"></span><b id="weaponName"></b><div id="weaponAmmo"></div><div class="ammo-meter"><i id="weaponAmmoBar"></i></div><small id="weaponHint"></small></div><div id="crosshair" hidden><i></i><i></i><i></i><i></i><b></b></div><div id="hitmark"></div>
+  <div id="prompt"></div>
+  <div id="toast"></div>
+</div>
+
+<div id="dead"><h2>VOCÊ MORREU</h2><p id="deadMsg"></p><p>Renascendo no hospital...</p></div>
+
+<div id="overlay">
+  <header class="menu-top"><span class="brand-small">NC<span> / </span>NEON COAST</span><span>MUNDO ABERTO · BRASIL</span></header>
+  <section id="homePanel" class="menu-panel home-panel">
+    <div class="eyebrow" id="menuEyebrow">A CIDADE É SUA.</div>
+    <h1>NEON<br><span>COAST</span></h1>
+    <p class="menu-intro">Cada rua, uma história.<br>Escolha quem você vai ser.</p>
+    <nav class="main-actions" aria-label="Menu principal">
+      <button id="play" class="primary">Iniciar <small>ESCOLHA SEU PERSONAGEM</small></button>
+      <button id="changeSkin" hidden>Escolher skin</button>
+      <button id="settingsButton">Configurações</button>
+      <button id="quitButton">Sair</button>
+    </nav>
+    <div class="home-notes"><span>EXPLORE SEM ROTEIRO</span><span>ENCONTRE SUA FREQUÊNCIA</span></div>
+  </section>
+  <div class="coast-art" aria-hidden="true"><div class="coast-sun"></div><div class="coast-grid"></div><div class="coast-caption">VIVA A RUA.<br><span>SINTA O SOM.</span></div></div>
+  <section id="skinPanel" class="menu-panel" hidden>
+    <div class="panel-heading"><div><div class="eyebrow">SEU COMEÇO</div><h2>Escolha sua skin.</h2></div><button class="quiet" data-menu-back>Voltar</button></div>
+    <div class="skin-layout">
+      <div class="skin-library"><div class="skin-filters"><input id="skinSearch" type="search" placeholder="Buscar personagem…" aria-label="Buscar skin"><select id="skinFilter" aria-label="Categoria de skin"><option value="all">Todas as skins</option><option value="civil">Civis</option><option value="policia">Fardamentos</option><option value="faccao">Facções</option></select></div><div id="skinCount" class="subtle" aria-live="polite">Carregando personagens…</div><div id="skinList" role="group" aria-label="Skins disponíveis"></div><div id="skinEmpty" hidden>Nenhuma skin encontrada.</div></div>
+      <div class="skin-showcase"><div class="preview-tag">PRÉVIA DO PERSONAGEM <span>3D</span></div><canvas id="skinPreview" aria-label="Prévia 3D da skin selecionada"></canvas><div class="skin-caption"><span id="skinRole" class="eyebrow"></span><h3 id="skinName">Selecione uma skin</h3><p id="skinStatus" role="status">Carregando prévia…</p><button id="confirmSkin" class="primary" disabled>Entrar na cidade</button></div></div>
+    </div>
+  </section>
+  <section id="settingsPanel" class="menu-panel settings-panel" hidden>
+    <div class="panel-heading"><div><div class="eyebrow">DO SEU JEITO</div><h2>Configurações.</h2></div><button class="quiet" data-menu-back>Voltar</button></div>
+    <div class="settings-grid"><div class="settings-controls">
+      <label for="settingVolume">Volume da rádio <output id="settingVolumeValue"></output></label><input id="settingVolume" type="range" min="0" max="100" step="1">
+      <label for="settingSensitivity">Sensibilidade do mouse <output id="settingSensitivityValue"></output></label><input id="settingSensitivity" type="range" min="25" max="200" step="5">
+      <label for="settingQuality">Qualidade gráfica</label><select id="settingQuality"><option value="auto">Automática</option><option value="performance">Desempenho</option><option value="high">Alta</option></select>
+      <label class="check-label"><input id="settingHelp" type="checkbox"> Mostrar ajuda durante o jogo</label>
+      <button id="fullscreenButton" class="quiet">Alternar tela cheia · F11</button><p class="subtle">As preferências são salvas automaticamente.</p>
+    </div><div class="controls-card"><h3>Na ponta dos dedos.</h3><p><kbd>W A S D</kbd> Mover / dirigir</p><p><kbd>F</kbd> Entrar / sair do veículo</p><p><kbd>ALT</kbd> Segure para escolher a estação</p><p><kbd>TAB</kbd> Segure para escolher a arma</p><p><kbd>MOUSE</kbd> Escolher na roda · solte para confirmar</p><p><kbd>T</kbd> Recarregar</p><p><kbd>ESC</kbd> Pausar / voltar</p></div></div>
+  </section>
+  <footer class="menu-footer"><span>NEON COAST <span class="muted">/</span> SUA CIDADE. SEU RITMO.</span><span id="menuFooterHint">TECLADO + MOUSE</span></footer>
+</div>
+<div id="selectionWheel" hidden role="dialog" aria-modal="true" aria-label="Roda de seleção"><div class="wheel-heading"><span class="eyebrow" id="wheelEyebrow"></span><h2 id="wheelTitle"></h2></div><div class="wheel-disc"><svg id="wheelSegments" viewBox="0 0 600 600" aria-hidden="true"></svg><div id="wheelItems"></div><div class="wheel-center"><span id="wheelGenre"></span><h3 id="wheelName"></h3><p id="wheelDetail"></p><small id="wheelCounter"></small></div><i id="wheelCursor"></i></div><div class="wheel-footer"><span id="wheelInstruction"></span><span><kbd>ESC</kbd> Cancelar</span></div></div>
+
+<!-- Biblioteca 3D (local) -->
+<script src="vendor/three.min.js"></script>
+
+<!-- Núcleo -->
+<script src="js/core/util.js"></script>
+<script src="js/core/engine.js"></script>
+<script src="js/core/post.js"></script>
+
+<!-- Mundo (a ordem importa: cada arquivo usa o que o anterior definiu) -->
+<script src="js/world/terrain.js"></script>
+<script src="js/world/water.js"></script>
+<script src="js/world/foliage-lib.js"></script>
+<script src="js/world/pavements.js"></script>
+<script src="js/world/city-textures.js"></script>
+<script src="js/world/props.js"></script>
+<script src="js/world/facades.js"></script>
+<script src="js/world/collision.js"></script>
+<script src="js/world/sp.js"></script>
+<script src="js/world/city.js"></script>
+<script src="js/world/rio.js"></script>
+<script src="js/world/vegetation.js"></script>
+<script src="js/world/sky.js"></script>
+<script src="js/world/favela.js"></script>
+<script src="js/world/scenes.js"></script>
+
+<!-- Entidades, entrada, interface e jogabilidade -->
+<script src="js/entities/models.js"></script>
+<script src="js/entities/vehicles.js"></script>
+<script src="js/world/traffic-lights.js"></script>
+<script src="js/core/input.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/gameplay/health.js"></script>
+<script src="js/gameplay/mission.js"></script>
+<script src="js/entities/car-physics-core.js"></script>
+<script src="js/entities/car-physics.js"></script>
+<script src="js/entities/damage.js"></script>
+<script src="js/gameplay/update.js"></script>
+<script src="js/entities/gator.js"></script>
+<script src="js/core/camera.js"></script>
+
+<!-- Veículos e fardamentos convertidos (assets/models/) -->
+<script src="js/entities/vehicle-models.js"></script>
+<script src="js/entities/anim.js"></script>
+<script src="js/entities/skins.js"></script>
+<script src="js/entities/player-model.js"></script>
+<script src="js/entities/pedestrians.js"></script>
+<script src="js/entities/occupants.js"></script>
+<script src="js/gameplay/vehicle-anim.js"></script>
+<script src="js/entities/npcs.js"></script>
+<script src="js/entities/traffic-assets.js"></script>
+<script src="js/gameplay/radio.js"></script>
+<script src="js/gameplay/weapons.js"></script>
+
+<!-- Polícia (RP, ROCAM, TOR, FT, Civil, ROTA) e emergência (SAMU, Bombeiros) -->
+<script src="js/entities/police.js"></script>
+<script src="js/entities/emergency.js"></script>
+<script src="js/ui/selection-wheel.js"></script>
+<script src="js/ui/menu.js"></script>
+
+<script src="js/main.js"></script>
+</body>
+</html>

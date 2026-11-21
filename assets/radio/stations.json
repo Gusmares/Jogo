@@ -1,0 +1,1233 @@
+{
+  "stations": [
+    {
+      "id": "TERR",
+      "name": "Terra Vermelha",
+      "tracks": [
+        {
+          "title": "Tião Carreiro e Pardinho - Boi Soberano",
+          "url": "assets/radio/TERR/track_0.mp3",
+          "duration": 202.896
+        },
+        {
+          "title": "Tião Carreiro e Pardinho - Catimbau",
+          "url": "assets/radio/TERR/track_1.mp3",
+          "duration": 227.916
+        },
+        {
+          "title": "Chitãozinho e Xororó - Galopeira",
+          "url": "assets/radio/TERR/track_2.mp3",
+          "duration": 207.072
+        },
+        {
+          "title": "Tião Carreiro e Pardinho - Empreitada Perigosa",
+          "url": "assets/radio/TERR/track_3.mp3",
+          "duration": 147.42
+        },
+        {
+          "title": "Liu e Léu - Boiadeiro Errante",
+          "url": "assets/radio/TERR/track_4.mp3",
+          "duration": 198.504
+        },
+        {
+          "title": "Lourenço e Lourival - Armadilha do Destino",
+          "url": "assets/radio/TERR/track_5.mp3",
+          "duration": 192.168
+        },
+        {
+          "title": "Lourenço e Lourival - Franguinho na Panela",
+          "url": "assets/radio/TERR/track_6.mp3",
+          "duration": 228.636
+        },
+        {
+          "title": "Milionário e José Rico - Sonhei Com Você",
+          "url": "assets/radio/TERR/track_7.mp3",
+          "duration": 260.856
+        },
+        {
+          "title": "Milionário e José Rico - Estrada Da Vida",
+          "url": "assets/radio/TERR/track_8.mp3",
+          "duration": 129.996
+        },
+        {
+          "title": "Mocóca e Paraíso - O Ipê e o Prisioneiro",
+          "url": "assets/radio/TERR/track_9.mp3",
+          "duration": 186.264
+        },
+        {
+          "title": "Liu e Léu - Rei do Café",
+          "url": "assets/radio/TERR/track_10.mp3",
+          "duration": 224.136
+        },
+        {
+          "title": "Tonico e Tinoco - Carro de Boi",
+          "url": "assets/radio/TERR/track_11.mp3",
+          "duration": 165.132
+        },
+        {
+          "title": "Tonico e Tinoco - Moreninha Linda",
+          "url": "assets/radio/TERR/track_12.mp3",
+          "duration": 183.6
+        },
+        {
+          "title": "Trio Parada Dura - Paineira Velha",
+          "url": "assets/radio/TERR/track_13.mp3",
+          "duration": 185.148
+        },
+        {
+          "title": "Zico e Zeca - Castigo",
+          "url": "assets/radio/TERR/track_14.mp3",
+          "duration": 186.156
+        }
+      ]
+    },
+    {
+      "id": "BROC",
+      "name": "BRock",
+      "tracks": [
+        {
+          "title": "Mamonas Assassinas - Money",
+          "url": "assets/radio/BROC/track_0.mp3",
+          "duration": 249.040521
+        },
+        {
+          "title": "Capital Inicial - Nada Vai Te Machucar",
+          "url": "assets/radio/BROC/track_1.mp3",
+          "duration": 243.905306
+        },
+        {
+          "title": "Capital Inicial - Primeiros Erros",
+          "url": "assets/radio/BROC/track_2.mp3",
+          "duration": 234.945306
+        },
+        {
+          "title": "Cazuza - Pro dia Nascer feliz",
+          "url": "assets/radio/BROC/track_3.mp3",
+          "duration": 267.755102
+        },
+        {
+          "title": "CPM22 - Um Minuto Para O Fim Do Mundo",
+          "url": "assets/radio/BROC/track_4.mp3",
+          "duration": 198.768
+        },
+        {
+          "title": "Detonautas - Quando o Sol Se For",
+          "url": "assets/radio/BROC/track_5.mp3",
+          "duration": 222.563265
+        },
+        {
+          "title": "Graforreia Xilarmonica - Amigo Punk",
+          "url": "assets/radio/BROC/track_6.mp3",
+          "duration": 229.067755
+        },
+        {
+          "title": "Ira! - Tarde Vazia",
+          "url": "assets/radio/BROC/track_7.mp3",
+          "duration": 225.645714
+        },
+        {
+          "title": "Jota Quest - Morrer de Amor",
+          "url": "assets/radio/BROC/track_8.mp3",
+          "duration": 209.031837
+        },
+        {
+          "title": "Legião Urbana - Faroeste Caboclo",
+          "url": "assets/radio/BROC/track_9.mp3",
+          "duration": 541.54449
+        },
+        {
+          "title": "Los Hermanos - Anna Julia",
+          "url": "assets/radio/BROC/track_10.mp3",
+          "duration": 212.506122
+        },
+        {
+          "title": "Matanza - Clube dos Canalhas",
+          "url": "assets/radio/BROC/track_11.mp3",
+          "duration": 180.114286
+        },
+        {
+          "title": "NXZero - Razoes e emoçoes",
+          "url": "assets/radio/BROC/track_12.mp3",
+          "duration": 220.917551
+        },
+        {
+          "title": "Pitty - Na Sua Estante",
+          "url": "assets/radio/BROC/track_13.mp3",
+          "duration": 222.336
+        },
+        {
+          "title": "Raimundos - Mulher de Fases",
+          "url": "assets/radio/BROC/track_14.mp3",
+          "duration": 210.102857
+        },
+        {
+          "title": "Raul Seixas - Cowboy Fora Da Lei",
+          "url": "assets/radio/BROC/track_15.mp3",
+          "duration": 214.909388
+        },
+        {
+          "title": "RPM - Olhar 43",
+          "url": "assets/radio/BROC/track_16.mp3",
+          "duration": 186.017959
+        },
+        {
+          "title": "RPM - Rádio Pirata",
+          "url": "assets/radio/BROC/track_17.mp3",
+          "duration": 210.076735
+        },
+        {
+          "title": "Skank - Sutilmente",
+          "url": "assets/radio/BROC/track_18.mp3",
+          "duration": 244.140408
+        },
+        {
+          "title": "Skank - Vou Deixar",
+          "url": "assets/radio/BROC/track_19.mp3",
+          "duration": 273.632653
+        }
+      ]
+    },
+    {
+      "id": "FUNK",
+      "name": "Baile da Onda FM",
+      "tracks": [
+        {
+          "title": "Bonde R300 - Oh Nanana",
+          "url": "assets/radio/FUNK/track_0.mp3",
+          "duration": 191.16
+        },
+        {
+          "title": "MC Kevinho - Agora é tudo Meu",
+          "url": "assets/radio/FUNK/track_1.mp3",
+          "duration": 171.18
+        },
+        {
+          "title": "Kevin o Chris - Medley da Gaiola",
+          "url": "assets/radio/FUNK/track_2.mp3",
+          "duration": 240.192
+        },
+        {
+          "title": "MC Daleste - Angra dos Reis",
+          "url": "assets/radio/FUNK/track_3.mp3",
+          "duration": 303.66
+        },
+        {
+          "title": "MC Fioti - Bum Bum Tam Tam",
+          "url": "assets/radio/FUNK/track_4.mp3",
+          "duration": 171.036
+        },
+        {
+          "title": "MC Guimê - Plaque de 100",
+          "url": "assets/radio/FUNK/track_5.mp3",
+          "duration": 174.564
+        },
+        {
+          "title": "MC Guimê - País do Futebol",
+          "url": "assets/radio/FUNK/track_6.mp3",
+          "duration": 149.112
+        },
+        {
+          "title": "MCs Gustta e DG - Abusadamente",
+          "url": "assets/radio/FUNK/track_7.mp3",
+          "duration": 233.64
+        },
+        {
+          "title": "MC João - Baile de Favela",
+          "url": "assets/radio/FUNK/track_8.mp3",
+          "duration": 187.56
+        },
+        {
+          "title": "MC Kevinho e Leo Santana - Encaixa",
+          "url": "assets/radio/FUNK/track_9.mp3",
+          "duration": 186.516
+        },
+        {
+          "title": "MC Lan - Open the Tcheka",
+          "url": "assets/radio/FUNK/track_10.mp3",
+          "duration": 176.796
+        },
+        {
+          "title": "MC Leozinho - Se Ela Dança Eu Danço",
+          "url": "assets/radio/FUNK/track_11.mp3",
+          "duration": 203.292
+        },
+        {
+          "title": "MC MM - Só Quer Vrau",
+          "url": "assets/radio/FUNK/track_12.mp3",
+          "duration": 174.744
+        },
+        {
+          "title": "MCS Nando DK e Jerry Smith - Troféu do Ano",
+          "url": "assets/radio/FUNK/track_13.mp3",
+          "duration": 204.156
+        },
+        {
+          "title": "MC Rodolfinho - Os Mlk é Liso",
+          "url": "assets/radio/FUNK/track_14.mp3",
+          "duration": 232.776
+        },
+        {
+          "title": "MC WM - Fuleragem",
+          "url": "assets/radio/FUNK/track_15.mp3",
+          "duration": 155.808
+        },
+        {
+          "title": "MC Zaac - Vai Embrazando",
+          "url": "assets/radio/FUNK/track_16.mp3",
+          "duration": 181.332
+        },
+        {
+          "title": "MCs Jhowzinho e Kadinho - Agora vai Sentar",
+          "url": "assets/radio/FUNK/track_17.mp3",
+          "duration": 225.144
+        },
+        {
+          "title": "MCs Zaac e Jerry Smith - Bumbum Granada",
+          "url": "assets/radio/FUNK/track_18.mp3",
+          "duration": 201.024
+        },
+        {
+          "title": "Os Cretinos e MC WM - Qual BumBum Mais Bate",
+          "url": "assets/radio/FUNK/track_19.mp3",
+          "duration": 179.352
+        }
+      ]
+    },
+    {
+      "id": "DOPE",
+      "name": "DOPE",
+      "tracks": [
+        {
+          "title": "DJ Snake Lil Jon - Turn Down For What",
+          "url": "assets/radio/DOPE/track_0.mp3",
+          "duration": 216.18
+        },
+        {
+          "title": "Djjr (feat. Beta Max) - Old Habits VIP",
+          "url": "assets/radio/DOPE/track_1.mp3",
+          "duration": 213.629417
+        },
+        {
+          "title": "Djjr - Pacman",
+          "url": "assets/radio/DOPE/track_2.mp3",
+          "duration": 248.68575
+        },
+        {
+          "title": "Eptic (feat. Virus Syndicate) - Bust 'Em Out ",
+          "url": "assets/radio/DOPE/track_3.mp3",
+          "duration": 176.472
+        },
+        {
+          "title": "Excision - The Paradox",
+          "url": "assets/radio/DOPE/track_4.mp3",
+          "duration": 293.616
+        },
+        {
+          "title": "Excision & Pegboard Nerds (feat. Mayor Apeshit) - Bring The Madness ",
+          "url": "assets/radio/DOPE/track_5.mp3",
+          "duration": 205.308
+        },
+        {
+          "title": "Getter & Ghostemane - Bury Me",
+          "url": "assets/radio/DOPE/track_6.mp3",
+          "duration": 281.628
+        },
+        {
+          "title": "Getter - Fricken Dope",
+          "url": "assets/radio/DOPE/track_7.mp3",
+          "duration": 255.312
+        },
+        {
+          "title": "Getter (feat. Georgia Ku) - Blood",
+          "url": "assets/radio/DOPE/track_8.mp3",
+          "duration": 244.116
+        },
+        {
+          "title": "Kill The Noise - Kill The Noise (Part I)",
+          "url": "assets/radio/DOPE/track_9.mp3",
+          "duration": 219.312
+        },
+        {
+          "title": "Knife Party - Bonfire",
+          "url": "assets/radio/DOPE/track_10.mp3",
+          "duration": 272.196
+        },
+        {
+          "title": "Koven - Never Have I Felt This",
+          "url": "assets/radio/DOPE/track_11.mp3",
+          "duration": 246.132
+        },
+        {
+          "title": "Pegboard Nerds & NGHTMRE (feat. Krewella) - Superstar ",
+          "url": "assets/radio/DOPE/track_12.mp3",
+          "duration": 211.248
+        },
+        {
+          "title": "Rickyxsan (feat. iE-z) - Growlin'",
+          "url": "assets/radio/DOPE/track_13.mp3",
+          "duration": 174.96
+        },
+        {
+          "title": "RL Grime - Core",
+          "url": "assets/radio/DOPE/track_14.mp3",
+          "duration": 240.084
+        },
+        {
+          "title": "Skrillex - Ruffneck Fire (VIP 2)",
+          "url": "assets/radio/DOPE/track_15.mp3",
+          "duration": 253.910204
+        },
+        {
+          "title": "Scroobius Pip - The Struggle (Doctor P Remix) Getter & AFK VIP",
+          "url": "assets/radio/DOPE/track_16.mp3",
+          "duration": 303.804
+        },
+        {
+          "title": "Skrillex - All Is Fair In Love And Brostep With Ragga Twins",
+          "url": "assets/radio/DOPE/track_17.mp3",
+          "duration": 249.516
+        },
+        {
+          "title": "Zomboy - Like A Bitch (Kill The Noise Remix)",
+          "url": "assets/radio/DOPE/track_18.mp3",
+          "duration": 274.5
+        },
+        {
+          "title": "Zomboy (feat. Bok Nero) - Rotten",
+          "url": "assets/radio/DOPE/track_19.mp3",
+          "duration": 216.936
+        }
+      ]
+    },
+    {
+      "id": "BTOP",
+      "name": "Baladinha Top",
+      "tracks": [
+        {
+          "title": "Gustavo Mioto part. Jorge e Mateus - Anti-Amor ",
+          "url": "assets/radio/BTOP/track_0.mp3",
+          "duration": 164.7
+        },
+        {
+          "title": "Gusttavo Lima - Apelido Carinhoso",
+          "url": "assets/radio/BTOP/track_1.mp3",
+          "duration": 201.168
+        },
+        {
+          "title": "Henrique e Juliano - Até Você Voltar",
+          "url": "assets/radio/BTOP/track_2.mp3",
+          "duration": 194.76
+        },
+        {
+          "title": "Henrique e Juliano - Cuida Bem Dela",
+          "url": "assets/radio/BTOP/track_3.mp3",
+          "duration": 204.264
+        },
+        {
+          "title": "Humberto e Ronaldo part. Jerry Smith - Não Fala Não Pra Mim ",
+          "url": "assets/radio/BTOP/track_4.mp3",
+          "duration": 207.18
+        },
+        {
+          "title": "João Bosco e Vinícius - Deixaria Tudo",
+          "url": "assets/radio/BTOP/track_5.mp3",
+          "duration": 258.516
+        },
+        {
+          "title": "Luan Santana - Te esperando",
+          "url": "assets/radio/BTOP/track_6.mp3",
+          "duration": 251.1
+        },
+        {
+          "title": "Luan Santana - Acordando o Prédio",
+          "url": "assets/radio/BTOP/track_7.mp3",
+          "duration": 219.708
+        },
+        {
+          "title": "Lucas Lucco - Vai Vendo",
+          "url": "assets/radio/BTOP/track_8.mp3",
+          "duration": 183.852
+        },
+        {
+          "title": "Mano Walter - Não Deixo Não",
+          "url": "assets/radio/BTOP/track_9.mp3",
+          "duration": 237.744
+        },
+        {
+          "title": "Marcos e Belutti part. Wesley Safadão - Aquele 1%",
+          "url": "assets/radio/BTOP/track_10.mp3",
+          "duration": 178.452
+        },
+        {
+          "title": "Marília Mendonça - Infiel",
+          "url": "assets/radio/BTOP/track_11.mp3",
+          "duration": 202.428
+        },
+        {
+          "title": "Matheus e Kauan - O Nosso Santo Bateu",
+          "url": "assets/radio/BTOP/track_12.mp3",
+          "duration": 158.076
+        },
+        {
+          "title": "Paula Fernandes - Pássaro de Fogo",
+          "url": "assets/radio/BTOP/track_13.mp3",
+          "duration": 244.8
+        },
+        {
+          "title": "Victor e Leo - Borboletas",
+          "url": "assets/radio/BTOP/track_14.mp3",
+          "duration": 199.512
+        },
+        {
+          "title": "Zé Neto e Cristiano - Largado às Traças",
+          "url": "assets/radio/BTOP/track_15.mp3",
+          "duration": 215.275083
+        }
+      ]
+    },
+    {
+      "id": "TRAC",
+      "name": "Cultura Track",
+      "tracks": [
+        {
+          "title": "1Kilo - Deixe-me Ir",
+          "url": "assets/radio/TRAC/track_0.mp3",
+          "duration": 217.728
+        },
+        {
+          "title": "Hungria Hip Hop part. Mr Catra - Bolo Doido",
+          "url": "assets/radio/TRAC/track_1.mp3",
+          "duration": 233.064
+        },
+        {
+          "title": "Tribo da Periferia - Carro de Malandro",
+          "url": "assets/radio/TRAC/track_2.mp3",
+          "duration": 259.128
+        },
+        {
+          "title": "Cauê Moura - Delírio",
+          "url": "assets/radio/TRAC/track_3.mp3",
+          "duration": 244.728
+        },
+        {
+          "title": "Cynthia Luz e Sant - Olhares",
+          "url": "assets/radio/TRAC/track_4.mp3",
+          "duration": 237.96
+        },
+        {
+          "title": "Cesar, Jhony, Thiago, Noventa e Samurai - Cypher Dissparo",
+          "url": "assets/radio/TRAC/track_5.mp3",
+          "duration": 291.384
+        },
+        {
+          "title": "ADL, Choise, Djonga, Menor do Chapa e Negra li - Favela Vive 3",
+          "url": "assets/radio/TRAC/track_6.mp3",
+          "duration": 537.624
+        },
+        {
+          "title": "Froid - Pseudosocial",
+          "url": "assets/radio/TRAC/track_7.mp3",
+          "duration": 136.08
+        },
+        {
+          "title": "Haikaiss - A Praga",
+          "url": "assets/radio/TRAC/track_8.mp3",
+          "duration": 215.46
+        },
+        {
+          "title": "Haikaiss part. MC Lan e Ojuara - Não Vou Morrer de Ficar Rico",
+          "url": "assets/radio/TRAC/track_9.mp3",
+          "duration": 257.4
+        },
+        {
+          "title": "Tribo da Periferia part. Hungria Hip Hop - Insônia",
+          "url": "assets/radio/TRAC/track_10.mp3",
+          "duration": 283.068
+        },
+        {
+          "title": "Hungria Hip Hop - Lembranças",
+          "url": "assets/radio/TRAC/track_11.mp3",
+          "duration": 280.08
+        },
+        {
+          "title": "Racionais MC's - Negro Drama",
+          "url": "assets/radio/TRAC/track_12.mp3",
+          "duration": 422.316
+        },
+        {
+          "title": "Projota - Ela Só Quer Paz",
+          "url": "assets/radio/TRAC/track_13.mp3",
+          "duration": 185.508
+        },
+        {
+          "title": "Projota part. Negra Li - O Homem Que Não Tinha Nada",
+          "url": "assets/radio/TRAC/track_14.mp3",
+          "duration": 230.76
+        },
+        {
+          "title": "Racionais MC's - Vida Loka Parte II",
+          "url": "assets/radio/TRAC/track_15.mp3",
+          "duration": 351.216
+        },
+        {
+          "title": "Racionais MC's - Homens na Estrada",
+          "url": "assets/radio/TRAC/track_16.mp3",
+          "duration": 521.676
+        },
+        {
+          "title": "Racionais MC's - Da Ponte Pra Cá",
+          "url": "assets/radio/TRAC/track_17.mp3",
+          "duration": 527.58
+        },
+        {
+          "title": "Sabotage - Um Bom Lugar",
+          "url": "assets/radio/TRAC/track_18.mp3",
+          "duration": 311.472
+        },
+        {
+          "title": "Costa Gold - TheCypherDeffect",
+          "url": "assets/radio/TRAC/track_19.mp3",
+          "duration": 281.16
+        }
+      ]
+    },
+    {
+      "id": "BEAT",
+      "name": "Beat Home",
+      "tracks": [
+        {
+          "title": "Aaron Smith - Dancin (KRONO Remix)",
+          "url": "assets/radio/BEAT/track_0.mp3",
+          "duration": 256.32
+        },
+        {
+          "title": "Afrojack (feat. Spree Wilson) - The Spark",
+          "url": "assets/radio/BEAT/track_1.mp3",
+          "duration": 239.472
+        },
+        {
+          "title": "Alan Walker - Alone",
+          "url": "assets/radio/BEAT/track_2.mp3",
+          "duration": 163.368
+        },
+        {
+          "title": "Alok e Bhaskar - Fuego",
+          "url": "assets/radio/BEAT/track_3.mp3",
+          "duration": 220.14
+        },
+        {
+          "title": "Alok, Bruno Martini (feat. Zeeba) - Hear Me Now",
+          "url": "assets/radio/BEAT/track_4.mp3",
+          "duration": 264.492
+        },
+        {
+          "title": "AronChupa - I'm an Albatraoz",
+          "url": "assets/radio/BEAT/track_5.mp3",
+          "duration": 148.572
+        },
+        {
+          "title": "Avicii - Wake Me Up",
+          "url": "assets/radio/BEAT/track_6.mp3",
+          "duration": 272.556
+        },
+        {
+          "title": "Bebe Rexha - I Got You",
+          "url": "assets/radio/BEAT/track_7.mp3",
+          "duration": 198.972
+        },
+        {
+          "title": "Calvin Harris - Summer",
+          "url": "assets/radio/BEAT/track_8.mp3",
+          "duration": 219.384
+        },
+        {
+          "title": "Calvin Harris & Alesso (feat. Hurts) - Under Control",
+          "url": "assets/radio/BEAT/track_9.mp3",
+          "duration": 210.492
+        },
+        {
+          "title": "Dada Life - Don't Feed the Dada",
+          "url": "assets/radio/BEAT/track_10.mp3",
+          "duration": 229.752
+        },
+        {
+          "title": "David Guetta (feat. Nicki Minaj) - Turn Me On",
+          "url": "assets/radio/BEAT/track_11.mp3",
+          "duration": 210.204
+        },
+        {
+          "title": "David Guetta e Showtek (feat. Vassy) - Bad ",
+          "url": "assets/radio/BEAT/track_12.mp3",
+          "duration": 170.748
+        },
+        {
+          "title": "Dillon Francis, DJ Snake - Get Low",
+          "url": "assets/radio/BEAT/track_13.mp3",
+          "duration": 212.688
+        },
+        {
+          "title": "Felguk - This Life",
+          "url": "assets/radio/BEAT/track_14.mp3",
+          "duration": 213.84
+        },
+        {
+          "title": "Major Lazer e DJ Snake (feat. MO) - Lean On",
+          "url": "assets/radio/BEAT/track_15.mp3",
+          "duration": 178.992
+        },
+        {
+          "title": "Miker Posner - I Took a Pill in Ibiza",
+          "url": "assets/radio/BEAT/track_16.mp3",
+          "duration": 199.8
+        },
+        {
+          "title": "Sidney Samson - Riverside (Motherfucker mix)",
+          "url": "assets/radio/BEAT/track_17.mp3",
+          "duration": 217.872
+        },
+        {
+          "title": "Tom Swoon e Stadiumx (feat. Rico e Miella) - Ghost",
+          "url": "assets/radio/BEAT/track_18.mp3",
+          "duration": 378.9
+        },
+        {
+          "title": "Vanic x Zella Day - Hypnotic",
+          "url": "assets/radio/BEAT/track_19.mp3",
+          "duration": 282.168
+        }
+      ]
+    },
+    {
+      "id": "ROLL",
+      "name": "Rolling Rocks",
+      "tracks": [
+        {
+          "title": "AC/DC - Highway to Hell",
+          "url": "assets/radio/ROLL/track_0.mp3",
+          "duration": 207.15102
+        },
+        {
+          "title": "AC/DC - Rock or Bust",
+          "url": "assets/radio/ROLL/track_1.mp3",
+          "duration": 184.346122
+        },
+        {
+          "title": "Bon Jovi - Misunderstood",
+          "url": "assets/radio/ROLL/track_2.mp3",
+          "duration": 200.672653
+        },
+        {
+          "title": "Disturbed - Stricken",
+          "url": "assets/radio/ROLL/track_3.mp3",
+          "duration": 248.42449
+        },
+        {
+          "title": "Green Day - Boulevard of Broken Dreams",
+          "url": "assets/radio/ROLL/track_4.mp3",
+          "duration": 261.851429
+        },
+        {
+          "title": "Imagine Dragons - Natural",
+          "url": "assets/radio/ROLL/track_5.mp3",
+          "duration": 190.484898
+        },
+        {
+          "title": "Kiss - I Was Made For Lovin' You",
+          "url": "assets/radio/ROLL/track_6.mp3",
+          "duration": 271.333878
+        },
+        {
+          "title": "Led Zeppelin - Immigrant Song",
+          "url": "assets/radio/ROLL/track_7.mp3",
+          "duration": 146.808163
+        },
+        {
+          "title": "Linkin Park - In The End",
+          "url": "assets/radio/ROLL/track_8.mp3",
+          "duration": 217.730612
+        },
+        {
+          "title": "Linkin Park - Numb",
+          "url": "assets/radio/ROLL/track_9.mp3",
+          "duration": 186.253061
+        },
+        {
+          "title": "Metallica - One",
+          "url": "assets/radio/ROLL/track_10.mp3",
+          "duration": 444.656327
+        },
+        {
+          "title": "Nirvana - Smells Like Teen Spirit",
+          "url": "assets/radio/ROLL/track_11.mp3",
+          "duration": 277.289796
+        },
+        {
+          "title": "Queen - Under Pressure",
+          "url": "assets/radio/ROLL/track_12.mp3",
+          "duration": 247.693061
+        },
+        {
+          "title": "Red Hot Chili Peppers - Californication",
+          "url": "assets/radio/ROLL/track_13.mp3",
+          "duration": 321.123265
+        },
+        {
+          "title": "Slipknot - Before I Forget",
+          "url": "assets/radio/ROLL/track_14.mp3",
+          "duration": 242.02449
+        },
+        {
+          "title": "Slipknot - Psychosocial",
+          "url": "assets/radio/ROLL/track_15.mp3",
+          "duration": 302.158367
+        },
+        {
+          "title": "System of a Down - Chop Suey",
+          "url": "assets/radio/ROLL/track_16.mp3",
+          "duration": 206.706939
+        },
+        {
+          "title": "System of a Down - Toxicity",
+          "url": "assets/radio/ROLL/track_17.mp3",
+          "duration": 223.399184
+        },
+        {
+          "title": "Animals - The House of the Rising Sun",
+          "url": "assets/radio/ROLL/track_18.mp3",
+          "duration": 267.676735
+        },
+        {
+          "title": "Three Days Grace - Last To Know",
+          "url": "assets/radio/ROLL/track_19.mp3",
+          "duration": 207.986939
+        }
+      ]
+    },
+    {
+      "id": "BRAS",
+      "name": "Brasileirinhas",
+      "tracks": [
+        {
+          "title": "Ana Carolina - Eu Sei Que Vou Te Amar",
+          "url": "assets/radio/BRAS/track_0.mp3",
+          "duration": 183.168
+        },
+        {
+          "title": "Ana Carolina - Quem De Nós Dois",
+          "url": "assets/radio/BRAS/track_1.mp3",
+          "duration": 303.72
+        },
+        {
+          "title": "Armandinho - Semente",
+          "url": "assets/radio/BRAS/track_2.mp3",
+          "duration": 241.776
+        },
+        {
+          "title": "BRAGABOYS - Bomba",
+          "url": "assets/radio/BRAS/track_3.mp3",
+          "duration": 190.224
+        },
+        {
+          "title": "Caetano Veloso - Alegria Alegria",
+          "url": "assets/radio/BRAS/track_4.mp3",
+          "duration": 165.456
+        },
+        {
+          "title": "Charlie Brown Jr - Zóio de Lula",
+          "url": "assets/radio/BRAS/track_5.mp3",
+          "duration": 249.144
+        },
+        {
+          "title": "Daniela Mercury - O Canto Da Cidade",
+          "url": "assets/radio/BRAS/track_6.mp3",
+          "duration": 204.329796
+        },
+        {
+          "title": "Elza Soares - O Tempo Não Para",
+          "url": "assets/radio/BRAS/track_7.mp3",
+          "duration": 256.848
+        },
+        {
+          "title": "Frejat - Segredos",
+          "url": "assets/radio/BRAS/track_8.mp3",
+          "duration": 232.32
+        },
+        {
+          "title": "Ivete Sangalo - Festa",
+          "url": "assets/radio/BRAS/track_9.mp3",
+          "duration": 234.6
+        },
+        {
+          "title": "Jammil- Praieiro",
+          "url": "assets/radio/BRAS/track_10.mp3",
+          "duration": 228.048
+        },
+        {
+          "title": "Kell Smith - Era Uma Vez",
+          "url": "assets/radio/BRAS/track_11.mp3",
+          "duration": 225.048
+        },
+        {
+          "title": "Nando Reis - Segundo Sol",
+          "url": "assets/radio/BRAS/track_12.mp3",
+          "duration": 254.064
+        },
+        {
+          "title": "Netinho - Milla",
+          "url": "assets/radio/BRAS/track_13.mp3",
+          "duration": 300.816
+        },
+        {
+          "title": "O Rappa - Anjos",
+          "url": "assets/radio/BRAS/track_14.mp3",
+          "duration": 418.68
+        },
+        {
+          "title": "Pedro e Thiago - Toque de Mágica",
+          "url": "assets/radio/BRAS/track_15.mp3",
+          "duration": 232.584
+        },
+        {
+          "title": "Planet Hemp - Legalize Já",
+          "url": "assets/radio/BRAS/track_16.mp3",
+          "duration": 176.64
+        },
+        {
+          "title": "Tribalistas - Já Sei Namorar",
+          "url": "assets/radio/BRAS/track_17.mp3",
+          "duration": 203.496
+        },
+        {
+          "title": "Um44k - 4 da Manhã",
+          "url": "assets/radio/BRAS/track_18.mp3",
+          "duration": 214.272
+        },
+        {
+          "title": "Vitor Kley e Bruno Martini - Morena",
+          "url": "assets/radio/BRAS/track_19.mp3",
+          "duration": 163.2
+        }
+      ]
+    },
+    {
+      "id": "APOP",
+      "name": "Apopcalypse",
+      "tracks": [
+        {
+          "title": "Anitta - Veneno",
+          "url": "assets/radio/APOP/track_0.mp3",
+          "duration": 169.32
+        },
+        {
+          "title": "Anitta, Mc Zaac, Maejor (feat. Tropkillaz & DJ Yuri Martins) - Vai Malandra",
+          "url": "assets/radio/APOP/track_1.mp3",
+          "duration": 191.89551
+        },
+        {
+          "title": "Billie Eilish - Bad Guy",
+          "url": "assets/radio/APOP/track_2.mp3",
+          "duration": 191.568
+        },
+        {
+          "title": "Marshmello (feat. Bastille) - Happier",
+          "url": "assets/radio/APOP/track_3.mp3",
+          "duration": 218.304
+        },
+        {
+          "title": "Camila Cabello - Havana",
+          "url": "assets/radio/APOP/track_4.mp3",
+          "duration": 218.568
+        },
+        {
+          "title": "Clean Bandit - Rockabye",
+          "url": "assets/radio/APOP/track_5.mp3",
+          "duration": 253.944
+        },
+        {
+          "title": "Coldplay - Paradise",
+          "url": "assets/radio/APOP/track_6.mp3",
+          "duration": 260.112
+        },
+        {
+          "title": "Demi Lovato - Neon Lights",
+          "url": "assets/radio/APOP/track_7.mp3",
+          "duration": 238.512
+        },
+        {
+          "title": "DJ Snake, Sean Paul, Anitta (feat. Tainy) - Fuego ",
+          "url": "assets/radio/APOP/track_8.mp3",
+          "duration": 197.304
+        },
+        {
+          "title": "Imagine Dragons - Radioactive",
+          "url": "assets/radio/APOP/track_9.mp3",
+          "duration": 189.408
+        },
+        {
+          "title": "Ina Wroldsen & Alok - Favela",
+          "url": "assets/radio/APOP/track_10.mp3",
+          "duration": 184.032
+        },
+        {
+          "title": "James Arthur - Impossible",
+          "url": "assets/radio/APOP/track_11.mp3",
+          "duration": 209.256
+        },
+        {
+          "title": "Maroon 5 - Memories",
+          "url": "assets/radio/APOP/track_12.mp3",
+          "duration": 195.168
+        },
+        {
+          "title": "Katy Perry - Firework",
+          "url": "assets/radio/APOP/track_13.mp3",
+          "duration": 233.736
+        },
+        {
+          "title": "Katy Perry - Part Of Me",
+          "url": "assets/radio/APOP/track_14.mp3",
+          "duration": 219.663673
+        },
+        {
+          "title": "Michael Jackson - They Don't Care About Us",
+          "url": "assets/radio/APOP/track_15.mp3",
+          "duration": 259.488
+        },
+        {
+          "title": "Pitbull (feat. Ke$ha) - Timber",
+          "url": "assets/radio/APOP/track_16.mp3",
+          "duration": 214.151837
+        },
+        {
+          "title": "Rag'n'Bone Man - Human",
+          "url": "assets/radio/APOP/track_17.mp3",
+          "duration": 197.904
+        },
+        {
+          "title": "Shawn Mendes, Camila Cabello - Señorita",
+          "url": "assets/radio/APOP/track_18.mp3",
+          "duration": 191.352
+        },
+        {
+          "title": "Sia - Cheap Thrills",
+          "url": "assets/radio/APOP/track_19.mp3",
+          "duration": 241.032
+        }
+      ]
+    },
+    {
+      "id": "RAPU",
+      "name": "RAPublic",
+      "tracks": [
+        {
+          "title": "2Pac - Ambitionz Az A Ridah",
+          "url": "assets/radio/RAPU/track_0.mp3",
+          "duration": 278.784
+        },
+        {
+          "title": "50 Cent - In Da Club ",
+          "url": "assets/radio/RAPU/track_1.mp3",
+          "duration": 249.888
+        },
+        {
+          "title": "Dr. Dre (feat. Snoop Dogg) - Still Dre",
+          "url": "assets/radio/RAPU/track_2.mp3",
+          "duration": 274.896
+        },
+        {
+          "title": "Drake - God's Plan",
+          "url": "assets/radio/RAPU/track_3.mp3",
+          "duration": 199.2
+        },
+        {
+          "title": "Eminem - Lose Yourself",
+          "url": "assets/radio/RAPU/track_4.mp3",
+          "duration": 320.04
+        },
+        {
+          "title": "Eminem - Not Afraid",
+          "url": "assets/radio/RAPU/track_5.mp3",
+          "duration": 259.08
+        },
+        {
+          "title": "Future - Mask Off",
+          "url": "assets/radio/RAPU/track_6.mp3",
+          "duration": 204.648
+        },
+        {
+          "title": "Gorillaz - Clint Eastwood",
+          "url": "assets/radio/RAPU/track_7.mp3",
+          "duration": 268.8
+        },
+        {
+          "title": "Imagine Dragons, Lil Wayne & Wiz Khalifa - Sucker for Pain",
+          "url": "assets/radio/RAPU/track_8.mp3",
+          "duration": 240.408
+        },
+        {
+          "title": "Juice Wrld - Lucid Dreams",
+          "url": "assets/radio/RAPU/track_9.mp3",
+          "duration": 240.576
+        },
+        {
+          "title": "Kanye West (feat. Lil Pump) - I Love It",
+          "url": "assets/radio/RAPU/track_10.mp3",
+          "duration": 172.08
+        },
+        {
+          "title": "Lil Pump - Gucci Gang",
+          "url": "assets/radio/RAPU/track_11.mp3",
+          "duration": 130.176
+        },
+        {
+          "title": "Post Malone - Better Now",
+          "url": "assets/radio/RAPU/track_12.mp3",
+          "duration": 201.072
+        },
+        {
+          "title": "Post Malone (feat. 21 Savage) – rockstar",
+          "url": "assets/radio/RAPU/track_13.mp3",
+          "duration": 218.112
+        },
+        {
+          "title": "Post Malone (feat. Quavo) - Congratulations",
+          "url": "assets/radio/RAPU/track_14.mp3",
+          "duration": 220.584
+        },
+        {
+          "title": "The Notorious B.I.G. - Juicy",
+          "url": "assets/radio/RAPU/track_15.mp3",
+          "duration": 254.544
+        },
+        {
+          "title": "Travis Scott (feat. Drake) - SICKO MODE",
+          "url": "assets/radio/RAPU/track_16.mp3",
+          "duration": 322.944
+        },
+        {
+          "title": "Wiz Khalifa (feat. Charlie Puth) - See You Again",
+          "url": "assets/radio/RAPU/track_17.mp3",
+          "duration": 232.08
+        },
+        {
+          "title": "Wiz Khalifa (feat. Snoop Dogg and Bruno Mars) - Young Wild and Free",
+          "url": "assets/radio/RAPU/track_18.mp3",
+          "duration": 187.08
+        },
+        {
+          "title": "Y2K, bbno$ - Lalala",
+          "url": "assets/radio/RAPU/track_19.mp3",
+          "duration": 160.704
+        }
+      ]
+    },
+    {
+      "id": "PAGO",
+      "name": "PaGOD",
+      "tracks": [
+        {
+          "title": "Br'oZ - Prometida",
+          "url": "assets/radio/PAGO/track_0.mp3",
+          "duration": 216.384
+        },
+        {
+          "title": "Exaltassamba - Tá vendo aquela Lua",
+          "url": "assets/radio/PAGO/track_1.mp3",
+          "duration": 194.952
+        },
+        {
+          "title": "Exaltassamba - Me Apaixonei Pela Pessoa Errada",
+          "url": "assets/radio/PAGO/track_2.mp3",
+          "duration": 209.376
+        },
+        {
+          "title": "Felipe Araújo & Ferrugem - Atrasadinha",
+          "url": "assets/radio/PAGO/track_3.mp3",
+          "duration": 174.048
+        },
+        {
+          "title": "Grupo Revelação - A Paixao Me Pegou",
+          "url": "assets/radio/PAGO/track_4.mp3",
+          "duration": 207.816
+        },
+        {
+          "title": "Inimigos Da HP - Toca Um samba Ai - ",
+          "url": "assets/radio/PAGO/track_5.mp3",
+          "duration": 180.114286
+        },
+        {
+          "title": "Molejo - Dança da Vassoura",
+          "url": "assets/radio/PAGO/track_6.mp3",
+          "duration": 215.275102
+        },
+        {
+          "title": "Pixote - Nem de Graça",
+          "url": "assets/radio/PAGO/track_7.mp3",
+          "duration": 181.416
+        },
+        {
+          "title": "Raça Negra - Cheia De Manias",
+          "url": "assets/radio/PAGO/track_8.mp3",
+          "duration": 209.4
+        },
+        {
+          "title": "Seu Jorge - Amiga Da Minha Mulher",
+          "url": "assets/radio/PAGO/track_9.mp3",
+          "duration": 251.352
+        },
+        {
+          "title": "Thiaguinho feat. Neymar - Ousadia e Alegria",
+          "url": "assets/radio/PAGO/track_10.mp3",
+          "duration": 151.32
+        },
+        {
+          "title": "Turma do Pagode - Camisa 10",
+          "url": "assets/radio/PAGO/track_11.mp3",
+          "duration": 199.416
+        },
+        {
+          "title": "Turma do Pagode - Cobertor de Orelha",
+          "url": "assets/radio/PAGO/track_12.mp3",
+          "duration": 157.968
+        },
+        {
+          "title": "Turma do Pagode - Lancinho",
+          "url": "assets/radio/PAGO/track_13.mp3",
+          "duration": 226.416
+        },
+        {
+          "title": "Zeca Pagodinho - Deixa A Vida Me Levar",
+          "url": "assets/radio/PAGO/track_14.mp3",
+          "duration": 217.68
+        }
+      ]
+    }
+  ],
+  "ads": [
+    {
+      "title": "Intervalo · GTA Brasil",
+      "url": "assets/radio/ADS/Track_1.ogg",
+      "duration": 62.001438
+    },
+    {
+      "title": "Intervalo · GTA Brasil",
+      "url": "assets/radio/ADS/Track_2.ogg",
+      "duration": 74.422313
+    },
+    {
+      "title": "Intervalo · GTA Brasil",
+      "url": "assets/radio/ADS/Track_3.ogg",
+      "duration": 59.880125
+    },
+    {
+      "title": "Intervalo · GTA Brasil",
+      "url": "assets/radio/ADS/Track_4.ogg",
+      "duration": 51.033313
+    },
+    {
+      "title": "Intervalo · GTA Brasil",
+      "url": "assets/radio/ADS/Track_5.ogg",
+      "duration": 62.289406
+    }
+  ]
+}

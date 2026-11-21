@@ -1,0 +1,38 @@
+{
+  "Ruas_Brasileiras___40_MixMods__41_": {
+    "usados": [
+      "Ruas Brasileiras - MixMods/roadslahills.txd"
+    ],
+    "nota": "Só 2 texturas deste pacote entraram no jogo (asfalto roadnew4_256 e calçada pavebsand256, de roadslahills.txd → assets/world). Os outros 64 TXD (ruas de outras regiões) ainda não foram aproveitados."
+  },
+  "Mod_de_ser_assaltado": {
+    "nota": "Mecânica de assalto (scripts CLEO .cs): fica só como referência; precisa ser reimplementada em JavaScript."
+  },
+  "SA_-_Proper_Shaders_09-26___40_b5tyubu3t__41_": {
+    "nota": "Plugin gráfico do motor do GTA (ASI/shaders .cso): não roda no navegador. O jogo tem seus próprios efeitos em js/core/post.js."
+  },
+  "SADE_-_Proper_Player_Retex": {
+    "nota": "Texturas do GTA SA Definitive Edition (.pak do Unreal): os nomes não batem com os modelos que temos; para usar seria preciso converter o formato."
+  },
+  "Nova Player.img V2": {
+    "nota": "Pacote .img com o CJ e roupas (414 MB). Ainda não extraído; é a base para montar o personagem e as roupas do SADE."
+  },
+  "SA_-_Urbanize_12-25_Final_1": {
+    "nota": "Daqui só o pacote de animações (urbanize.ifp) foi usado. Os scripts CLEO (cenas dos NPCs) foram refeitos em JavaScript (js/world/scenes.js); modelos/IPL do mod ainda não usados."
+  },
+  "Pack_184_vehicles_Extras_e_Skate_-_GTA_Brasil_v4": {
+    "nota": "Versão anterior (v4) do mesmo pack: o jogo usa a v4.1 (Pack_185), que tem os mesmos veículos corrigidos. Pode ser apagada."
+  },
+  "favela_completa_212_kb_skins_veiculos_scripts": {
+    "nota": "O .zip pede senha e não foi extraído (pasta vazia). Com a senha dá para extrair em assets/mods/_compactados e rodar o inventário."
+  },
+  "pack_de_41_veiculos_velocidade_gerenciador": {
+    "nota": "O .zip pede senha e não foi extraído (pasta vazia)."
+  },
+  "mapa_delegacia_em_ls": {
+    "nota": "Mapa do MTA (objetos posicionados em Los Santos, IDs do GTA SA): não se aplica ao nosso mapa."
+  },
+  "Pack_185_vehicles_Extras_-_GTA_Brasil_v4.1_-_ImVehSys": {
+    "nota": "Os carros, motos, caminhões e ônibus entraram (~145). Ficaram de fora: aviões, helicópteros, barcos, trens, reboques, carrinhos de controle remoto e 5 carros cujas rodas dependem do plugin ImVehFt (sem malha de roda no DFF). O vehicle.txd genérico (_CFG/generic) também é usado: vira as texturas compartilhadas em assets/models/_generic (tools/generic-vehicle-tex.js)."
+  }
+}

@@ -1,0 +1,1998 @@
+{
+ "vehicles": [
+  {
+   "id": "honda_biz",
+   "weight": 3,
+   "name": "Honda Biz",
+   "kind": "bike"
+  },
+  {
+   "id": "vw_gol",
+   "weight": 6,
+   "name": "VW Gol G2",
+   "kind": "car"
+  },
+  {
+   "id": "vw_fusca",
+   "weight": 4,
+   "name": "VW Fusca 1963",
+   "kind": "car"
+  },
+  {
+   "id": "peugeot_206",
+   "weight": 4,
+   "name": "Peugeot 206 GTI",
+   "kind": "car"
+  },
+  {
+   "id": "bus_belem",
+   "weight": 1,
+   "name": "Comil Svelto · Belém",
+   "kind": "bus"
+  },
+  {
+   "id": "bus_sinoscap",
+   "weight": 1,
+   "name": "Comil Svelto · Sinoscap",
+   "kind": "bus"
+  },
+  {
+   "id": "bus_sao_jose",
+   "weight": 1,
+   "name": "Comil Svelto · São José",
+   "kind": "bus"
+  },
+  {
+   "id": "br_admiral",
+   "weight": 3,
+   "name": "A7",
+   "kind": "car"
+  },
+  {
+   "id": "br_alpha",
+   "weight": 3,
+   "name": "Camaro",
+   "kind": "car"
+  },
+  {
+   "id": "br_ambulan",
+   "weight": 0,
+   "name": "Sprinter ambulância",
+   "kind": "car",
+   "service": "samu"
+  },
+  {
+   "id": "br_bandito",
+   "weight": 3,
+   "name": "Fusca Baja",
+   "kind": "car"
+  },
+  {
+   "id": "br_banshee",
+   "weight": 3,
+   "name": "DBS",
+   "kind": "car"
+  },
+  {
+   "id": "br_barracks",
+   "weight": 0,
+   "name": "Cargo 2422 exército",
+   "kind": "car",
+   "service": "exercito"
+  },
+  {
+   "id": "br_benson",
+   "weight": 3,
+   "name": "F-4000 '05",
+   "kind": "car"
+  },
+  {
+   "id": "br_bf400",
+   "weight": 2,
+   "name": "GSXR 1000",
+   "kind": "bike"
+  },
+  {
+   "id": "br_bfinject",
+   "weight": 3,
+   "name": "Gol G3",
+   "kind": "car"
+  },
+  {
+   "id": "br_blade",
+   "weight": 3,
+   "name": "147",
+   "kind": "car"
+  },
+  {
+   "id": "br_blistac",
+   "weight": 3,
+   "name": "Gol G1",
+   "kind": "car"
+  },
+  {
+   "id": "br_bloodra",
+   "weight": 3,
+   "name": "Spacefox",
+   "kind": "car"
+  },
+  {
+   "id": "br_bobcat",
+   "weight": 3,
+   "name": "Montana",
+   "kind": "car"
+  },
+  {
+   "id": "br_boxburg",
+   "weight": 3,
+   "name": "Sprinter longa",
+   "kind": "car"
+  },
+  {
+   "id": "br_boxville",
+   "weight": 3,
+   "name": "Kombi picape",
+   "kind": "car"
+  },
+  {
+   "id": "br_bravura",
+   "weight": 3,
+   "name": "Celta",
+   "kind": "car"
+  },
+  {
+   "id": "br_broadway",
+   "weight": 3,
+   "name": "HR",
+   "kind": "car"
+  },
+  {
+   "id": "br_buccanee",
+   "weight": 3,
+   "name": "Uno Mille",
+   "kind": "car"
+  },
+  {
+   "id": "br_buffalo",
+   "weight": 3,
+   "name": "Challenger",
+   "kind": "car"
+  },
+  {
+   "id": "br_bullet",
+   "weight": 3,
+   "name": "Mustang GT",
+   "kind": "car"
+  },
+  {
+   "id": "br_burrito",
+   "weight": 3,
+   "name": "Sprinter Curta",
+   "kind": "car"
+  },
+  {
+   "id": "br_bus",
+   "weight": 3,
+   "name": "Torino",
+   "kind": "car"
+  },
+  {
+   "id": "br_cabbie",
+   "weight": 3,
+   "name": "Spacefox Táxi",
+   "kind": "car"
+  },
+  {
+   "id": "br_caddy",
+   "weight": 3,
+   "name": "Uno Novo 2013",
+   "kind": "car"
+  },
+  {
+   "id": "br_cadrona",
+   "weight": 3,
+   "name": "Gol G2",
+   "kind": "car"
+  },
+  {
+   "id": "br_camper",
+   "weight": 3,
+   "name": "Kombi",
+   "kind": "car"
+  },
+  {
+   "id": "br_cement",
+   "weight": 0,
+   "name": "Caminhão cimento",
+   "kind": "car",
+   "service": "obra"
+  },
+  {
+   "id": "br_cheetah",
+   "weight": 3,
+   "name": "Gol G6",
+   "kind": "car"
+  },
+  {
+   "id": "br_clover",
+   "weight": 3,
+   "name": "Opala SS",
+   "kind": "car"
+  },
+  {
+   "id": "br_club",
+   "weight": 3,
+   "name": "206",
+   "kind": "car"
+  },
+  {
+   "id": "br_coach",
+   "weight": 3,
+   "name": "Paradiso G7",
+   "kind": "car"
+  },
+  {
+   "id": "br_comet",
+   "weight": 3,
+   "name": "E36",
+   "kind": "car"
+  },
+  {
+   "id": "br_copbike",
+   "weight": 0,
+   "name": "XRE 300 viatura",
+   "kind": "bike",
+   "service": "policia"
+  },
+  {
+   "id": "br_copcarla",
+   "weight": 0,
+   "name": "Trailblazer viatura",
+   "kind": "car",
+   "service": "policia"
+  },
+  {
+   "id": "br_copcarru",
+   "weight": 0,
+   "name": "Fusion viatura",
+   "kind": "car",
+   "service": "policia"
+  },
+  {
+   "id": "br_copcarsf",
+   "weight": 0,
+   "name": "Spacefox viatura",
+   "kind": "car",
+   "service": "policia"
+  },
+  {
+   "id": "br_copcarvg",
+   "weight": 0,
+   "name": "Frontier viatura",
+   "kind": "car",
+   "service": "policia"
+  },
+  {
+   "id": "br_dft30",
+   "weight": 3,
+   "name": "1113 ou 1519",
+   "kind": "car"
+  },
+  {
+   "id": "br_dozer",
+   "weight": 0,
+   "name": "Retroescavadeira",
+   "kind": "car",
+   "service": "obra"
+  },
+  {
+   "id": "br_dumper",
+   "weight": 0,
+   "name": "Caminhão Basculante",
+   "kind": "car",
+   "service": "obra"
+  },
+  {
+   "id": "br_duneride",
+   "weight": 0,
+   "name": "Cargo 1415",
+   "kind": "car",
+   "service": "carga"
+  },
+  {
+   "id": "br_elegy",
+   "weight": 3,
+   "name": "M4",
+   "kind": "car"
+  },
+  {
+   "id": "br_emperor",
+   "weight": 3,
+   "name": "Punto",
+   "kind": "car"
+  },
+  {
+   "id": "br_enforcer",
+   "weight": 0,
+   "name": "L200 Triton CHOQUE",
+   "kind": "car",
+   "service": "choque"
+  },
+  {
+   "id": "br_esperant",
+   "weight": 3,
+   "name": "Golf MK4",
+   "kind": "car"
+  },
+  {
+   "id": "br_euros",
+   "weight": 3,
+   "name": "Civic '99",
+   "kind": "car"
+  },
+  {
+   "id": "br_faggio",
+   "weight": 2,
+   "name": "CB 600 F Hornet",
+   "kind": "bike"
+  },
+  {
+   "id": "br_fbiranch",
+   "weight": 0,
+   "name": "L200 Triton PF",
+   "kind": "car",
+   "service": "pf"
+  },
+  {
+   "id": "br_fbitruck",
+   "weight": 0,
+   "name": "Caveirão",
+   "kind": "car",
+   "service": "caveirao"
+  },
+  {
+   "id": "br_fcr900",
+   "weight": 2,
+   "name": "CG 150",
+   "kind": "bike"
+  },
+  {
+   "id": "br_feltzer",
+   "weight": 3,
+   "name": "Camry XLE",
+   "kind": "car"
+  },
+  {
+   "id": "br_firela",
+   "weight": 0,
+   "name": "F-4000 bombeiros",
+   "kind": "car",
+   "service": "bombeiros"
+  },
+  {
+   "id": "br_firetruk",
+   "weight": 0,
+   "name": "firetruk",
+   "kind": "car",
+   "service": "bombeiros"
+  },
+  {
+   "id": "br_flash",
+   "weight": 3,
+   "name": "Focus",
+   "kind": "car"
+  },
+  {
+   "id": "br_flatbed",
+   "weight": 3,
+   "name": "Cargo 4030",
+   "kind": "car"
+  },
+  {
+   "id": "br_fortune",
+   "weight": 3,
+   "name": "Tiida",
+   "kind": "car"
+  },
+  {
+   "id": "br_freeway",
+   "weight": 2,
+   "name": "XRE 300",
+   "kind": "bike"
+  },
+  {
+   "id": "br_glendale",
+   "weight": 3,
+   "name": "Bora",
+   "kind": "car"
+  },
+  {
+   "id": "br_glenshit",
+   "weight": 3,
+   "name": "Bandeirante",
+   "kind": "car"
+  },
+  {
+   "id": "br_greenwoo",
+   "weight": 3,
+   "name": "Palio Weekend",
+   "kind": "car"
+  },
+  {
+   "id": "br_hermes",
+   "weight": 3,
+   "name": "Fusca",
+   "kind": "car"
+  },
+  {
+   "id": "br_hotdog",
+   "weight": 3,
+   "name": "Van Lanches",
+   "kind": "car"
+  },
+  {
+   "id": "br_hotknife",
+   "weight": 3,
+   "name": "Spin",
+   "kind": "car"
+  },
+  {
+   "id": "br_hotrina",
+   "weight": 3,
+   "name": "S10 '20",
+   "kind": "car"
+  },
+  {
+   "id": "br_hotrinb",
+   "weight": 3,
+   "name": "Siena",
+   "kind": "car"
+  },
+  {
+   "id": "br_hotring",
+   "weight": 3,
+   "name": "Formula 1 '02",
+   "kind": "car"
+  },
+  {
+   "id": "br_huntley",
+   "weight": 3,
+   "name": "Trailblazer",
+   "kind": "car"
+  },
+  {
+   "id": "br_hustler",
+   "weight": 3,
+   "name": "Fusca Novo",
+   "kind": "car"
+  },
+  {
+   "id": "br_infernus",
+   "weight": 3,
+   "name": "Gallardo",
+   "kind": "car"
+  },
+  {
+   "id": "br_intruder",
+   "weight": 3,
+   "name": "Passat CC",
+   "kind": "car"
+  },
+  {
+   "id": "br_jester",
+   "weight": 3,
+   "name": "Chevette",
+   "kind": "car"
+  },
+  {
+   "id": "br_journey",
+   "weight": 3,
+   "name": "Hilux '19",
+   "kind": "car"
+  },
+  {
+   "id": "br_landstal",
+   "weight": 3,
+   "name": "Range Rover",
+   "kind": "car"
+  },
+  {
+   "id": "br_linerun",
+   "weight": 3,
+   "name": "Scania R440",
+   "kind": "car"
+  },
+  {
+   "id": "br_manana",
+   "weight": 3,
+   "name": "Opala",
+   "kind": "car"
+  },
+  {
+   "id": "br_merit",
+   "weight": 3,
+   "name": "Fusion",
+   "kind": "car"
+  },
+  {
+   "id": "br_mesa",
+   "weight": 3,
+   "name": "Wrangler",
+   "kind": "car"
+  },
+  {
+   "id": "br_monster",
+   "weight": 0,
+   "name": "Caminhão Monstro PMESP",
+   "kind": "car",
+   "service": "policia"
+  },
+  {
+   "id": "br_monstera",
+   "weight": 3,
+   "name": "Ram 2500",
+   "kind": "car"
+  },
+  {
+   "id": "br_monsterb",
+   "weight": 3,
+   "name": "Silverado",
+   "kind": "car"
+  },
+  {
+   "id": "br_moonbeam",
+   "weight": 3,
+   "name": "Besta",
+   "kind": "car"
+  },
+  {
+   "id": "br_mrwhoop",
+   "weight": 3,
+   "name": "Toro",
+   "kind": "car"
+  },
+  {
+   "id": "br_mule",
+   "weight": 3,
+   "name": "F-4000 Baú",
+   "kind": "car"
+  },
+  {
+   "id": "br_nebula",
+   "weight": 3,
+   "name": "Sentra",
+   "kind": "car"
+  },
+  {
+   "id": "br_newsvan",
+   "weight": 0,
+   "name": "Sprinter imprensa",
+   "kind": "car",
+   "service": "imprensa"
+  },
+  {
+   "id": "br_nrg500",
+   "weight": 2,
+   "name": "Tiger 800",
+   "kind": "bike"
+  },
+  {
+   "id": "br_oceanic",
+   "weight": 3,
+   "name": "Palio Hatch",
+   "kind": "car"
+  },
+  {
+   "id": "br_packer",
+   "weight": 3,
+   "name": "L1620 Cegonha",
+   "kind": "car"
+  },
+  {
+   "id": "br_patriot",
+   "weight": 0,
+   "name": "Jipe Exército",
+   "kind": "car",
+   "service": "exercito"
+  },
+  {
+   "id": "br_pcj600",
+   "weight": 2,
+   "name": "CBR 1000 RR",
+   "kind": "bike"
+  },
+  {
+   "id": "br_peren",
+   "weight": 3,
+   "name": "Corsa Hatch",
+   "kind": "car"
+  },
+  {
+   "id": "br_petro",
+   "weight": 3,
+   "name": "17.220",
+   "kind": "car"
+  },
+  {
+   "id": "br_phoenix",
+   "weight": 3,
+   "name": "Logan",
+   "kind": "car"
+  },
+  {
+   "id": "br_picador",
+   "weight": 3,
+   "name": "Saveiro G5",
+   "kind": "car"
+  },
+  {
+   "id": "br_pizzaboy",
+   "weight": 2,
+   "name": "Pop 110i",
+   "kind": "bike"
+  },
+  {
+   "id": "br_pony",
+   "weight": 3,
+   "name": "Ducato ou Boxer ou Jumper",
+   "kind": "car"
+  },
+  {
+   "id": "br_premier",
+   "weight": 3,
+   "name": "Touareg",
+   "kind": "car"
+  },
+  {
+   "id": "br_previon",
+   "weight": 3,
+   "name": "Ka '98",
+   "kind": "car"
+  },
+  {
+   "id": "br_primo",
+   "weight": 3,
+   "name": "Voyage Comfortline",
+   "kind": "car"
+  },
+  {
+   "id": "br_quad",
+   "weight": 3,
+   "name": "CG 150 Triciclo",
+   "kind": "car"
+  },
+  {
+   "id": "br_rancher",
+   "weight": 3,
+   "name": "Range Rover SRV",
+   "kind": "car"
+  },
+  {
+   "id": "br_rdtrain",
+   "weight": 3,
+   "name": "113H",
+   "kind": "car"
+  },
+  {
+   "id": "br_regina",
+   "weight": 3,
+   "name": "Corsa Wagon",
+   "kind": "car"
+  },
+  {
+   "id": "br_remingtn",
+   "weight": 3,
+   "name": "Kadett",
+   "kind": "car"
+  },
+  {
+   "id": "br_rhino",
+   "weight": 0,
+   "name": "Tanque exército",
+   "kind": "car",
+   "service": "exercito"
+  },
+  {
+   "id": "br_rnchlure",
+   "weight": 3,
+   "name": "Sprinter viatura",
+   "kind": "car"
+  },
+  {
+   "id": "br_romero",
+   "weight": 0,
+   "name": "Saveiro Funerária",
+   "kind": "car",
+   "service": "funeraria"
+  },
+  {
+   "id": "br_rumpo",
+   "weight": 3,
+   "name": "Kangoo",
+   "kind": "car"
+  },
+  {
+   "id": "br_sabre",
+   "weight": 3,
+   "name": "Golf GTI '19",
+   "kind": "car"
+  },
+  {
+   "id": "br_sadler",
+   "weight": 3,
+   "name": "Chevy 500",
+   "kind": "car"
+  },
+  {
+   "id": "br_sadlshit",
+   "weight": 3,
+   "name": "Bandeirante picape",
+   "kind": "car"
+  },
+  {
+   "id": "br_sanchez",
+   "weight": 2,
+   "name": "XT 600",
+   "kind": "bike"
+  },
+  {
+   "id": "br_sandking",
+   "weight": 3,
+   "name": "ML 63 AMG",
+   "kind": "car"
+  },
+  {
+   "id": "br_savanna",
+   "weight": 3,
+   "name": "Classe E",
+   "kind": "car"
+  },
+  {
+   "id": "br_securica",
+   "weight": 0,
+   "name": "securica",
+   "kind": "car",
+   "service": "forte"
+  },
+  {
+   "id": "br_sentinel",
+   "weight": 3,
+   "name": "Grand Cherokee",
+   "kind": "car"
+  },
+  {
+   "id": "br_slamvan",
+   "weight": 3,
+   "name": "Frontier",
+   "kind": "car"
+  },
+  {
+   "id": "br_solair",
+   "weight": 3,
+   "name": "Cayenne",
+   "kind": "car"
+  },
+  {
+   "id": "br_stafford",
+   "weight": 3,
+   "name": "Versa",
+   "kind": "car"
+  },
+  {
+   "id": "br_stratum",
+   "weight": 3,
+   "name": "Q8",
+   "kind": "car"
+  },
+  {
+   "id": "br_stretch",
+   "weight": 3,
+   "name": "911 Carrera",
+   "kind": "car"
+  },
+  {
+   "id": "br_sultan",
+   "weight": 3,
+   "name": "Lancer GT",
+   "kind": "car"
+  },
+  {
+   "id": "br_sunrise",
+   "weight": 3,
+   "name": "406",
+   "kind": "car"
+  },
+  {
+   "id": "br_supergt",
+   "weight": 3,
+   "name": "F430",
+   "kind": "car"
+  },
+  {
+   "id": "br_swatvan",
+   "weight": 0,
+   "name": "Blindado do exército",
+   "kind": "car",
+   "service": "exercito"
+  },
+  {
+   "id": "br_sweeper",
+   "weight": 3,
+   "name": "Ecosport",
+   "kind": "car"
+  },
+  {
+   "id": "br_tahoma",
+   "weight": 3,
+   "name": "Corsa Sedan",
+   "kind": "car"
+  },
+  {
+   "id": "br_tampa",
+   "weight": 3,
+   "name": "Brasília",
+   "kind": "car"
+  },
+  {
+   "id": "br_taxi",
+   "weight": 3,
+   "name": "Voyage Comfortline táxi",
+   "kind": "car"
+  },
+  {
+   "id": "br_topfun",
+   "weight": 3,
+   "name": "Fiorino '95",
+   "kind": "car"
+  },
+  {
+   "id": "br_tornado",
+   "weight": 3,
+   "name": "Corcel",
+   "kind": "car"
+  },
+  {
+   "id": "br_towtruck",
+   "weight": 3,
+   "name": "Frontier reboque",
+   "kind": "car"
+  },
+  {
+   "id": "br_tractor",
+   "weight": 0,
+   "name": "685",
+   "kind": "car",
+   "service": "rural"
+  },
+  {
+   "id": "br_trash",
+   "weight": 3,
+   "name": "Caminhão de Lixo",
+   "kind": "car"
+  },
+  {
+   "id": "br_turismo",
+   "weight": 3,
+   "name": "Camry '20",
+   "kind": "car"
+  },
+  {
+   "id": "br_uranus",
+   "weight": 3,
+   "name": "XC90 T8",
+   "kind": "car"
+  },
+  {
+   "id": "br_utility",
+   "weight": 3,
+   "name": "Pickup EMP Energia eletrica",
+   "kind": "car"
+  },
+  {
+   "id": "br_vincent",
+   "weight": 3,
+   "name": "Jetta",
+   "kind": "car"
+  },
+  {
+   "id": "br_virgo",
+   "weight": 3,
+   "name": "500",
+   "kind": "car"
+  },
+  {
+   "id": "br_voodoo",
+   "weight": 3,
+   "name": "L200 Triton",
+   "kind": "car"
+  },
+  {
+   "id": "br_walton",
+   "weight": 3,
+   "name": "F-4000 '80",
+   "kind": "car"
+  },
+  {
+   "id": "br_washing",
+   "weight": 3,
+   "name": "S40",
+   "kind": "car"
+  },
+  {
+   "id": "br_willard",
+   "weight": 3,
+   "name": "HB20",
+   "kind": "car"
+  },
+  {
+   "id": "br_windsor",
+   "weight": 3,
+   "name": "Onix",
+   "kind": "car"
+  },
+  {
+   "id": "br_yankee",
+   "weight": 3,
+   "name": "L1620",
+   "kind": "car"
+  },
+  {
+   "id": "br_zr350",
+   "weight": 3,
+   "name": "Ka Sedan",
+   "kind": "car"
+  },
+  {
+   "id": "pmsp_onibus_pm_sp",
+   "weight": 0,
+   "name": "Ônibus PM-SP",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_moto_pm_sp",
+   "weight": 0,
+   "name": "Moto PM-SP",
+   "kind": "bike",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_viatura_seda_pm_sp",
+   "weight": 0,
+   "name": "Viatura (sedã) PM-SP",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_viatura_seda_2_pm_sp",
+   "weight": 0,
+   "name": "Viatura (sedã 2) PM-SP",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_viatura_seda_3_pm_sp",
+   "weight": 0,
+   "name": "Viatura (sedã 3) PM-SP",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_viatura_suv_pm_sp",
+   "weight": 0,
+   "name": "Viatura (SUV) PM-SP",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmerj_caminhao_pmerj",
+   "weight": 0,
+   "name": "Caminhão PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_moto_pmerj",
+   "weight": 0,
+   "name": "Moto PMERJ",
+   "kind": "bike",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_viatura_seda_pmerj",
+   "weight": 0,
+   "name": "Viatura (sedã) PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_viatura_seda_2_pmerj",
+   "weight": 0,
+   "name": "Viatura (sedã 2) PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_viatura_seda_3_pmerj",
+   "weight": 0,
+   "name": "Viatura (sedã 3) PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_viatura_suv_pmerj",
+   "weight": 0,
+   "name": "Viatura (SUV) PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj2_audi_a4_pmerj",
+   "weight": 0,
+   "name": "Audi A4 PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj2_trailblazer_pmerj",
+   "weight": 0,
+   "name": "Trailblazer PMERJ",
+   "kind": "car",
+   "service": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "baep_baep_toyota",
+   "weight": 0,
+   "name": "BAEP Toyota",
+   "kind": "car",
+   "service": "policia",
+   "unit": "baep"
+  },
+  {
+   "id": "baep_baep_trailblazer",
+   "weight": 0,
+   "name": "BAEP Trailblazer",
+   "kind": "car",
+   "service": "policia",
+   "unit": "baep"
+  },
+  {
+   "id": "baixo_fiat_palio_fixa",
+   "weight": 3,
+   "name": "FIAT PALIO Fixa",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_fiat_stilo",
+   "weight": 3,
+   "name": "FIAT STILO",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_fox_rebaixado",
+   "weight": 3,
+   "name": "FOX Rebaixado",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_gol_g3",
+   "weight": 3,
+   "name": "GOL G3",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_golfmk2",
+   "weight": 3,
+   "name": "GOLFMK2",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_palio_chavoso",
+   "weight": 3,
+   "name": "PALIO CHAVOSO",
+   "kind": "car"
+  },
+  {
+   "id": "baixo_saveirog5",
+   "weight": 3,
+   "name": "SAVEIROG5",
+   "kind": "car"
+  },
+  {
+   "id": "moto_scooter",
+   "weight": 2,
+   "name": "Scooter",
+   "kind": "bike"
+  },
+  {
+   "id": "moto_moto_custom",
+   "weight": 2,
+   "name": "Moto custom",
+   "kind": "bike"
+  },
+  {
+   "id": "moto_moto_trilha",
+   "weight": 2,
+   "name": "Moto trilha",
+   "kind": "bike"
+  },
+  {
+   "id": "moto_moto_esportiva",
+   "weight": 2,
+   "name": "Moto esportiva",
+   "kind": "bike"
+  },
+  {
+   "id": "moto_moto_esportiva_2",
+   "weight": 2,
+   "name": "Moto esportiva 2",
+   "kind": "bike"
+  },
+  {
+   "id": "fla_carro_do_flamengo",
+   "weight": 3,
+   "name": "Carro do Flamengo",
+   "kind": "car"
+  },
+  {
+   "id": "com_picape_da_comunidade",
+   "weight": 3,
+   "name": "Picape da comunidade",
+   "kind": "car"
+  }
+ ],
+ "weapons": [
+  {
+   "id": "fn_fal",
+   "name": "FN FAL",
+   "capacity": 20,
+   "interval": 0.13,
+   "reload": 2.5,
+   "clip": "RIFLE_fire"
+  },
+  {
+   "id": "taurus_247",
+   "name": "Taurus 24/7",
+   "capacity": 15,
+   "interval": 0.25,
+   "reload": 1.6,
+   "clip": "COLT45_fire"
+  },
+  {
+   "id": "w_ak47",
+   "name": "AK-47",
+   "style": "rifle",
+   "capacity": 30,
+   "interval": 0.1,
+   "reload": 2.4
+  },
+  {
+   "id": "w_sniper",
+   "name": "Fuzil de precisão",
+   "style": "sniper",
+   "capacity": 5,
+   "interval": 1.1,
+   "reload": 2.8
+  },
+  {
+   "id": "w_mp5lng",
+   "name": "MP5",
+   "style": "smg2",
+   "capacity": 30,
+   "interval": 0.075,
+   "reload": 2
+  },
+  {
+   "id": "w_micro_uzi",
+   "name": "Uzi",
+   "style": "smg",
+   "capacity": 32,
+   "interval": 0.06,
+   "reload": 1.8
+  },
+  {
+   "id": "w_tec9",
+   "name": "Tec-9",
+   "style": "smg",
+   "capacity": 32,
+   "interval": 0.07,
+   "reload": 1.8
+  },
+  {
+   "id": "w_desert_eagle",
+   "name": "Desert Eagle",
+   "style": "deagle",
+   "capacity": 7,
+   "interval": 0.45,
+   "reload": 1.8
+  },
+  {
+   "id": "w_colt45",
+   "name": "Pistola .40",
+   "style": "pistol",
+   "capacity": 15,
+   "interval": 0.22,
+   "reload": 1.5
+  },
+  {
+   "id": "w_chromegun",
+   "name": "Escopeta calibre 12",
+   "style": "shotgun",
+   "capacity": 6,
+   "interval": 0.95,
+   "reload": 3.2
+  },
+  {
+   "id": "w_shotgspa",
+   "name": "Escopeta de combate",
+   "style": "spas",
+   "capacity": 7,
+   "interval": 0.35,
+   "reload": 3
+  },
+  {
+   "id": "w_sawnoff",
+   "name": "Escopeta de cano serrado",
+   "style": "sawnoff",
+   "capacity": 2,
+   "interval": 0.35,
+   "reload": 1.8
+  },
+  {
+   "id": "w_taser",
+   "name": "Taser",
+   "style": "taser",
+   "capacity": 1,
+   "interval": 1,
+   "reload": 2.2
+  },
+  {
+   "id": "w_knifecur",
+   "name": "Faca",
+   "style": "knife",
+   "capacity": 0,
+   "interval": 0.55,
+   "reload": 0
+  },
+  {
+   "id": "w_katana",
+   "name": "Katana",
+   "style": "katana",
+   "capacity": 0,
+   "interval": 0.7,
+   "reload": 0
+  }
+ ],
+ "skins": [
+  {
+   "id": "pmsp_policial_pm_sp_280",
+   "name": "Policial PM-SP 280",
+   "role": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_policial_pm_sp_281",
+   "name": "Policial PM-SP 281",
+   "role": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_policial_pm_sp_282",
+   "name": "Policial PM-SP 282",
+   "role": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmsp_policial_pm_sp_284",
+   "name": "Policial PM-SP 284",
+   "role": "policia",
+   "unit": "pmsp"
+  },
+  {
+   "id": "pmerj_policial_pmerj_280",
+   "name": "Policial PMERJ 280",
+   "role": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_policial_pmerj_281",
+   "name": "Policial PMERJ 281",
+   "role": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj_policial_pmerj_284",
+   "name": "Policial PMERJ 284",
+   "role": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj2_comandante_pmerj",
+   "name": "Comandante PMERJ",
+   "role": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "pmerj2_recruta_pmerj",
+   "name": "Recruta PMERJ",
+   "role": "policia",
+   "unit": "pmerj"
+  },
+  {
+   "id": "baep_baep_farda_1",
+   "name": "BAEP Farda 1",
+   "role": "policia",
+   "unit": "baep"
+  },
+  {
+   "id": "baep_baep_farda_2",
+   "name": "BAEP Farda 2",
+   "role": "policia",
+   "unit": "baep"
+  },
+  {
+   "id": "baep_baep_farda_3",
+   "name": "BAEP Farda 3",
+   "role": "policia",
+   "unit": "baep"
+  },
+  {
+   "id": "fla_torcedor_do_flamengo",
+   "name": "Torcedor do Flamengo",
+   "role": "civil"
+  },
+  {
+   "id": "com_morador_do_morro",
+   "name": "Morador do morro",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_andre",
+   "name": "Morador andre",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_173",
+   "name": "Morador 173",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_103",
+   "name": "Morador 103",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_250",
+   "name": "Morador 250",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_felipegs",
+   "name": "Morador FelipeGS",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_bmori",
+   "name": "Morador bmori",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_04_mulher",
+   "name": "Morador 04 (mulher)",
+   "role": "faccao"
+  },
+  {
+   "id": "bvo_morador_felipegs_2",
+   "name": "Morador FelipeGS",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_15",
+   "name": "Pessoa 15",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_16",
+   "name": "Pessoa 16",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_17",
+   "name": "Pessoa 17",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_18",
+   "name": "Pessoa 18",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_19",
+   "name": "Pessoa 19",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_20",
+   "name": "Pessoa 20",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_21",
+   "name": "Pessoa 21",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_22",
+   "name": "Pessoa 22",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_23",
+   "name": "Pessoa 23",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_24",
+   "name": "Pessoa 24",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_25",
+   "name": "Pessoa 25",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_26",
+   "name": "Pessoa 26",
+   "role": "faccao"
+  },
+  {
+   "id": "band_pessoa_27",
+   "name": "Pessoa 27",
+   "role": "faccao"
+  },
+  {
+   "id": "br_pessoa_brasileiro",
+   "name": "Pessoa brasileiro",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_243",
+   "name": "Pessoa 243",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_244",
+   "name": "Pessoa 244",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_245",
+   "name": "Pessoa 245",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_247",
+   "name": "Pessoa 247",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_248",
+   "name": "Pessoa 248",
+   "role": "civil"
+  },
+  {
+   "id": "gtav_pessoa_249",
+   "name": "Pessoa 249",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_bmydj",
+   "name": "Pessoa bmydj",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_janitor",
+   "name": "Pessoa janitor",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_maccer",
+   "name": "Pessoa maccer",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_bfori",
+   "name": "Pessoa bfori",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_swmycr",
+   "name": "Pessoa swmycr",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_andre",
+   "name": "Pessoa andre",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_wmydrug",
+   "name": "Pessoa wmydrug",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_bfori_2",
+   "name": "Pessoa bfori",
+   "role": "civil"
+  },
+  {
+   "id": "zico_pessoa_maccer_2",
+   "name": "Pessoa maccer",
+   "role": "civil"
+  },
+  {
+   "id": "funk_pessoa_fam3",
+   "name": "Pessoa fam3",
+   "role": "civil"
+  },
+  {
+   "id": "funk_pessoa_23",
+   "name": "Pessoa 23",
+   "role": "civil"
+  },
+  {
+   "id": "funk_pessoa_24",
+   "name": "Pessoa 24",
+   "role": "civil"
+  },
+  {
+   "id": "funk_pessoa_25",
+   "name": "Pessoa 25",
+   "role": "civil"
+  },
+  {
+   "id": "funk_pessoa_56",
+   "name": "Pessoa 56",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_124",
+   "name": "Pessoa 124",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_13",
+   "name": "Pessoa 13",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_133",
+   "name": "Pessoa 133",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_17",
+   "name": "Pessoa 17",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_20",
+   "name": "Pessoa 20",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_24",
+   "name": "Pessoa 24",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_309",
+   "name": "Pessoa 309",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_girlsims4lana",
+   "name": "Pessoa girlsims4Lana",
+   "role": "civil"
+  },
+  {
+   "id": "zico7_pessoa_9",
+   "name": "Pessoa 9",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_14",
+   "name": "Pessoa 14",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_15",
+   "name": "Pessoa 15",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_17",
+   "name": "Pessoa 17",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_01",
+   "name": "Pessoa 01",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_bmydrug",
+   "name": "Pessoa bmydrug",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_28",
+   "name": "Pessoa 28",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_maccer",
+   "name": "Pessoa maccer",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_170",
+   "name": "Pessoa 170",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_182",
+   "name": "Pessoa 182",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_249_mulher",
+   "name": "Pessoa 249 (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_297",
+   "name": "Pessoa 297",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_300",
+   "name": "Pessoa 300",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_43",
+   "name": "Pessoa 43",
+   "role": "civil"
+  },
+  {
+   "id": "gmz_pessoa_261",
+   "name": "Pessoa 261",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_andree",
+   "name": "Pessoa andree",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_bolas77",
+   "name": "Pessoa Bolas77",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_darwin13",
+   "name": "Pessoa Darwin13",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_deadmau",
+   "name": "Pessoa DeadMau",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_djby99",
+   "name": "Pessoa Djby99",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_lmfao",
+   "name": "Pessoa LMFAO",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_navidad",
+   "name": "Pessoa Navidad",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_newskin",
+   "name": "Pessoa NEWSKIN",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_online5",
+   "name": "Pessoa Online5",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_online98",
+   "name": "Pessoa Online98",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_ramdonv1",
+   "name": "Pessoa Ramdonv1",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_rubene",
+   "name": "Pessoa RubenE",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_rubeno",
+   "name": "Pessoa RubenO",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_sabu19",
+   "name": "Pessoa Sabu19",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_stiv33",
+   "name": "Pessoa Stiv33",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_tasket98",
+   "name": "Pessoa Tasket98",
+   "role": "civil"
+  },
+  {
+   "id": "dias_pessoa_teta8",
+   "name": "Pessoa Teta8",
+   "role": "civil"
+  },
+  {
+   "id": "dif_pessoa_19",
+   "name": "Pessoa 19",
+   "role": "civil"
+  },
+  {
+   "id": "dif_pessoa_25",
+   "name": "Pessoa 25",
+   "role": "civil"
+  },
+  {
+   "id": "dif_pessoa_291",
+   "name": "Pessoa 291",
+   "role": "civil"
+  },
+  {
+   "id": "dif_pessoa_30",
+   "name": "Pessoa 30",
+   "role": "civil"
+  },
+  {
+   "id": "dif_pessoa_312",
+   "name": "Pessoa 312",
+   "role": "civil"
+  },
+  {
+   "id": "fem_mulher_miyablue_mulher",
+   "name": "Mulher MiyaBlue (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "fem_mulher_mai_korean_mulher",
+   "name": "Mulher mai korean (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "fem_mulher_mai_koreanv3_mulher",
+   "name": "Mulher mai koreanv3 (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_bmost_mulher",
+   "name": "Pessoa bmost (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_wfyst_mulher",
+   "name": "Pessoa wfyst (mulher)",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_12",
+   "name": "Pessoa 12",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_13",
+   "name": "Pessoa 13",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_14",
+   "name": "Pessoa 14",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_15",
+   "name": "Pessoa 15",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_17",
+   "name": "Pessoa 17",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_andre",
+   "name": "Pessoa andre",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_18",
+   "name": "Pessoa 18",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_19",
+   "name": "Pessoa 19",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_bb",
+   "name": "Pessoa bb",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_22",
+   "name": "Pessoa 22",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_23",
+   "name": "Pessoa 23",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_24",
+   "name": "Pessoa 24",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_male01",
+   "name": "Pessoa male01",
+   "role": "civil"
+  },
+  {
+   "id": "zio_pessoa_wmybmx",
+   "name": "Pessoa wmybmx",
+   "role": "civil"
+  },
+  {
+   "id": "sk_assaltante",
+   "name": "Assaltante",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_bmx_boy",
+   "name": "BMX Boy",
+   "role": "civil"
+  },
+  {
+   "id": "sk_casual_v2",
+   "name": "Casual V2",
+   "role": "civil"
+  },
+  {
+   "id": "sk_funkeiro",
+   "name": "Funkeiro",
+   "role": "civil"
+  },
+  {
+   "id": "sk_funkeiro_edhardy",
+   "name": "Funkeiro edhardy",
+   "role": "civil"
+  },
+  {
+   "id": "sk_gangster_moderno",
+   "name": "Gangster Moderno",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_graffit",
+   "name": "Graffit",
+   "role": "civil"
+  },
+  {
+   "id": "sk_joker",
+   "name": "Joker",
+   "role": "civil"
+  },
+  {
+   "id": "sk_ladrao_gtav",
+   "name": "Ladrao Gtav",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_rapper_moderno",
+   "name": "Rapper Moderno",
+   "role": "civil"
+  },
+  {
+   "id": "sk_riley",
+   "name": "Riley",
+   "role": "civil"
+  },
+  {
+   "id": "sk_acefoe",
+   "name": "Acefoe",
+   "role": "civil"
+  },
+  {
+   "id": "sk_alucinado",
+   "name": "Alucinado",
+   "role": "civil"
+  },
+  {
+   "id": "sk_aqd",
+   "name": "AQD",
+   "role": "civil"
+  },
+  {
+   "id": "sk_bandit",
+   "name": "Bandit",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_estudante",
+   "name": "Estudante",
+   "role": "civil"
+  },
+  {
+   "id": "sk_grovestreet",
+   "name": "GroveStreet",
+   "role": "civil"
+  },
+  {
+   "id": "sk_terror",
+   "name": "Terror",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_traficante_anos90",
+   "name": "Traficante anos90",
+   "role": "faccao"
+  },
+  {
+   "id": "sk_tupac_amaru_sharkur",
+   "name": "Tupac Amaru Sharkur",
+   "role": "civil"
+  }
+ ],
+ "disabled": [
+  "Mod_de_ser_assaltado",
+  "SA_-_Proper_Shaders_09-26___40_b5tyubu3t__41_"
+ ]
+}

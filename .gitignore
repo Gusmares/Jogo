@@ -1,0 +1,13 @@
+# dependências e builds
+node_modules/
+dist/
+.claude/
+*.log
+
+# Assets pesados e conteúdo de terceiros (modelos/texturas do GTA SA e dos mods, músicas) ficam SÓ no PC:
+# o repositório é público e o GitHub não aceita arquivos > 100 MB. Para rodar o jogo é preciso a pasta assets/ local.
+assets/*
+!assets/catalog.json
+!assets/radio/
+assets/radio/*
+!assets/radio/stations.json

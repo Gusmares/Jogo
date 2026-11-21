@@ -1,0 +1,12 @@
+[
+  { "id": "hilux_rota",     "name": "Hilux ROTA",            "kind": "car",  "dff": "mods/hilux-rota/fbiranch.dff",                                  "txd": "mods/hilux-rota/fbiranch.txd", "hide": ["x2100lense"] },
+  { "id": "palio_rp",       "name": "Palio RP",              "kind": "car",  "dff": "mods/pmesp/Viaturas/Palio RP/copcarla.dff",                     "txd": "mods/pmesp/Viaturas/Palio RP/copcarla.txd" },
+  { "id": "spin_rp",        "name": "Spin RP",               "kind": "car",  "dff": "mods/pmesp/Viaturas/Spin RP/copcarvg.dff",                      "txd": "mods/pmesp/Viaturas/Spin RP/copcarvg.txd" },
+  { "id": "sw4_ft",         "name": "SW4 Força Tática",      "kind": "car",  "dff": "mods/pmesp/Viaturas/SW4 FT/copcarsf.dff",                       "txd": "mods/pmesp/Viaturas/SW4 FT/copcarsf.txd" },
+  { "id": "hilux_tor",      "name": "Hilux TOR",             "kind": "car",  "dff": "mods/pmesp/Viaturas/Hilux TOR/copcarru.dff",                    "txd": "mods/pmesp/Viaturas/Hilux TOR/copcarru.txd" },
+  { "id": "trailblazer_pc", "name": "TrailBlazer Civil",     "kind": "car",  "dff": "mods/pmesp/Viaturas/TrailBlazer Policia Civil/rancher.dff",     "txd": "mods/pmesp/Viaturas/TrailBlazer Policia Civil/rancher.txd" },
+  { "id": "trailblazer_rota","name": "TrailBlazer ROTA",     "kind": "car",  "dff": "mods/pmesp/Viaturas/TrailBlazer ROTA/fbiranch.dff",             "txd": "mods/pmesp/Viaturas/TrailBlazer ROTA/fbiranch.txd" },
+  { "id": "moto_rocam",     "name": "Moto ROCAM",            "kind": "bike", "dff": "mods/pmesp/Viaturas/Moto ROCAM/copbike.dff",                    "txd": "mods/pmesp/Viaturas/Moto ROCAM/copbike.txd", "siren": "blue", "lodTris": 6000 },
+  { "id": "ambulancia",     "name": "Ambulância SAMU",       "kind": "car",  "dff": "mods/pmesp/Viaturas/Ambulancia.Bombeiros/ambulan.dff",          "txd": "mods/pmesp/Viaturas/Ambulancia.Bombeiros/ambulan.txd", "siren": "white", "lodTris": 3000 },
+  { "id": "bombeiros",      "name": "Caminhão dos Bombeiros","kind": "car",  "dff": "mods/pmesp/Viaturas/Ambulancia.Bombeiros/firetruk.dff",         "txd": "mods/pmesp/Viaturas/Ambulancia.Bombeiros/firetruk.txd", "siren": "white", "lodTris": 4000 }
+]
