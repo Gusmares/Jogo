@@ -15,6 +15,7 @@ function applyTrafficModel(c, type) {
   if (!type || c === player.car) return;
   const old = c.mesh, color = CAR_COLORS[Math.floor(Math.random() * CAR_COLORS.length)];
   c.mesh = makeVehicleMesh(type, color); scene.remove(old); scene.add(c.mesh);
+  if (typeof disposeDeform === 'function') { disposeDeform({ mesh: old }); disposeDeform(c); c.deformed = false; }   // a malha amassada era do modelo antigo
   if (old.userData.ownedMats) old.userData.ownedMats.forEach(m => m.dispose());
   c.mesh.position.copy(old.position); c.mesh.rotation.copy(old.rotation);
   applyVehDims(c, type.man); c.speed = Math.min(c.speed, c.cruise);

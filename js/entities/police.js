@@ -49,7 +49,7 @@ const copCars = () => cars.filter(c => c.police && c.ai);
 const nodeIdx = v => clamp(Math.round((v - roadC(0)) / P), 0, N);
 /* cruzamento existente mais próximo de (x,z) na grade global (cidades + rodovia) */
 function snapNode(x, z) { const [ci, cj] = nodeIJ(x, z); if (nodeOK(ci, cj)) return [ci, cj]; let best = null, bd = 1e9; for (let r = 1; r <= 6 && !best; r++) for (let a = -r; a <= r; a++) for (let b = -r; b <= r; b++) { if (!nodeOK(ci + a, cj + b)) continue; const d = Math.hypot(roadC(ci + a) - x, roadC(cj + b) - z); if (d < bd) { bd = d; best = [ci + a, cj + b]; } } if (best) return best; const c = nearestCity(x, z); return [clamp(ci, c.i0, c.i0 + c.ni), clamp(cj, c.j0, c.j0 + c.nj)]; }
-const removeCar = c => { scene.remove(c.mesh); const i = cars.indexOf(c); if (i >= 0) cars.splice(i, 1); if(c.mesh.userData.ownedMats)c.mesh.userData.ownedMats.forEach(m=>m.dispose());for(const a of [c.driver,c.rider])if(a&&a.mesh.skeleton)a.mesh.skeleton.dispose(); };
+const removeCar = c => { if (typeof disposeDeform === 'function') disposeDeform(c); scene.remove(c.mesh); const i = cars.indexOf(c); if (i >= 0) cars.splice(i, 1); if(c.mesh.userData.ownedMats)c.mesh.userData.ownedMats.forEach(m=>m.dispose());for(const a of [c.driver,c.rider])if(a&&a.mesh.skeleton)a.mesh.skeleton.dispose(); };
 
 /* ---------- carregamento sob demanda ---------- */
 const unitModelReady = k => UNITS[k].models.filter(id => vehReady[id]);

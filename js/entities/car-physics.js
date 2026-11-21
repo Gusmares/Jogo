@@ -49,9 +49,9 @@ function advanceCarPhysics(c,dt,input){
     const correction=Math.hypot(q.x-cx,q.z-cz);
     const impact=CarPhysics.collide(c,null,hit.nx,hit.nz,correction,cx-hit.nx*c.cr,cz-hit.nz*c.cr);
     physicsCrash(c,impact);
-    if(typeof applyVehicleDamage==='function')applyVehicleDamage(c,impact,null,cx-hit.nx*c.cr,cz-hit.nz*c.cr);
+    if(typeof applyVehicleDamage==='function'){const bx=hit.box,thin=bx&&Math.max(bx.x1-bx.x0,bx.z1-bx.z0)<1.3;applyVehicleDamage(c,impact,null,cx-hit.nx*c.cr,cz-hit.nz*c.cr,hit.nx,hit.nz,{kind:thin?'pole':'wall'});}
   }
-  if(p.impact){physicsCrash(c,p.impact);if(typeof applyVehicleDamage==='function'&&p.impact>9)applyVehicleDamage(c,p.impact*.8,null,c.x,c.z);p.impact=0;}
+  if(p.impact){physicsCrash(c,p.impact);if(typeof applyVehicleDamage==='function'&&p.impact>9)applyVehicleDamage(c,p.impact,null,c.x,c.z,undefined,undefined,{kind:'land'});p.impact=0;}
   p.lastX=c.x;p.lastZ=c.z;
 }
 function driveCarAI(c,dt,target,diff){
@@ -82,7 +82,7 @@ function resolvePhysicsCars(a,b){
   if(depth>0){
     const impact=CarPhysics.collide(a,b,nx,nz,depth,px,pz);
     physicsCrash(a,impact);physicsCrash(b,impact);
-    if(typeof applyVehicleDamage==='function'){applyVehicleDamage(a,impact,b,px,pz);applyVehicleDamage(b,impact,a,px,pz);}
+    if(typeof applyVehicleDamage==='function'){applyVehicleDamage(a,impact,b,px,pz,nx,nz);applyVehicleDamage(b,impact,a,px,pz,-nx,-nz);}
     if(impact>2){const pc=a===player.car?a:b===player.car?b:null;if(pc)carHitCrime(pc,pc===a?b:a);}
   }
   return true;

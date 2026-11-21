@@ -9,17 +9,17 @@ function addCollider(b){
 const addRound=(x,z,r)=>addCollider({x0:x-r,x1:x+r,z0:z-r,z1:z+r});
 const nearby=(x,z)=>grid.get(Math.floor(x/CELL)+','+Math.floor(z/CELL))||EMPTY;
 function pushOut(p,r,boxes){
-  let hit=false,nx=0,nz=0;
+  let hit=false,nx=0,nz=0,box=null;
   for(const b of boxes){
     const cx=clamp(p.x,b.x0,b.x1),cz=clamp(p.z,b.z0,b.z1),dx=p.x-cx,dz=p.z-cz,d2=dx*dx+dz*dz;
     if(d2<r*r){
       if(d2>1e-6){const d=Math.sqrt(d2),pen=r-d;p.x+=dx/d*pen;p.z+=dz/d*pen;nx+=dx/d;nz+=dz/d;}
       else{const l=p.x-b.x0,rt=b.x1-p.x,t=p.z-b.z0,bt=b.z1-p.z,m=Math.min(l,rt,t,bt);
         if(m===l){p.x=b.x0-r;nx-=1;}else if(m===rt){p.x=b.x1+r;nx+=1;}else if(m===t){p.z=b.z0-r;nz-=1;}else{p.z=b.z1+r;nz+=1;}}
-      hit=true;
+      hit=true;box=b;
     }
   }
-  if(hit){const l=Math.hypot(nx,nz)||1;return{nx:nx/l,nz:nz/l};}
+  if(hit){const l=Math.hypot(nx,nz)||1;return{nx:nx/l,nz:nz/l,box};}
   return null;
 }
 

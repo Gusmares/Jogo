@@ -254,6 +254,11 @@ Tudo que veio dos mods fica em `assets/mods/`, num balde por situação:
 - O jogador usa o mesmo chão dos pedestres e carros (`footGround` em `js/gameplay/update.js`): terreno + calçadas/lajes. Sobe meio-fio e degraus de até 45 cm sem pular.
 - Armas sem mirar: pistola, taser, Desert Eagle, Uzi, Tec-9 e cano serrado ficam na mão, apontando para o chão ao lado do corpo, com a locomoção normal; fuzis, escopetas e MP5 vão nas duas mãos, atravessados na frente do peito, com o grupo "armed" do SA (`IDLE_armed`, `WALK_armed`, `run_armed`) e a mão esquerda no guarda-mão (IK). Só ao mirar (botão direito), atirar ou recarregar o personagem levanta a arma; a troca é suave (`restWeaponPose` em `js/gameplay/weapons.js`).
 
+## Batidas (deformação real)
+- `js/entities/damage.js`: cada batida deforma os vértices da malha do próprio carro (completa, média, longe e a porta), a partir do ponto e da **altura** do impacto (para-choque de carro, para-choque alto de caminhão/ônibus, parede inteira, poste/árvore estreito, teto ao cair capotado), da direção, do **raspão** (o amassado se alonga) e da força (velocidade × peso do outro lado). Zona de deformação que encolhe a frente, amassado local, dobras com ruído próprio de cada batida, capô que estufa, teto que cede. Nunca sai igual.
+- Metal amassado com sombreado facetado e arranhões (metal aparecendo); vidros trincam e estouram só onde bateu; faróis/lanternas atingidos apagam; roda atingida entorta e é empurrada junto com a lataria; em batida muito forte a roda pode soltar. Faíscas, cacos de vidro, pedaços de plástico e de lataria na cor do carro; fumaça com a frente destruída.
+- Desempenho: grade espacial dos vértices (só a região atingida é percorrida); até 12 carros amassados ao mesmo tempo; carros da IA longe da câmera guardam só o dano numérico. Backspace (parado) conserta e desamassa.
+
 ## Créditos
 - Viatura "Hilux SW4 Rota": mod para GTA San Andreas. Sistema de luzes: LM3D, Patifuck. Créditos: S4K4N4S, Abreu_3D, Abner_3D,
   Bruno Silva e LukasR (`assets/mods/*/hilux-rota/Créditos.txt`). https://gtamontesclaros-mg.blogspot.com.br/
