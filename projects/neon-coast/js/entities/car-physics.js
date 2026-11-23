@@ -1,5 +1,15 @@
 /* Adaptação do solver ao mundo, controles, colisores e modelos do NEON COAST. Motos usam a física anterior. */
 'use strict';
+/* modo da física: GTA IV (padrão) ou NEON (v3). F7 alterna no jogo; a escolha fica salva neste PC.
+   A tabela do GTA IV (assets/physics/gta4-handling.json) é gerada da cópia local do jogo por engine/tools/gta4-handling.js; sem ela, o modo GTA IV usa perfis por classe. */
+{ let mode = 'gta4'; try { mode = localStorage.getItem('neon-physics-mode') || 'gta4'; } catch (e) { /* sem armazenamento */ } CarPhysics.setMode(mode); }
+fetch('assets/physics/gta4-handling.json').then(r => r.ok ? r.json() : null).then(t => { if (!t) return; CarPhysics.setGTA4(t); if (typeof cars !== 'undefined') for (const c of cars) if (c.physics) CarPhysics.reconfig(c); }).catch(() => {});
+function togglePhysicsMode() {
+  const next = CarPhysics.mode === 'gta4' ? 'neon' : 'gta4'; CarPhysics.setMode(next); try { localStorage.setItem('neon-physics-mode', next); } catch (e) { /* sem armazenamento */ }
+  for (const c of cars) if (c.physics) CarPhysics.reconfig(c);
+  const pc = player.car && player.car.physics && player.car.physics.cfg;
+  if (typeof toast === 'function') toast(next === 'gta4' ? 'FÍSICA: GTA IV' + (pc && pc.iv ? ' (como ' + pc.iv + ')' : '') : 'FÍSICA: NEON (v3, com assistências)', 2600);
+}
 const usesCarPhysics = c => c.kind !== 'prop';      // carro, ônibus e moto usam o mesmo solver (a moto tem o modelo de inclinação)
 function carGroundHeight(x,z){
   // Mesmos triângulos da malha visível: Hq é bilinear e diverge nas diagonais das colinas.

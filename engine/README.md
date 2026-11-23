@@ -42,6 +42,9 @@ Um objeto por linha (bom para o git): `layouts` (planta), `landmarks` (marcos de
 ```
 O projeto também tem um `package.json` com `"main"` apontando para o app Electron do jogo (`electron/main.js`).
 
+## Física estilo GTA IV
+A física dos carros tem um **modo GTA IV** (padrão; F7 no jogo alterna com o modo NEON). Ele usa o `handling.dat` da cópia local do GTA IV: `node engine/tools/gta4-handling.js` lê `research/gta4/*/data/handling.dat` (fora do git) e gera `<projeto>/assets/physics/gta4-handling.json`. O estudo completo — o que cada campo faz, por que o IV tem aquele jeito, como foi adaptado, medidas e o que dá para ajustar — está em [`docs/fisica-gta4.md`](docs/fisica-gta4.md).
+
 ## Comandos (na raiz do repositório)
 | Comando | O que faz |
 |---|---|

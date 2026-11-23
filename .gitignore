@@ -15,3 +15,6 @@ projects/*/assets/radio/*
 # NEON ENGINE: cópias automáticas do mapa a cada "Salvar" e o caminho da engine gravado no executável
 projects/*/maps/.backup/
 engine/app/engine.json
+
+# Pesquisa local (arquivos de jogos de terceiros: NUNCA vão para o GitHub)
+research/

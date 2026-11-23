@@ -117,6 +117,72 @@
     k.revMax = lerp(10, 6, heavy);                                                          // ré (m/s)
     return k;
   }
+  /* ---------- MODO GTA IV ----------
+     O comportamento dos carros do GTA IV vem do handling.dat (lido da cópia local do jogo por engine/tools/gta4-handling.js).
+     Cada carro NOSSO continua com a própria identidade (massa, potência, máxima, aderência do handling dele) e pega do carro
+     equivalente do GTA IV o "jeito": curva do pneu (pico em 12-20° de deriva e quanto segura deslizando), mola de tração
+     (o pneu deforma antes de escorregar), suspensão mole e pouco amortecida (rolagem e mergulho grandes), divisão de freio,
+     força do freio de mão, multiplicadores de dano — e sem as assistências de estabilidade do modo NEON. */
+  let IV = null, MODE = 'gta4';
+  const IV_CLASS = {                                     // classe -> carros de referência do GTA IV (o primeiro que existir na tabela)
+    super: ['infernus', 'turismo', 'supergt', 'coquette'], sport: ['banshee', 'comet', 'feltzer', 'sultanrs'], sport4: ['sultan', 'sultanrs', 'comet'],
+    muscle: ['dukes', 'sabregt', 'vigero', 'stallion'], compactF: ['blista', 'dilett', 'chavos'], compactR: ['futo', 'blista'],
+    sedan: ['admiral', 'primo', 'pmp600', 'merit', 'oracle'], police: ['police', 'police2'], taxi: ['taxi', 'cabby'], suv: ['cavcade', 'habanero', 'huntley', 'patriot'],
+    pickup: ['bobcat', 'rancher', 'yankee'], van: ['burrito', 'speedo', 'pony', 'minivan'], truck: ['benson', 'mule', 'flatbed'], bus: ['bus'], heavy: ['patriot', 'stockade']
+  };
+  /* valores típicos por classe (próprios, para quando a tabela do jogo não estiver no PC) */
+  const IV_GENERIC = {
+    super: { tracMax: 1.45, tracMin: 1.15, tracLat: 14, tracSpring: 0.12, tracBias: 0.47, susForce: 2.0, susComp: 1.4, susRebound: 1.6, susUpper: 0.1, susLower: -0.12, susBias: 0.5, brakeBias: 0.68, handbrake: 0.7, dmgDeform: 0.8, dmgCollision: 1 },
+    sport: { tracMax: 1.45, tracMin: 1.15, tracLat: 13, tracSpring: 0.13, tracBias: 0.47, susForce: 2.0, susComp: 1.4, susRebound: 1.5, susUpper: 0.11, susLower: -0.13, susBias: 0.5, brakeBias: 0.66, handbrake: 0.8, dmgDeform: 0.7, dmgCollision: 1 },
+    muscle: { tracMax: 1.2, tracMin: 0.95, tracLat: 18, tracSpring: 0.15, tracBias: 0.47, susForce: 1.15, susComp: 0.8, susRebound: 0.8, susUpper: 0.14, susLower: -0.22, susBias: 0.52, brakeBias: 0.65, handbrake: 0.7, dmgDeform: 0.8, dmgCollision: 1 },
+    sedan: { tracMax: 1.2, tracMin: 0.95, tracLat: 14, tracSpring: 0.14, tracBias: 0.47, susForce: 1.5, susComp: 0.9, susRebound: 0.9, susUpper: 0.15, susLower: -0.17, susBias: 0.5, brakeBias: 0.65, handbrake: 0.7, dmgDeform: 0.8, dmgCollision: 1 },
+    suv: { tracMax: 1.15, tracMin: 0.9, tracLat: 15, tracSpring: 0.16, tracBias: 0.48, susForce: 1.3, susComp: 0.9, susRebound: 0.9, susUpper: 0.2, susLower: -0.2, susBias: 0.5, brakeBias: 0.65, handbrake: 0.6, dmgDeform: 0.8, dmgCollision: 1 },
+    van: { tracMax: 1.1, tracMin: 0.88, tracLat: 13.5, tracSpring: 0.15, tracBias: 0.49, susForce: 1.2, susComp: 1.0, susRebound: 0.8, susUpper: 0.1, susLower: -0.21, susBias: 0.5, brakeBias: 0.64, handbrake: 0.4, dmgDeform: 0.8, dmgCollision: 1 },
+    truck: { tracMax: 0.88, tracMin: 0.72, tracLat: 14.5, tracSpring: 0.15, tracBias: 0.47, susForce: 1.0, susComp: 1.2, susRebound: 0.9, susUpper: 0.12, susLower: -0.25, susBias: 0.5, brakeBias: 0.58, handbrake: 0.2, dmgDeform: 0.8, dmgCollision: 1 }
+  };
+  const IV_GEN_OF = { super: 'super', sport: 'sport', sport4: 'sport', muscle: 'muscle', compactF: 'sedan', compactR: 'sedan', sedan: 'sedan', police: 'sedan', taxi: 'sedan', suv: 'suv', pickup: 'suv', van: 'van', truck: 'truck', bus: 'truck', heavy: 'suv' };
+  function setGTA4(table) { IV = table && (table.vehicles || table); }
+  function setMode(m) { MODE = m === 'neon' ? 'neon' : 'gta4'; }
+  /* classe de GTA IV de um carro nosso (pelo tipo, peso, potência e tração) */
+  function ivClass(k, info) {
+    const t = info.type, h = info.height || 1.5, len = info.len || 4.4, kmh = k.vmax * 3.6, acc = k.fmax / k.mass;
+    if (t === 'bus' || len > 10) return 'bus'; if (t === 'truck' || len > 7.2 || k.mass > 3500) return 'truck';
+    if (info.police) return k.mass > 1700 || t === 'suv' ? 'suv' : 'police';           // viaturas: a altura do modelo inclui giroflex/rack, não serve
+    if (t === 'van' || (h > 2.25 && len > 4.8 && k.mass > 1800)) return 'van';
+    if (t === 'suv' || (h > 1.72 && k.mass > 1600)) return k.mass > 2600 ? 'heavy' : 'suv';
+    if (kmh >= 192 && acc > 8) return 'super'; if (kmh >= 165 && acc > 8.5) return k.drive === 'all' ? 'sport4' : 'sport';
+    if (k.drive !== 'front' && k.mass > 1450 && acc > 4.5) return 'muscle';
+    if (t === 'compact' || k.mass < 1150) return k.drive === 'rear' ? 'compactR' : 'compactF';
+    return 'sedan';
+  }
+  function ivRef(cls) {
+    if (IV) for (const n of IV_CLASS[cls] || []) if (IV[n] && !IV[n].bike) return Object.assign({ name: n.toUpperCase() }, IV[n]);
+    return Object.assign({ name: 'padrão ' + cls, generic: true }, IV_GENERIC[IV_GEN_OF[cls] || 'sedan']);
+  }
+  function applyIV(k, info) {
+    const cls = ivClass(k, info), R = ivRef(cls), DEG = Math.PI / 180;
+    k.iv = R.name; k.ivClass = cls;
+    k.peak = clamp(R.tracLat, 8, 22) * DEG * 0.8;                                     // pico da curva lateral (o IV usa ângulos grandes: o carro "deita" e escorrega aos poucos)
+    k.slide = clamp(R.tracMin / R.tracMax, 0.62, 0.92);                              // quanto segura deslizando
+    const mu = (k.muF + k.muR) / 2 * clamp(R.tracMax / 1.25, 0.85, 1.15), b = clamp(R.tracBias, 0.4, 0.6);
+    k.muF = mu * (1 + (b - 0.5) * 1.6); k.muR = mu * (1 - (b - 0.5) * 1.6);         // tracBias < 0,5: mais aderência atrás (estável)
+    k.relax = clamp(R.tracSpring * 4, 0.3, 0.8);                                     // mola de tração: o pneu deforma ~0,4-0,7 m de rolagem antes da força chegar
+    const f = 0.85 + 0.32 * clamp(R.susForce, 0.6, 3);                               // suspensão: força -> frequência (Hz) -> afundamento estático
+    k.sag = clamp(G / Math.pow(2 * Math.PI * f, 2), 0.06, 0.2);
+    k.travel = clamp((R.susUpper - R.susLower) * 0.5 + 0.05, 0.1, 0.3);
+    k.zetaC = clamp(0.16 + 0.16 * R.susComp, 0.22, 0.6); k.zetaR = clamp(0.16 + 0.17 * R.susRebound, 0.22, 0.65); k.zeta = (k.zetaC + k.zetaR) / 2;
+    k.susBias = clamp(R.susBias, 0.35, 0.65);
+    k.cg = clamp(k.cg + clamp(R.comZ || -0.15, -0.3, 0.1) * 0.6, 0.28, 1.4);           // o IV abaixa o centro de massa (comZ negativo): rola muito, mas quase não capota
+    k.rollDamp = 1.5; k.pitchDamp = 1.1; k.transfer = 0.9; k.rollStop = 0.15;         // carroceria solta (rola e mergulha), com batente de suspensão
+    k.brakeF = clamp(R.brakeBias, 0.45, 0.75);
+    k.hbGrip = clamp(0.62 - 0.32 * R.handbrake, 0.25, 0.6); k.hbForce = clamp(R.handbrake, 0.15, 1);
+    k.stab *= 0.6; k.counter = 0.3;                                                   // o IV não tem controle de estabilidade (fica uma ajuda leve, para teclado)
+    k.deform = R.dmgDeform; k.crash = R.dmgCollision;
+    return k;
+  }
+  /* troca o modo de um carro que já existe (mantém posição e velocidade) */
+  function reconfig(c) { const p = c.physics; if (!p || p.bike) return; const fresh = configFor(c); p.cfg = fresh; const n = p.wheels.filter(w => w.front).length || 1, r = Math.max(1, p.wheels.length - n), bF = fresh.susBias ? 2 * fresh.susBias : 1, bR = fresh.susBias ? 2 * (1 - fresh.susBias) : 1;
+    fresh.spring = [fresh.mass * G * fresh.fb / (n * fresh.sag) * bF, fresh.mass * G * (1 - fresh.fb) / (r * fresh.sag) * bR]; }
   function configFor(c, options) {
     const pc = c.physicsCfg || {}, man = MODEL[c.modelId || ''];
     const bikeCat = (man && man.cat) || (pc.cat === 'bike' || pc.cat === 'scooter' ? pc.cat : null) || (c.kind === 'bike' ? 'bike' : null);
@@ -126,6 +192,8 @@
     if (!pc.sa && !man && pc.mass && type !== 'bus' && type !== 'truck') H.mass = Math.max(pc.mass, TYPES[type].mass * 0.8);
     const cfg = Object.assign(deriveCar(H, { height: d.height || (c.len > 9 ? 3 : 1.5), service: (man && man.service) || pc.service || c.service, type }), options || {});
     cfg.category = type || 'sa'; cfg.cat = cfg.category;
+    if (MODE === 'gta4') { const svc = (man && man.service) || pc.service || c.service; applyIV(cfg, { type, len: c.len, height: d.height, police: svc === 'policia' || svc === 'pf' || svc === 'caveirao' || svc === 'choque' }); }
+    cfg.mode = MODE;
     // compatibilidade com quem lê cfg.grip/brake/travel/sag (dano, câmera, colisões)
     cfg.grip = (cfg.muF + cfg.muR) / 2; cfg.brake = cfg.brakeA / G;
     return cfg;
@@ -146,7 +214,8 @@
     const centerZ = rz + wb * cfg.fb;                               // o centro de massa fica onde o peso por eixo bate com "fb"
     const m = cfg.mass;
     { const cap = (track / (2 * cfg.cg)) * 0.92, top = Math.max(cfg.muF, cfg.muR); if (!bike && top > cap) { cfg.muF *= cap / top; cfg.muR *= cap / top; } }   // alto e estreito: aderência limitada pelo tombamento
-    cfg.spring = [m * G * cfg.fb / (Math.max(1, front.length) * cfg.sag), m * G * (1 - cfg.fb) / (Math.max(1, rear.length) * cfg.sag)];   // [dianteira, traseira] por roda
+    const bF = cfg.susBias ? 2 * cfg.susBias : 1, bR = cfg.susBias ? 2 * (1 - cfg.susBias) : 1;
+    cfg.spring = [m * G * cfg.fb / (Math.max(1, front.length) * cfg.sag) * bF, m * G * (1 - cfg.fb) / (Math.max(1, rear.length) * cfg.sag) * bR];   // [dianteira, traseira] por roda
     const p = c.physics = {
       cfg, bike, centerZ, wheelbase: wb, track, a: fz - centerZ, b: centerZ - rz,
       wheels: wheels.map(w => ({ ...w, contact: false, compression: 0, offset: 0, spin: 0, load: 0, slipSpin: 0 })),
@@ -238,7 +307,7 @@
     if (dmg) steerMax *= 1 - 0.3 * dmg.total;
     const pull = dmg ? clamp((dmg.right - dmg.left) * 0.05, -0.06, 0.06) * smooth(2, 10, v) : 0;
     // contra-esterço automático (estabilidade): as rodas apontam para onde o carro está indo quando ele escorrega
-    const counter = p.hbT > 0 ? 0 : clamp(beta * k.stab * 0.85, -0.35, 0.35) * smooth(3, 8, v) * (forward >= 0 ? 1 : 0);
+    const counter = p.hbT > 0 ? 0 : clamp(beta * k.stab * 0.85 * (k.counter === undefined ? 1 : k.counter * 3), -0.35, 0.35) * smooth(3, 8, v) * (forward >= 0 ? 1 : 0);
     const target = clamp((input.steer || 0) * steerMax + counter + pull, -k.steerLock, k.steerLock);
     const rate = (Math.abs(target) > Math.abs(c.steer) && Math.sign(target) === Math.sign(c.steer || target) ? k.steerRate : k.steerRate * 1.7) * (1 - 0.35 * smooth(10, 40, v));
     c.steer += clamp(target - c.steer, -rate * dt, rate * dt);
@@ -256,7 +325,7 @@
       w.g = ground; w.mx = mount.x; w.mz = mount.z;
       const wr = w.lost ? 0.14 : w.r, length = mount.y - ground.height - wr, compression = k.travel + k.sag - length;
       const rate2 = w.lastLength === undefined ? 0 : (length - w.lastLength) / dt; w.lastLength = length;
-      const kSpring = k.spring[w.front ? 0 : 1], mCorner = m * (w.front ? k.fb / frontN : (1 - k.fb) / rearN), damper = 2 * Math.sqrt(kSpring * mCorner) * k.zeta;
+      const kSpring = k.spring[w.front ? 0 : 1], mCorner = m * (w.front ? k.fb / frontN : (1 - k.fb) / rearN), damper = 2 * Math.sqrt(kSpring * mCorner) * (k.zetaC ? (rate2 < 0 ? k.zetaC : k.zetaR) : k.zeta);
       w.contact = compression > 0 && length > -1.2; w.load = 0; w.mCorner = mCorner;
       w.compression = clamp(compression / (2 * k.travel + k.sag), 0, 1);
       w.offset = w.contact ? clamp(compression - k.sag, -k.sag, k.travel) : -k.sag;
@@ -303,7 +372,7 @@
       lonF -= Math.sign(lon) * Math.min(brakeF, stopF);
       lonF -= Math.sign(lon) * Math.min((k.crr + (ground.rolling || 0) * 0.04) * load, stopF);
       if (w.lost) lonF -= Math.sign(lon) * Math.min(0.5 * load, stopF);
-      if (rearLocked) lonF = -Math.sign(lon) * Math.min(limit * 0.75 * k.slide, stopF + 1);
+      if (rearLocked) lonF = -Math.sign(lon) * Math.min(limit * 0.75 * k.slide * (k.hbForce === undefined ? 1 : 0.55 + 0.45 * k.hbForce), stopF + 1);
       lonF = clamp(lonF, -limit * 1.02, limit * 1.02);
 
       /* lateral: deriva -> curva do pneu; círculo de atrito com o longitudinal; em baixa velocidade amortece o escorregão */
@@ -311,14 +380,16 @@
       let latMax = limit * Math.sqrt(Math.max(0, 1 - u * u * 0.6));         // círculo de atrito "de jogo": acelerando/freando no limite ainda dá para virar
       if (spinning) latMax *= lerp(0.7, 0.9, k.tc);                                    // roda patinando: a traseira sai
       if (rearLocked) latMax *= k.hbGrip;
-      const alpha = Math.atan2(lat, Math.max(alon, 1.5)), x = Math.abs(alpha) / (k.peak * (rearLocked ? 0.6 : 1));
+      let alpha = Math.atan2(lat, Math.max(alon, 1.5));
+      if (k.relax) { w.alpha = w.alpha === undefined ? alpha : w.alpha + (alpha - w.alpha) * Math.min(1, Math.max(speed, 1) * dt / k.relax); alpha = w.alpha; }   // mola de tração do IV: a deriva "chega" ao pneu depois de rolar alguns decímetros
+      const x = Math.abs(alpha) / (k.peak * (rearLocked ? 0.6 : 1));
       let latF = -Math.sign(alpha) * latMax * tire(x, k.slide);
       const visc = clamp(-lat * w.mCorner * 14, -latMax, latMax), blend = smooth(0.8, 3.5, speed);
       latF = lerp(visc, latF, blend);
 
       const wx = s * lonF + co * latF, wz = co * lonF - s * latF;
       fx += wx; fz += wz; ty += rz * wx - rx * wz;
-      torqueP += lonF * k.cg * 0.8; torqueR -= latF * k.cg * 0.8;                       // mergulho/rolagem (transferência de carga)
+      torqueP += lonF * k.cg * (k.transfer || 0.8); torqueR -= latF * k.cg * (k.transfer || 0.8);                       // mergulho/rolagem (transferência de carga)
       slipMax = Math.max(slipMax, Math.abs(lat)); if (spinning) wheelspin = 1;
       const spinV = spinning ? Math.min(14, 3 + Fdrive / m) : rearLocked ? -alon : 0;
       w.slipSpin += (spinV / w.r - w.slipSpin) * (1 - Math.exp(-dt * 10)); spinMax = Math.max(spinMax, Math.abs(spinV));
@@ -339,7 +410,8 @@
         if (Math.sign(over) === Math.sign(p.yawV) && Math.abs(p.yawV) > Math.abs(want)) ty -= over * p.iy * (2 + 10 * k.stab) * smooth(0.04, 0.2, Math.abs(beta) + Math.abs(over) * 0.15);
       }
       ty -= p.yawV * p.iy * 0.12;                                                       // amortecimento leve (reta firme)
-      torqueP -= p.pitchV * p.ix * 1.8 + (Math.abs(p.pitch) > k.maxPitch + 0.15 ? 0 : 0); torqueR -= p.rollV * p.iz * 2.6;
+      torqueP -= p.pitchV * p.ix * (k.pitchDamp || 1.8); torqueR -= p.rollV * p.iz * (k.rollDamp || 2.6);
+      if (k.rollStop && Math.abs(p.roll) > k.rollStop) torqueR -= (p.roll - Math.sign(p.roll) * k.rollStop) * p.iz * 90 + p.rollV * p.iz * 4;   // batente: a carroceria encosta e para de rolar
     } else { p.airTime += dt; torqueP = -p.pitchV * p.ix * 0.15; torqueR = -p.rollV * p.iz * 0.15; }
     const ax = fx / m, az = fz / m; p.accel = ax * sh + az * ch;
     p.vx += ax * dt; p.vz += az * dt; p.vy += fy / m * dt;
@@ -422,6 +494,6 @@
     impulse(a, tx * jt, tz * jt, ax, az); if (pb) impulse(b, -tx * jt, -tz * jt, bx, bz);
     return -approach;
   }
-  const api = { create, step, point, rotate, collide, impulse, syncSpeed, PRESETS, CATEGORY, TYPES, MODEL, configFor, deriveCar, STEP: 1 / 120 };
+  const api = { create, step, point, rotate, collide, impulse, syncSpeed, PRESETS, CATEGORY, TYPES, MODEL, configFor, deriveCar, setGTA4, setMode, reconfig, ivClass, get mode() { return MODE; }, get gta4() { return IV; }, STEP: 1 / 120 };
   if (typeof module === 'object' && module.exports) module.exports = api; else scope.CarPhysics = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

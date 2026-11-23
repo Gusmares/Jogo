@@ -174,6 +174,7 @@ function spawnDebris(x, y, z, vx, vz, n, kind, color) {
 function applyVehicleDamage(c, impact, other, px, pz, nx, nz, info) {
   if (!c.physics) return;
   const p = c.physics, kind = info && info.kind || (other ? 'car' : 'wall');
+  if (p.cfg && p.cfg.deform) impact *= 0.5 + 0.5 * p.cfg.deform / 0.8;                     // modo GTA IV: multiplicador de deformação do carro (handling.dat)
   // velocidade de raspão (tangente ao contato)
   let vt = 0, tx = 0, tz = 0;
   if (nx !== undefined) { const ovx = other && other.physics ? other.physics.vx : 0, ovz = other && other.physics ? other.physics.vz : 0, rvx = p.vx - ovx, rvz = p.vz - ovz; tx = -nz; tz = nx; vt = rvx * tx + rvz * tz; }

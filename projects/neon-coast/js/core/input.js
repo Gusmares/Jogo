@@ -13,6 +13,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyG'&&started&&!paused&&typeof cycleEmote==='function')cycleEmote();
   if(e.code==='KeyO'&&started&&!paused&&typeof cycleOutfit==='function')cycleOutfit(e.shiftKey);
   if(e.code==='KeyL'&&player.car&&player.car.cop)player.car.sirenManual=!player.car.sirenManual;
+  if(e.code==='F7'&&typeof togglePhysicsMode==='function'){e.preventDefault();togglePhysicsMode();}
   if(e.code==='KeyH')$('help').style.display=$('help').style.display==='none'?'block':'none';
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
