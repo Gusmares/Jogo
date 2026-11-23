@@ -4,8 +4,8 @@
 // Depois de converter: gera o detalhe médio dos carros pesados (decimate-vehicles) e o atlas/LOD das skins (atlas-skins).
 'use strict';
 const fs = require('fs'), path = require('path');
-const { convertVehicle } = require('./convert-dff');
-const { convertSkin } = require('./convert-skin');
+const { convertVehicle } = require('../../../engine/tools/convert-dff');
+const { convertSkin } = require('../../../engine/tools/convert-skin');
 const root = path.resolve(__dirname, '..'), A = require('./auto-catalog.json');
 const force = process.argv.includes('--force'), only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null, idArg = process.argv.includes('--id') ? process.argv[process.argv.indexOf('--id') + 1] : null, prefix = process.argv.includes('--prefix') ? process.argv[process.argv.indexOf('--prefix') + 1] : null;
 const done = (dir, file) => !force && fs.existsSync(path.join(root, dir, file));

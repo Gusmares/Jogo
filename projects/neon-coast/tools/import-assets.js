@@ -1,9 +1,9 @@
 // Conversão reproduzível dos mods locais. Não executa plugins CLEO/ASI.
 'use strict';
 const fs = require('fs'), path = require('path');
-const { convertVehicle } = require('./convert-dff');
-const { loadTXD, encodePNG } = require('./txd');
-const { modFile } = require('./mods');
+const { convertVehicle } = require('../../../engine/tools/convert-dff');
+const { loadTXD, encodePNG } = require('../../../engine/tools/txd');
+const { modFile } = require('../../../engine/tools/mods');
 const root = path.resolve(__dirname, '..'), cfg = require('./assets.json');
 const writeJSON = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(value, null, 2)); };
 function importModels() {

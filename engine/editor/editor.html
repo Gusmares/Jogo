@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NEON ENGINE — editor de mapa</title>
-<link rel="stylesheet" href="editor/editor.css">
+<base href="/">   <!-- a raiz é a pasta do projeto aberto; a interface da engine vem de /__ed/ -->
+<link rel="stylesheet" href="/__ed/editor.css">
 </head>
 <body>
 <!-- NEON ENGINE: carrega o MESMO mundo do jogo (todos os scripts do index.html, menos o laço do jogo) e põe as ferramentas por cima. Código em editor/. -->
 <div id="edApp">
   <header id="edTop">
-    <div class="ed-brand"><b>NEON</b> ENGINE <span id="edMapName">maps/world.json</span><i id="edDirty" title="Alterações não salvas"></i></div>
+    <div class="ed-brand"><b>NEON</b> ENGINE <button id="edProject" class="ed-project" title="Projeto aberto — clique para trocar"><span id="edProjName">Projeto</span><small id="edMapName">maps/world.json</small></button><i id="edDirty" title="Alterações não salvas"></i></div>
     <div class="ed-group" role="toolbar" aria-label="Ferramentas">
       <button data-tool="select" title="Selecionar (Q)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z"/></svg></button>
       <button data-tool="translate" title="Mover (W)"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg></button>
@@ -66,6 +67,6 @@
 <div id="edBoot"><div><b>NEON</b> ENGINE<p id="edBootMsg">Carregando o mundo…</p><div class="bar"><i id="edBootBar"></i></div><pre id="edBootErr"></pre></div></div>
 
 <div id="gameDom" hidden></div>
-<script src="editor/boot.js"></script>
+<script src="/__ed/boot.js"></script>
 </body>
 </html>

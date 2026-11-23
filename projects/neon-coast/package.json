@@ -1,0 +1,8 @@
+{
+  "name": "neon-coast",
+  "productName": "NEON COAST",
+  "version": "1.0.0",
+  "description": "Jogo 3D de mundo aberto: São Paulo e Rio de Janeiro (projeto do NEON ENGINE).",
+  "main": "electron/main.js",
+  "private": true
+}

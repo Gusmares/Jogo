@@ -237,6 +237,29 @@ async function openBuild() {
   } catch (e) { log.textContent += '\nErro: ' + e.message; }
 }
 
+/* ---------------- projetos ---------------- */
+async function openProjects() {
+  let info = ED.project; try { info = await edApi('project'); ED.project = info; } catch (e) { /* sem servidor */ }
+  const m = (info && info.manifest) || {}, box = el('div', { class: 'ed-projects' });
+  const open = async p => {
+    if (ED.dirty && !confirm('Há alterações não salvas neste mapa. Trocar de projeto mesmo assim?')) return;
+    try { const r = await edApi('open-project', p ? { root: p.root } : {}); if (r.opened) { ED.dirty = false; edToast('Abrindo o projeto…', 3000); } } catch (e) { edToast(e.message, 4000); }
+  };
+  box.append(el('div', { class: 'ed-proj-cur' }, el('span', { class: 'ed-lab' }, 'Projeto aberto'), el('b', {}, m.name || (info && info.folder) || '—'),
+    m.description ? el('p', { class: 'ed-hint' }, m.description) : null,
+    el('small', {}, (info && info.root) || (info && info.folder) || ''), el('small', {}, 'Criado no NEON ENGINE ' + (m.engine || '') + (m.created ? ' · ' + m.created : '') + ' · mapa: ' + (m.map || ED.file))));
+  const all = []; const seen = new Set();
+  for (const p of ((info && info.recent) || []).concat((info && info.projects) || [])) { const k = p.root || p.folder; if (seen.has(k)) continue; seen.add(k); all.push(p); }
+  box.append(el('h4', {}, 'Projetos'));
+  for (const p of all) box.append(el('div', { class: 'ed-row' + (p.current ? ' on' : '') }, el('span', {}, p.name || p.folder), el('small', {}, p.current ? 'aberto' : ''),
+    !p.current && ED.desktop ? el('button', { onclick: () => open(p) }, 'Abrir') : null));
+  if (!all.length) box.append(el('p', { class: 'ed-empty' }, 'Nenhum outro projeto encontrado.'));
+  box.append(el('div', { class: 'ed-actions' },
+    ED.desktop ? el('button', { onclick: () => open(null) }, 'Abrir outra pasta…') : el('p', { class: 'ed-hint' }, 'No navegador o projeto é o que o servidor abriu (npm run serve -- <pasta>).'),
+    ED.desktop ? el('button', { onclick: () => edApi('reveal', { path: 'neon.project.json' }) }, 'Mostrar pasta do projeto') : null));
+  modal('Projeto', box);
+}
+
 /* ---------------- barra de status ---------------- */
 function onCursor(p) {
   $e('edStCursor').textContent = 'X ' + fmtNum(p.x) + '  Y ' + fmtNum(p.y) + '  Z ' + fmtNum(p.z);
@@ -258,7 +281,8 @@ function edUiStart() {
   $e('edModalClose').addEventListener('click', closeModal); $e('edModal').addEventListener('pointerdown', e => { if (e.target === $e('edModal')) closeModal(); });
   $e('edModal').addEventListener('keydown', e => { if (e.code === 'Escape') closeModal(); });
   const hr = $e('edHour'); hr.addEventListener('input', () => { hour = +hr.value; updateSky(0); const h = Math.floor(hour) % 24, m = Math.round((hour % 1) * 60); $e('edHourVal').textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); });
-  $e('edMapName').textContent = ED.file + (ED.desktop ? '' : ED.api ? ' · navegador' : ' · sem servidor');
+  { const m = ED.project && ED.project.manifest; $e('edProjName').textContent = (m && m.name) || 'Projeto'; $e('edMapName').textContent = ED.file + (ED.desktop ? '' : ED.api ? ' · navegador' : ' · sem servidor'); }
+  $e('edProject').addEventListener('click', openProjects);
   edOn('scene', renderOutliner); edOn('select', () => { renderOutliner(); renderInspector(); }); edOn('transform', refreshInspectorNumbers);
   edOn('placing', () => { renderInspector(); renderLib(); }); edOn('models', renderLib); edOn('cursor', onCursor);
   edOn('fps', f => { $e('edStFps').textContent = Math.round(f) + ' fps'; $e('edStCam').textContent = 'câmera ' + Math.round(fly.speed) + ' m/s'; });

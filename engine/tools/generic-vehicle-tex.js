@@ -8,7 +8,7 @@ const fs = require('fs'), path = require('path');
 const { loadTXD, encodePNG } = require('./txd');
 const { modFile } = require('./mods');
 
-const root = path.resolve(__dirname, '..'), out = path.join(root, 'assets/models/_generic');
+const root = require('./project').root(), out = path.join(root, 'assets/models/_generic');
 const SRC = ['mods/Pack_185_vehicles_Extras_-_GTA_Brasil_v4.1_-_ImVehSys/Pack 185 vehicles Extras - GTA Brasil v4.1 - ImVehSys/_CFG/generic/vehicle.txd',
              'mods/Pack_185_vehicles_Extras_-_GTA_Brasil_v4.1_-_ImVehSys/Pack 185 vehicles Extras - GTA Brasil v4.1 - ImVehSys/_CFG/generic/vehicle2.txd'];
 const SKIP = /^(carplate|carpback|platecharset|plateback\d|vehicleenvmap128|xvehicleenv128|vehiclespecdot64|vehiclescratch64)$/i;   // placa: gerada no jogo; mapas de reflexo: o motor tem os seus

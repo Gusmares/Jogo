@@ -6,7 +6,7 @@ const path = require('path');
 const { loadDFF } = require('./dff');
 const { loadTXD, downscale, encodePNG } = require('./txd');
 const { modFile } = require('./mods');
-const root = path.resolve(__dirname, '..');
+const root = require('./project').root();                 // pasta do projeto (assets/models fica lá)
 
 /* matrizes 4x4 (linha-maior, convenção de vetor-coluna) */
 const mul = (a, b) => { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j]; return o; };
@@ -92,7 +92,7 @@ function convertSkin(cfg) {
   console.log(`${cfg.id.padEnd(12)} ${(idx.length / 3 / 1000).toFixed(1)}k tris | ${bones.length} ossos | em pé: altura ${(maxY - minY).toFixed(2)} m, largura ${(maxX - minX).toFixed(2)} m, pés em y=${minY.toFixed(2)} | materiais ${matList.length}`);
 }
 if (require.main === module) {
-const cfgs = JSON.parse(fs.readFileSync(path.join(__dirname, 'skins.json'), 'utf8'));
+const cfgs = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'skins.json'), 'utf8'));
 const idArg = process.argv.indexOf('--id') > 0 ? process.argv[process.argv.indexOf('--id') + 1] : null;
 for (const c of cfgs) if (process.argv.includes('--all') || c.id === idArg) { try { convertSkin(c); } catch (e) { console.log(c.id, 'FALHOU:', e.stack); } }
 }

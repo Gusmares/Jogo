@@ -1,0 +1,14 @@
+{
+  "format": "neon-project",
+  "version": 1,
+  "name": "NEON COAST",
+  "description": "Mundo aberto estilo GTA SA: São Paulo + Rio de Janeiro.",
+  "engine": "0.2",
+  "created": "2026-11-23",
+  "entry": "index.html",
+  "map": "maps/world.json",
+  "build": {
+    "name": "NEON COAST",
+    "include": ["index.html", "package.json", "neon.project.json", "css", "js", "vendor", "electron", "maps", "assets/models", "assets/anims", "assets/radio", "assets/world", "assets/catalog.json"]
+  }
+}

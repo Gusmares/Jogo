@@ -1,0 +1,8 @@
+{
+  "name": "neon-engine",
+  "productName": "NEON ENGINE",
+  "version": "0.2.0",
+  "description": "NEON ENGINE: editor de mapa e ferramentas para projetos de mundo aberto",
+  "main": "main.js",
+  "private": true
+}

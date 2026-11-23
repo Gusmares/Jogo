@@ -25,7 +25,7 @@ kbd { font: 11px var(--mono); background: var(--panel2); border: 1px solid var(-
 #edTop { grid-area: top; display: flex; align-items: center; gap: 10px; padding: 0 10px; background: var(--panel); border-bottom: 1px solid var(--line); min-width: 0; }
 .ed-brand { font-size: 15px; letter-spacing: 0.12em; color: var(--dim); display: flex; align-items: baseline; gap: 8px; margin-right: 6px; }
 .ed-brand b { color: var(--acc); letter-spacing: 0.12em; }
-#edMapName { font: 11px var(--mono); letter-spacing: 0; color: var(--faint); }
+
 #edDirty { width: 8px; height: 8px; border-radius: 50%; display: inline-block; align-self: center; }
 #edDirty.on { background: var(--acc2); box-shadow: 0 0 6px var(--acc2); }
 .ed-group { display: flex; gap: 4px; padding-left: 10px; border-left: 1px solid var(--line); }
@@ -120,3 +120,12 @@ body.ed-placing #viewport canvas#c { cursor: crosshair; }
 #edBoot pre { font: 11px var(--mono); color: var(--bad); letter-spacing: 0; text-align: left; max-width: 80vw; white-space: pre-wrap; }
 ::-webkit-scrollbar { width: 10px; height: 10px; } ::-webkit-scrollbar-thumb { background: #2c333d; border-radius: 6px; border: 2px solid var(--panel); } ::-webkit-scrollbar-track { background: transparent; }
 @media (max-width: 1300px) { #edApp { grid-template-columns: 240px 1fr 300px; } .ed-hour { display: none; } }
+.ed-project { flex-direction: column; align-items: flex-start; gap: 0; padding: 2px 9px; letter-spacing: 0; line-height: 1.15; background: transparent; border-color: transparent; }
+.ed-project:hover:not(:disabled) { background: var(--panel2); border-color: var(--line2); }
+#edProjName { font-size: 13px; font-weight: 600; color: #fff; }
+.ed-project small { font: 10.5px var(--mono); color: var(--faint); }
+.ed-proj-cur { display: flex; flex-direction: column; gap: 3px; padding: 10px; background: var(--field); border: 1px solid var(--line); border-radius: var(--r); }
+.ed-proj-cur b { font-size: 16px; color: #fff; }
+.ed-proj-cur small { color: var(--faint); font: 11px var(--mono); }
+.ed-projects .ed-row { align-items: center; }
+.ed-projects .ed-row button { margin-left: 8px; padding: 2px 8px; }

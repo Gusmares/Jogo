@@ -13,6 +13,6 @@ const id = (arg('id') || 'obj_' + base).toLowerCase();
 if (!/^[a-z0-9_]+$/.test(id)) { console.error('ID inválido (use letras minúsculas, números e _): ' + id); process.exit(1); }
 try {
   convertVehicle({ id, name: arg('name') || path.basename(dff, path.extname(dff)), dff: path.resolve(dff), txd: path.resolve(txd), kind: 'object', emergency: false });
-  const man = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'assets/models', id, 'model.json'), 'utf8'));
+  const man = JSON.parse(fs.readFileSync(path.join(require('./project').root(), 'assets/models', id, 'model.json'), 'utf8'));
   console.log('IMPORTADO ' + JSON.stringify({ id, name: man.name, dims: man.dims }));
 } catch (e) { console.error('Falhou: ' + (e && e.stack || e)); process.exit(2); }

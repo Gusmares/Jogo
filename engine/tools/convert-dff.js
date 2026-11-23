@@ -10,7 +10,7 @@ const { loadTXD, downscale, encodePNG } = require('./txd');
 const { modFile } = require('./mods');
 const { genericIndex } = require('./generic-vehicle-tex');
 
-const root = path.resolve(__dirname, '..');
+const root = require('./project').root();                 // pasta do projeto (assets/models fica lá)
 const GTA2 = p => [-p[0], p[2], p[1]];                    // (x dir, y frente, z cima) -> three (x, y cima, z frente), rotação própria
 const LAMP_TEX = /vehiclelights|lights|emerglights|lightbar|farol|lanterna/i;
 
@@ -245,7 +245,7 @@ function convertVehicle(cfg) {
 }
 
 if (require.main === module) {
-const cfgs = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8')).concat(require('./assets.json').vehicles);
+const cfgs = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'models.json'), 'utf8')).concat(require(path.join(root, 'tools', 'assets.json')).vehicles);
 const idArg = process.argv.indexOf('--id') > 0 ? process.argv[process.argv.indexOf('--id') + 1] : null;
 if (!process.argv.includes('--all') && !cfgs.some(c => c.id === idArg)) { console.error('Use --all ou --id <modelo>'); process.exitCode = 1; }
 for (const c of cfgs) if (process.argv.includes('--all') || c.id === idArg) { try { convertVehicle(c); } catch (e) { console.error(c.id, 'FALHOU:', e.stack); process.exitCode = 1; } }

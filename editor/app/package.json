@@ -1,8 +1,0 @@
-{
-  "name": "neon-engine",
-  "productName": "NEON ENGINE",
-  "version": "0.1.0",
-  "description": "Editor de mapa do NEON COAST",
-  "main": "main.js",
-  "private": true
-}

@@ -2,7 +2,7 @@
    A parte visual dos painéis fica em editor/ui.js. Os objetos são montados pelas MESMAS funções do jogo (js/world/placements.js). */
 'use strict';
 const ED = {
-  file: MAPDATA.__file || 'maps/world.json', map: null, dirty: false, api: false, desktop: false,
+  file: MAPDATA.__file || 'maps/world.json', project: window.NEON_PROJECT_INFO || null, map: null, dirty: false, api: false, desktop: false,
   roots: new Map(),            // id -> THREE.Group na cena
   sel: null, tool: 'translate', snap: true, snapMove: 0.5, snapRot: 15, space: 'world', top: false,
   undo: [], redo: [], pending: null, placing: null, models: [], catalog: null, planDirty: false, listeners: {}
@@ -262,7 +262,7 @@ async function edPlay() {
   const hit = edHitPoint(edCenterRay()), p = hit ? hit.p : new THREE.Vector3(fly.x, carGroundHeight(fly.x, fly.z), fly.z);
   const h = ((fly.yaw / DEG + 180) % 360 + 360) % 360, b = { x: p.x, y: p.y, z: p.z, h };
   if (ED.desktop) { try { await edApi('play', b); } catch (e) { edToast(e.message); } }
-  else window.open('index.html?test=' + [b.x, b.y, b.z, b.h].map(v => v.toFixed(2)).join(','), '_blank');
+  else window.open(((ED.project && ED.project.manifest && ED.project.manifest.entry) || 'index.html') + '?test=' + [b.x, b.y, b.z, b.h].map(v => v.toFixed(2)).join(','), '_blank');
 }
 /* acompanha uma tarefa demorada (importar, gerar .exe) e devolve o resultado */
 async function edJob(id, onLog) {

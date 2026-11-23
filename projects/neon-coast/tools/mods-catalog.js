@@ -7,8 +7,8 @@
 //  • Armas: pack [Armas] (AK-47, M4/sniper, MP5, Uzi, Tec-9, Desert Eagle, escopetas, faca, katana, taser).
 'use strict';
 const fs = require('fs'), path = require('path');
-const { loadDFF } = require('./dff');
-const { MODS, findMod } = require('./mods');
+const { loadDFF } = require('../../../engine/tools/dff');
+const { MODS, findMod } = require('../../../engine/tools/mods');
 const root = path.resolve(__dirname, '..');
 const rel = p => 'mods/' + path.relative(MODS, p).replace(/\\/g, '/').split('/').slice(1).join('/');        // sem o balde
 const walk = (d, out = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); e.isDirectory() ? walk(p, out) : out.push(p); } return out; };

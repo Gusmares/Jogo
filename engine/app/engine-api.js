@@ -4,7 +4,7 @@
 const fs = require('fs'), path = require('path'), { spawn } = require('child_process');
 
 module.exports = function engineApi(opts) {
-  const root = opts.root, desktop = !!opts.desktop, jobs = new Map();
+  const root = opts.root, desktop = !!opts.desktop, jobs = new Map(), P = require(path.join(opts.engine || path.resolve(__dirname, '..'), 'tools', 'project.js')), engineTools = path.join(P.ENGINE, 'tools');
   let jobSeq = 0;
   const send = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
   const body = req => new Promise((ok, fail) => { let n = 0; const parts = []; req.on('data', d => { n += d.length; if (n > 40e6) { fail(new Error('pedido grande demais')); req.destroy(); } else parts.push(d); }); req.on('end', () => { try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(e); } }); req.on('error', fail); });
@@ -12,8 +12,8 @@ module.exports = function engineApi(opts) {
   /* roda um script de tools/ com o Node (no app desktop, o próprio Electron em modo Node) e guarda a saída num "job" */
   function runJob(script, args, label) {
     const id = ++jobSeq, job = { id, label, log: '', done: false, code: null, started: Date.now() };
-    const env = Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: '1' });
-    const p = spawn(process.execPath, [path.join(root, 'tools', script)].concat(args), { cwd: root, env, windowsHide: true });
+    const env = Object.assign({}, process.env, { ELECTRON_RUN_AS_NODE: '1', NEON_PROJECT: root });   // as ferramentas da engine trabalham no projeto aberto
+    const p = spawn(process.execPath, [path.join(engineTools, script)].concat(args), { cwd: root, env, windowsHide: true });
     const add = d => { job.log += d.toString(); if (job.log.length > 200000) job.log = job.log.slice(-150000); };
     p.stdout.on('data', add); p.stderr.on('data', add);
     p.on('error', e => { add('\n' + e.message); job.done = true; job.code = -1; });
@@ -44,6 +44,7 @@ module.exports = function engineApi(opts) {
     const route = url.slice('/__engine/'.length);
     (async () => {
       if (route === 'ping') return send(res, 200, { ok: true, desktop, root: desktop ? root : undefined });
+      if (route === 'project') return send(res, 200, { ok: true, root: desktop ? root : undefined, folder: path.basename(root), manifest: P.readManifest(root), projects: P.listProjects().map(p => ({ name: p.name, folder: path.basename(p.root), root: desktop ? p.root : undefined, current: path.resolve(p.root) === path.resolve(root) })), recent: opts.recent ? opts.recent() : [] });
       if (route === 'models') return send(res, 200, { ok: true, models: listModels() });
       if (route === 'maps') { const d = path.join(root, 'maps'); return send(res, 200, { ok: true, maps: fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.json')).map(f => 'maps/' + f) : [] }); }
       if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'use POST' });
@@ -60,7 +61,8 @@ module.exports = function engineApi(opts) {
         const args = ['--dff', b.dff, '--txd', b.txd]; if (b.id) args.push('--id', b.id); if (b.name) args.push('--name', b.name);
         return send(res, 200, { ok: true, job: runJob('import-object.js', args, 'Importar ' + path.basename(b.dff)).id });
       }
-      if (route === 'build') return send(res, 200, { ok: true, job: runJob('build-exe.js', [], 'Gerar NEON COAST.exe').id });
+      if (route === 'build') return send(res, 200, { ok: true, job: runJob('build-game.js', [root], 'Gerar o executável do projeto').id });
+      if (route === 'open-project') { if (!opts.openProject) return send(res, 200, { ok: false, error: 'só no app desktop' }); return send(res, 200, { ok: true, opened: await opts.openProject(b) }); }
       if (route === 'job') { const j = jobs.get(+b.id); if (!j) throw new Error('tarefa não encontrada'); return send(res, 200, { ok: true, job: j }); }
       if (route === 'pick') { if (!opts.pick) return send(res, 200, { ok: false, error: 'só no app desktop' }); return send(res, 200, { ok: true, files: await opts.pick(b) }); }
       if (route === 'play') { if (!opts.play) return send(res, 200, { ok: false, error: 'só no app desktop' }); await opts.play(b); return send(res, 200, { ok: true }); }

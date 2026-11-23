@@ -7,7 +7,7 @@
 // As configurações (tools/*.json) apontam para "mods/<nome-do-mod>/arquivo" SEM o balde: mover a pasta de balde não quebra nada.
 'use strict';
 const fs = require('fs'), path = require('path');
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = require('./project').root();                // mods ficam em <projeto>/assets/mods
 const MODS = path.join(ROOT, 'assets', 'mods');
 const BUCKETS = ['0-NOVOS', '1-USADOS', '2-PARCIAIS', '3-NAO-USADOS'];
 

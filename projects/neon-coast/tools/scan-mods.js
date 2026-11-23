@@ -3,7 +3,7 @@
 // Para cada DFF acha o TXD (mesmo nome na pasta, ou o único TXD da pasta) e, em recursos do MTA, o ID que o script substitui.
 'use strict';
 const fs = require('fs'), path = require('path');
-const { loadDFF } = require('./dff');
+const { loadDFF } = require('../../../engine/tools/dff');
 const root = path.resolve(__dirname, '..');
 const dirArg = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'assets/mods/0-NOVOS';
 const jsonOut = process.argv.includes('--json') ? process.argv[process.argv.indexOf('--json') + 1] : null;

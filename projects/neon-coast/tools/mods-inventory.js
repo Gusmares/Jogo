@@ -5,7 +5,7 @@
 // ou tem cópia idêntica em assets/models | anims | radio | world (animações e rádio são copiados).
 'use strict';
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
-const { ROOT, MODS, BUCKETS } = require('./mods');
+const { ROOT, MODS, BUCKETS } = require('../../../engine/tools/mods');
 const RUNTIME = ['models', 'anims', 'radio', 'world'].map(d => path.join(ROOT, 'assets', d));
 const KIND = {
   model: ['dff'], texture: ['txd', 'tga', 'dds', 'png', 'jpg', 'jpeg', 'bmp'], anim: ['ifp'], audio: ['atp', 'ogg', 'mp3', 'wav', 'flac'], pack: ['img', 'pak', 'zip', 'rar', '7z'],

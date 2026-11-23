@@ -8,13 +8,17 @@ window.NEON_EDITOR = true;
   const errors = [];
   addEventListener('error', e => { errors.push((e.filename || '').split('/').pop() + ': ' + e.message); err.textContent = errors.slice(-6).join('\n'); });
   try {
-    const html = await (await fetch('index.html', { cache: 'no-store' })).text();
+    let info = null; try { info = await (await fetch('__engine/project', { cache: 'no-store' })).json(); } catch (e) { /* sem servidor da engine */ }
+    window.NEON_PROJECT_INFO = info && info.ok ? info : null;
+    const entry = (info && info.manifest && info.manifest.entry) || 'index.html';
+    msg.textContent = 'Abrindo o projeto ' + ((info && info.manifest && info.manifest.name) || '') + '…';
+    const html = await (await fetch(entry, { cache: 'no-store' })).text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const game = [...doc.querySelectorAll('script[src]')].map(s => s.getAttribute('src')).filter(s => !/(^|\/)js\/main\.js$/.test(s));
     doc.querySelectorAll('script').forEach(s => s.remove());
     const host = document.getElementById('gameDom'); host.innerHTML = doc.body.innerHTML;
     const cv = host.querySelector('#c'); document.getElementById('viewport').prepend(cv);
-    const own = ['vendor/TransformControls.js', 'editor/engine.js', 'editor/ui.js'];
+    const own = ['/__ed/vendor/TransformControls.js', '/__ed/engine.js', '/__ed/ui.js'];
     const all = game.concat(own); let done = 0;
     await new Promise(resolve => {
       for (const src of all) {
