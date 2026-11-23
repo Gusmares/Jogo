@@ -19,7 +19,8 @@ packager({
   overwrite: true,
   prune: true,
   asar: true,
-  // não entram no executável: mods originais (24 MB), ferramentas, saídas anteriores e documentação
-  ignore: [/^\/assets\/(?!models(?:\/|$)|anims(?:\/|$)|radio(?:\/|$)|world(?:\/|$)|catalog\.json$)/, /^\/dist($|\/)/, /^\/tools($|\/)/, /^\/\.claude($|\/)/, /^\/README\.md$/]
+  // não entram no executável: mods originais (24 MB), ferramentas, saídas anteriores, documentação e o editor de mapa (o mapa salvo, maps/world.json, entra)
+  ignore: [/^\/assets\/(?!models(?:\/|$)|anims(?:\/|$)|radio(?:\/|$)|world(?:\/|$)|catalog\.json$)/, /^\/dist($|\/)/, /^\/tools($|\/)/, /^\/\.claude($|\/)/, /^\/README\.md$/,
+    /^\/editor($|\/)/, /^\/editor\.html$/, /^\/vendor\/TransformControls\.js$/, /^\/maps\/\.backup($|\/)/]
 }).then(paths => console.log('Pronto:', paths.join('\n')))
   .catch(err => { console.error('Falha ao gerar o executável:', err); process.exit(1); });

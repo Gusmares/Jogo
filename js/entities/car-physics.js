@@ -13,6 +13,7 @@ function carGroundHeight(x,z){
     height=Math.max(height,slab?.3:.06);
   }
   if(Math.abs(x)<6&&z>HALF&&z<HALF+SWD-30)height=Math.max(height,.12);
+  if(typeof MAP_SURF!=='undefined'&&MAP_SURF.size)height=Math.max(height,mapGroundAt(x,z));   // rampas e pisos colocados no editor (placements.js)
   return height;
 }
 function sampleCarGround(x,z){

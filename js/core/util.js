@@ -64,3 +64,17 @@ const SWD=360;            // profundidade do pântano
 const WL=-0.05;           // nível da água
 const X0=-900,Z0=-760,CS=6,NX=667,NZ=286,W1=NX+1,X1=X0+NX*CS,Z1=Z0+NZ*CS;
 
+
+/* ============================ MAPA EDITÁVEL (NEON ENGINE) ============================
+   maps/world.json é o arquivo que o editor (editor.html / NEON ENGINE.exe) salva — o equivalente aos IDE/IPL do SA:
+   planta das cidades (tipo de cada quarteirão), marcos, objetos colocados, geradores de carro e o ponto de partida.
+   Lido de forma síncrona porque a cidade é montada enquanto os scripts carregam. Sem o arquivo, vale o mapa do código. */
+const MAPDATA=(()=>{
+  const q=typeof location!=='undefined'?new URLSearchParams(location.search):null,file=(q&&q.get('map'))||'maps/world.json';
+  if(!/^maps\/[\w\-\/]+\.json$/.test(file))return{};
+  try{const x=new XMLHttpRequest();x.open('GET',file+'?t='+Date.now(),false);x.send();if(x.status===200){const d=JSON.parse(x.responseText);d.__file=file;return d;}}
+  catch(e){console.warn('Mapa: não consegui ler '+file,e);}
+  return{};
+})();
+/* planta de uma cidade: a do arquivo do mapa (se válida, mesmo tamanho) ou a do código */
+function mapLayout(id,def){const L=MAPDATA.layouts&&MAPDATA.layouts[id];return Array.isArray(L)&&L.length===def.length&&L.every((r,k)=>typeof r==='string'&&r.length===def[k].length)?L:def;}

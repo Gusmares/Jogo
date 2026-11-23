@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEON ENGINE — editor de mapa</title>
+<link rel="stylesheet" href="editor/editor.css">
+</head>
+<body>
+<!-- NEON ENGINE: carrega o MESMO mundo do jogo (todos os scripts do index.html, menos o laço do jogo) e põe as ferramentas por cima. Código em editor/. -->
+<div id="edApp">
+  <header id="edTop">
+    <div class="ed-brand"><b>NEON</b> ENGINE <span id="edMapName">maps/world.json</span><i id="edDirty" title="Alterações não salvas"></i></div>
+    <div class="ed-group" role="toolbar" aria-label="Ferramentas">
+      <button data-tool="select" title="Selecionar (Q)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z"/></svg></button>
+      <button data-tool="translate" title="Mover (W)"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg></button>
+      <button data-tool="rotate" title="Girar (E)"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg></button>
+      <button data-tool="scale" title="Escala (R)"><svg viewBox="0 0 24 24"><path d="M4 20h7v-7H4zM13 11l7-7M15 4h5v5"/></svg></button>
+    </div>
+    <div class="ed-group">
+      <button id="edSnap" class="toggle" title="Encaixe na grade (X)">Grade <span id="edSnapVal">0,5 m · 15°</span></button>
+      <button id="edSpace" class="toggle" title="Eixos do mundo / do objeto (L)">Mundo</button>
+      <button id="edTopView" class="toggle" title="Vista de cima (T)">Vista de cima</button>
+    </div>
+    <div class="ed-group">
+      <button id="edUndo" title="Desfazer (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button id="edRedo" title="Refazer (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
+    </div>
+    <label class="ed-hour" title="Hora do dia (só no editor)">Hora <input id="edHour" type="range" min="0" max="24" step="0.25" value="13.5"><span id="edHourVal">13:30</span></label>
+    <div class="ed-spacer"></div>
+    <div class="ed-group">
+      <button id="edPlan">Planta da cidade</button>
+      <button id="edImport">Importar DFF</button>
+      <button id="edSave" title="Salvar (Ctrl+S)">Salvar</button>
+      <button id="edPlay" class="primary" title="Salvar e jogar a partir da câmera (F5)"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg> Testar</button>
+      <button id="edBuild" title="Gerar o NEON COAST.exe com este mapa">Gerar .exe</button>
+    </div>
+  </header>
+
+  <aside id="edLeft" class="ed-panel">
+    <div class="ed-tabs" role="tablist"><button data-lib="prefab" class="on">Objetos</button><button data-lib="model">Modelos</button><button data-lib="vehicle">Veículos</button></div>
+    <input id="edLibSearch" type="search" placeholder="Buscar…" aria-label="Buscar na biblioteca">
+    <div id="edLib"></div>
+    <p class="ed-hint">Clique num item e depois no mapa para colocar. <kbd>Shift</kbd> coloca vários; <kbd>R</kbd> gira; <kbd>Esc</kbd> cancela.</p>
+  </aside>
+
+  <main id="viewport"><div id="edToast"></div><div id="edCross"></div></main>
+
+  <aside id="edRight" class="ed-panel">
+    <section class="ed-sec">
+      <h3>Cena <span id="edCount"></span></h3>
+      <input id="edOutSearch" type="search" placeholder="Filtrar…" aria-label="Filtrar objetos da cena">
+      <div id="edOutliner"></div>
+    </section>
+    <section class="ed-sec grow">
+      <h3>Propriedades</h3>
+      <div id="edInspector"><p class="ed-empty">Nada selecionado.</p></div>
+    </section>
+  </aside>
+
+  <footer id="edStatus"><span id="edStCursor">—</span><span id="edStZone"></span><span id="edStCam"></span><span class="ed-spacer"></span><span id="edStHelp">Botão direito + WASD voa · Q/E desce/sobe · Shift rápido · roda = velocidade · F foca</span><span id="edStFps"></span></footer>
+</div>
+
+<div id="edModal" hidden><div class="ed-modal-box"><header><h2 id="edModalTitle"></h2><button id="edModalClose" aria-label="Fechar">×</button></header><div id="edModalBody"></div></div></div>
+
+<div id="edBoot"><div><b>NEON</b> ENGINE<p id="edBootMsg">Carregando o mundo…</p><div class="bar"><i id="edBootBar"></i></div><pre id="edBootErr"></pre></div></div>
+
+<div id="gameDom" hidden></div>
+<script src="editor/boot.js"></script>
+</body>
+</html>

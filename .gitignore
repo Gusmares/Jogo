@@ -11,3 +11,7 @@ assets/*
 !assets/radio/
 assets/radio/*
 !assets/radio/stations.json
+
+# NEON ENGINE: cópias automáticas do mapa a cada "Salvar" e o caminho do projeto gravado no executável do editor
+maps/.backup/
+editor/app/project.json

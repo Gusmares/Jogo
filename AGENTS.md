@@ -18,7 +18,8 @@ Dois agentes trabalham neste repositório ao mesmo tempo. **Cada um só mexe na 
 ## ChatGPT NÃO PODE mexer
 - Física/veículos: `js/entities/car-physics-core.js`, `car-physics.js`, `vehicles.js`, `vehicle-models.js`, `damage.js`, `traffic-assets.js`, `police.js`, `emergency.js`, `npcs.js`, `pedestrians.js`, `occupants.js`, `anim.js`, `skins.js`, `player-model.js`, `models.js`, `gator.js`.
 - Laço do jogo e controles: `js/main.js`, `js/gameplay/update.js`, `vehicle-anim.js`, `weapons.js`, `mission.js`, `health.js`, `js/core/*` (camera, input, engine, util, post).
-- Mapa: tudo em `js/world/`.
+- Mapa: tudo em `js/world/` (inclusive `placements.js`, que monta os objetos do editor no jogo).
+- Editor de mapa (NEON ENGINE): `editor.html`, `editor/` (inclusive `editor/editor.css`), `vendor/TransformControls.js`. O mapa salvo, `maps/world.json`, é conteúdo do dono do projeto: só muda pelo editor.
 - Ferramentas e dados: `tools/`, `assets/` (modelos, catálogo, animações), `electron/`, `package.json`.
 
 ## Contratos que a interface tem que manter
@@ -28,6 +29,8 @@ O código do jogo usa estes IDs de elementos — **não renomeie nem remova** (p
 `selectionWheel`, `wheelCounter`, `wheelCursor`, `wheelDetail`, `wheelEyebrow`, `wheelGenre`, `wheelInstruction`, `wheelItems`, `wheelName`, `wheelSegments`, `wheelTitle`.
 
 Funções globais chamadas pelo resto do jogo — mantenha nome e parâmetros: `startGame`, `toast`, `zoneName`, `drawMinimap`, `policeHud`, `updateRadio`, `radioReady`.
+
+O editor de mapa (`editor.html`) carrega o `index.html` inteiro: copia a marcação do `<body>` (escondida) e roda todos os `<script>` na ordem, menos `js/main.js`. Por isso os scripts de UI **não podem depender de rodar dentro do laço do jogo para não quebrar no carregamento**, e o canvas do jogo tem que continuar sendo `<canvas id="c">`. Quando o editor estiver aberto, `window.NEON_EDITOR === true`.
 
 ## Regras gerais
 - Nada de framework, `import`/`export`, TypeScript ou empacotador: scripts clássicos carregados em ordem pelo `index.html`.

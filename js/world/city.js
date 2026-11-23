@@ -23,7 +23,11 @@ const cityFlat = new CellMesher(), cityMarks = new CellMesher(), citySigns = new
 const LAYOUT = ['IIRRRMMR', 'IMRRMMTR', 'RMMTTMMR', 'RMTTZTMP', 'PMTTTTMR', 'RMMTTMCR', 'RRMMMMSR', 'IIRRRPRR'];
 /* Rio (10 x 6): zona norte residencial perto dos morros, Centro com torres, Maracanã, aterro/parque e a orla com prédios de frente para o mar (A) */
 const LAYOUT_RJ = ['RRMRRMRRIR', 'RMMTTMRRZR', 'MTTTZMMSMR', 'PMTTMCMRMP', 'RMMZMRMMRR', 'AAAAAAAAAA'];
-const LAYOUTS = { sp: LAYOUT_SP, rj: LAYOUT_RJ };            // SP: mapa de bairros e marcos em sp.js
+const LAYOUTS = { sp: mapLayout('sp', LAYOUT_SP), rj: mapLayout('rj', LAYOUT_RJ) };   // SP: mapa de bairros e marcos em sp.js; o editor pode trocar a planta (maps/world.json)
+if (MAPDATA.landmarks && MAPDATA.landmarks.sp && typeof MAPDATA.landmarks.sp === 'object') {   // marcos de SP escolhidos no editor (célula "i,j" -> marco)
+  for (const k of Object.keys(SP_LM)) delete SP_LM[k];
+  for (const [k, v] of Object.entries(MAPDATA.landmarks.sp)) if (SP_BUILD[v] && /^\d+,\d+$/.test(k)) SP_LM[k] = v;
+}
 const TINTS_G = [0xbfd7e6, 0x9fc4d4, 0xa9b9c9, 0x8fb0c0, 0xc9d6dc, 0x9cb7a9], TINTS_C = [0xe9e4da, 0xd8d2c4, 0xcfd4d8, 0xe0d6c8, 0xc9c3b5, 0xd9cdbd], TINTS_B = [0xffffff, 0xf2e2d6, 0xe9cfc0, 0xf5e9dc], TINTS_H = [0xf3e3c6, 0xe8d3d0, 0xd6e4d0, 0xd0dce8, 0xeadfb8, 0xf0efe8, 0xe4c9a8];
 const pk2 = arr => arr[Math.floor(rnd() * arr.length)];
 const collide = (x, z, w, d, h) => addCollider({ x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2, h });

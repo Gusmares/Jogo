@@ -16,7 +16,10 @@
     "assets:interface": "node tools/prepare-interface-assets.js",
     "test:physics": "node tools/test-car-physics.js",
     "test:physics-world": "electron . --physics-selftest",
-    "mods": "node tools/mods-inventory.js --organizar"
+    "mods": "node tools/mods-inventory.js --organizar",
+    "editor": "electron editor/app",
+    "build:editor": "node tools/build-editor.js",
+    "test:editor": "electron editor/app --selftest"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
