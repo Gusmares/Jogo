@@ -30,8 +30,10 @@
     <label class="ed-hour" title="Hora do dia (só no editor)">Hora <input id="edHour" type="range" min="0" max="24" step="0.25" value="13.5"><span id="edHourVal">13:30</span></label>
     <div class="ed-spacer"></div>
     <div class="ed-group">
+      <button id="edTerrain" class="toggle" title="Esculpir o terreno (B)"><svg viewBox="0 0 24 24"><path d="M2 20l6-9 4 5 3-4 7 8z"/></svg> Terreno</button>
       <button id="edPlan">Planta da cidade</button>
-      <button id="edImport">Importar DFF</button>
+      <button id="edImport" title="Trazer modelos 3D: FBX, GLB/glTF, OBJ, DAE, STL, PLY, 3DS ou DFF do GTA SA">Importar</button>
+      <button id="edExport" title="Exportar seleção, objetos ou uma região do mapa em GLB/OBJ">Exportar</button>
       <button id="edSave" title="Salvar (Ctrl+S)">Salvar</button>
       <button id="edPlay" class="primary" title="Salvar e jogar a partir da câmera (F5)"><svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg> Testar</button>
       <button id="edBuild" title="Gerar o NEON COAST.exe com este mapa">Gerar .exe</button>

@@ -138,6 +138,12 @@ function walkFor(cid, type, lj) {
   if (cid === 'sp') { if (lj === 4 || lj === 5 || (lj >= 6 && type === 'T') || type === 'S' || type === 'C') return WALK.intertravado; return type === 'R' || type === 'I' ? WALK.concreto : WALK.portuguesa; }
   return type === 'R' || type === 'I' ? WALK.concreto : WALK.intertravado;              // o mapa do estado na pedra portuguesa é coisa de SP
 }
+/* cada prédio/área gerada vira uma entidade editável no NEON ENGINE (collision.js: WENT) */
+towerBlock = entityFn('torres', 'Torres comerciais', towerBlock); midrise = entityFn('predio', 'Prédio', midrise); apartment = entityFn('residencial', 'Prédio residencial', apartment);
+houseLot = entityFn('casa', 'Casa', houseLot); warehouse = entityFn('galpao', 'Galpão', warehouse); industrialBlock = entityFn('industrial', 'Área industrial', industrialBlock);
+plazaBlock = entityFn('praca', 'Praça', plazaBlock); stadiumBlock = entityFn('estadio', 'Estádio', stadiumBlock); mallBlock = entityFn('shopping', 'Shopping', mallBlock);
+parkBlock = entityFn('parque', 'Parque', parkBlock); beachBlock = entityFn('orla', 'Prédios da orla', beachBlock);
+for (const k of Object.keys(SP_BUILD)) SP_BUILD[k] = entityFn('marco-' + k, 'Marco: ' + k, SP_BUILD[k]);
 let spMuralBlock = false;
 /* ---- monta a cidade ---- */
 for (const C of CITIES) for (let j = C.j0; j < C.j0 + C.nj; j++) for (let i = C.i0; i < C.i0 + C.ni; i++) {

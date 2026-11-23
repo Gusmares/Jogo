@@ -9,6 +9,6 @@
   "map": "maps/world.json",
   "build": {
     "name": "NEON COAST",
-    "include": ["index.html", "package.json", "neon.project.json", "css", "js", "vendor", "electron", "maps", "assets/models", "assets/anims", "assets/radio", "assets/world", "assets/catalog.json"]
+    "include": ["index.html", "package.json", "neon.project.json", "css", "js", "vendor", "electron", "maps", "assets/models", "assets/objects", "assets/anims", "assets/radio", "assets/world", "assets/catalog.json"]
   }
 }

@@ -18,7 +18,9 @@ window.NEON_EDITOR = true;
     doc.querySelectorAll('script').forEach(s => s.remove());
     const host = document.getElementById('gameDom'); host.innerHTML = doc.body.innerHTML;
     const cv = host.querySelector('#c'); document.getElementById('viewport').prepend(cv);
-    const own = ['/__ed/vendor/TransformControls.js', '/__ed/engine.js', '/__ed/ui.js'];
+    const V = n => '/__ed/vendor/' + n + '.js';
+    const own = [V('TransformControls'), V('fflate.min'), V('GLTFLoader'), V('FBXLoader'), V('OBJLoader'), V('MTLLoader'), V('ColladaLoader'), V('STLLoader'), V('PLYLoader'), V('TDSLoader'), V('TGALoader'), V('DDSLoader'), V('GLTFExporter'), V('OBJExporter'),
+      '/__ed/engine.js', '/__ed/terrain-tool.js', '/__ed/ui.js', '/__ed/io3d.js'];
     const all = game.concat(own); let done = 0;
     await new Promise(resolve => {
       for (const src of all) {

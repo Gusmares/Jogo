@@ -18,13 +18,17 @@ const r2 = v => Math.round(v * 100) / 100;
 function edNormalize(m) {
   m = m && typeof m === 'object' ? m : {}; delete m.__file;
   m.format = 'neon-map'; m.version = 1; if (!Array.isArray(m.objects)) m.objects = []; if (!Array.isArray(m.vehicles)) m.vehicles = [];
+  if (!m.world || typeof m.world !== 'object' || Array.isArray(m.world)) m.world = {};
+  delete m.terrain;                                               // o relevo fica em TT.delta (terrain-tool.js) e volta para o arquivo ao salvar
   return m;
 }
 function edNewId(prefix) { const used = new Set([...ED.map.objects, ...ED.map.vehicles].map(o => o.id)); let n = used.size + 1, id; do id = prefix + (n++).toString(36); while (used.has(id)); return id; }
 const edAll = () => ED.map.objects.concat(ED.map.vehicles);
-const edDef = id => id === 'spawn' ? ED.map.spawn : edAll().find(o => o.id === id) || null;
-const edKind = id => id === 'spawn' ? 'spawn' : ED.map.vehicles.some(v => v.id === id) ? 'vehicle' : 'object';
-function edLabel(def) {
+const isW = id => typeof id === 'string' && id.startsWith('w:'), wEnt = id => isW(id) ? WENT.byId.get(id.slice(2)) : null;
+const edDef = id => id === 'spawn' ? ED.map.spawn : isW(id) ? (ED.map.world[id.slice(2)] || {}) : edAll().find(o => o.id === id) || null;
+const edKind = id => id === 'spawn' ? 'spawn' : isW(id) ? 'world' : ED.map.vehicles.some(v => v.id === id) ? 'vehicle' : 'object';
+function edLabel(def, id) {
+  if (id && isW(id)) { const e = wEnt(id); return e ? e.name : id; }
   if (!def) return '';
   if (def === ED.map.spawn) return 'Ponto de partida';
   if (def.name) return def.name;
@@ -34,10 +38,11 @@ function edLabel(def) {
 }
 /* JSON legível e bom para o git: um objeto por linha */
 function edStringify(m) {
-  const head = {}; for (const [k, v] of Object.entries(m)) if (k !== 'objects' && k !== 'vehicles') head[k] = v;
+  const head = {}; for (const [k, v] of Object.entries(m)) if (k !== 'objects' && k !== 'vehicles' && k !== 'world' && k !== 'terrain') head[k] = v;
   const body = JSON.stringify(head, null, 2).replace(/\[\s+([-\d.,\s]+?)\s+\]/g, (m, a) => '[' + a.trim().split(/,\s*/).join(', ') + ']').replace(/\n}$/, '');
   const arr = (k) => '  "' + k + '": [' + (m[k].length ? '\n' + m[k].map(o => '    ' + JSON.stringify(o)).join(',\n') + '\n  ' : '') + ']';
-  return body + (Object.keys(head).length ? ',\n' : '\n') + arr('objects') + ',\n' + arr('vehicles') + '\n}\n';
+  const obj = (k) => { const e = Object.entries(m[k] || {}); return '  "' + k + '": {' + (e.length ? '\n' + e.map(([i, v]) => '    ' + JSON.stringify(i) + ': ' + JSON.stringify(v)).join(',\n') + '\n  ' : '') + '}'; };
+  return body + (Object.keys(head).length ? ',\n' : '\n') + arr('objects') + ',\n' + arr('vehicles') + ',\n' + obj('world') + (m.terrain ? ',\n  "terrain": ' + JSON.stringify(m.terrain) : '') + '\n}\n';
 }
 function setDirty(v) { ED.dirty = v; document.getElementById('edDirty').classList.toggle('on', v); document.title = (v ? '● ' : '') + 'NEON ENGINE — ' + ED.file; }
 window.__engineDirty = () => ED.dirty;
@@ -47,8 +52,8 @@ const edSnap = () => JSON.stringify(ED.map);
 function edBegin() { if (ED.pending === null) ED.pending = edSnap(); }
 function edCommit() { if (ED.pending === null) return; const now = edSnap(); if (now !== ED.pending) { ED.undo.push(ED.pending); if (ED.undo.length > 300) ED.undo.shift(); ED.redo.length = 0; setDirty(true); } ED.pending = null; edEmit('history'); }
 function edChange(fn) { edBegin(); fn(); edCommit(); }
-function edUndo() { if (!ED.undo.length) return; ED.redo.push(edSnap()); ED.map = JSON.parse(ED.undo.pop()); setDirty(true); edReconcile(); edToast('Desfeito'); }
-function edRedo() { if (!ED.redo.length) return; ED.undo.push(edSnap()); ED.map = JSON.parse(ED.redo.pop()); setDirty(true); edReconcile(); edToast('Refeito'); }
+function edUndo() { if (!ED.undo.length) return; const u = ED.undo.pop(); if (u.terrain) { ttUndoEntry(u.terrain, true); ED.redo.push(u); } else { ED.redo.push(edSnap()); ED.map = JSON.parse(u); edReconcile(); } setDirty(true); edEmit('history'); edToast('Desfeito'); }
+function edRedo() { if (!ED.redo.length) return; const u = ED.redo.pop(); if (u.terrain) { ttUndoEntry(u.terrain, false); ED.undo.push(u); } else { ED.undo.push(edSnap()); ED.map = JSON.parse(u); edReconcile(); } setDirty(true); edEmit('history'); edToast('Refeito'); }
 
 /* ---------------- cena: monta/atualiza o que está no mapa ---------------- */
 const edVehMat = new THREE.MeshBasicMaterial({ color: 0x40c4ff, wireframe: true });
@@ -93,7 +98,8 @@ function edReconcile() {
     if (edShape(JSON.parse(root.userData.json), kind) !== edShape(def, kind)) { const keep = ED.sel === id; edDispose(root); ED.roots.delete(id); edPlaceRoot(id, def, kind); if (keep) edAttach(); }
     else { root.userData.def = def; root.userData.json = js; edApply(root, def, kind); }
   }
-  if (ED.sel && !ED.roots.has(ED.sel)) ED.sel = null;
+  edWorldSync();
+  if (ED.sel && !ED.roots.has(ED.sel) && !wEnt(ED.sel)) ED.sel = null;
   edAttach(); edEmit('scene'); edEmit('select');
 }
 /* algo mudou nos dados de um objeto (painel de propriedades) */
@@ -119,8 +125,8 @@ function edLookAtPoint(x, y, z, dist) {
   fly.x = x - dir.x * dist; fly.y = y - dir.y * dist; fly.z = z - dir.z * dist; edCamApply();
 }
 function edFocus() {
-  const r = ED.sel && ED.roots.get(ED.sel); if (!r) return;
-  const bb = new THREE.Box3().setFromObject(r), c = bb.getCenter(new THREE.Vector3()), s = bb.getSize(new THREE.Vector3()).length();
+  const we = wEnt(ED.sel), r = !we && ED.sel && ED.roots.get(ED.sel); if (!r && !we) return;
+  const bb = we ? entBox(we, ED.map.world[we.id]) : new THREE.Box3().setFromObject(r), c = bb.getCenter(new THREE.Vector3()), s = bb.getSize(new THREE.Vector3()).length();
   edLookAtPoint(c.x, c.y, c.z, Math.max(6, s * 1.4));
 }
 function edSetTop(on) {
@@ -151,9 +157,10 @@ function edHitPoint(ray, skip) {
 }
 function edPick(e) {
   const ray = edMouseRay(e); edRay.ray.copy(ray);
-  const hits = edRay.intersectObjects([...ED.roots.values()], true);
-  for (const h of hits) { let o = h.object; while (o && !o.userData.edId) o = o.parent; if (o && o.visible) return o.userData.edId; }
-  return null;
+  const hits = edRay.intersectObjects([...ED.roots.values()], true); let best = null;
+  for (const h of hits) { let o = h.object; while (o && !o.userData.edId) o = o.parent; if (o && o.visible) { best = { id: o.userData.edId, d: h.distance }; break; } }
+  const w = edPickWorld(ray); if (w && (!best || w.d < best.d)) best = w;
+  return best ? best.id : null;
 }
 /* chão logo abaixo de um ponto (relevo, calçada ou topo de outro objeto) */
 function edGroundBelow(x, y, z, skip) {
@@ -167,10 +174,12 @@ function edGroundBelow(x, y, z, skip) {
 /* ---------------- seleção e gizmo ---------------- */
 const tc = new THREE.TransformControls(camera, renderer.domElement); tc.setSize(0.9); scene.add(tc);
 const selBox = new THREE.BoxHelper(undefined, 0xffc400); selBox.visible = false; selBox.material.depthTest = false; selBox.renderOrder = 999; scene.add(selBox);
-function edSelect(id) { ED.sel = id && ED.roots.has(id) ? id : null; edAttach(); edEmit('select'); }
+function edSelect(id) { ED.sel = id && (ED.roots.has(id) || wEnt(id)) ? id : null; edAttach(); edEmit('select'); }
 function edAttach() {
+  if (wEnt(ED.sel)) return edAttachWorld();
+  selWBox.visible = false;
   const r = ED.sel && ED.roots.get(ED.sel);
-  if (!r || ED.tool === 'select' || ED.placing) { tc.detach(); } else {
+  if (!r || ED.tool === 'select' || ED.placing || TT.on) { tc.detach(); } else {
     const kind = r.userData.kind, mode = kind !== 'object' && ED.tool === 'scale' ? 'translate' : ED.tool;
     tc.attach(r); tc.setMode(mode); tc.setSpace(kind !== 'object' ? 'local' : ED.space);
     tc.showX = tc.showZ = !(mode === 'rotate' && kind !== 'object'); tc.showY = true;
@@ -181,13 +190,72 @@ function edAttach() {
 function edSetTool(t) { ED.tool = t; document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t)); edAttach(); }
 tc.addEventListener('dragging-changed', e => { if (e.value) edBegin(); else { edCommit(); edEmit('select'); } });
 tc.addEventListener('objectChange', () => {                     // gizmo mexeu: grava de volta nos dados (graus, 2 casas)
-  const r = tc.object; if (!r) return; const def = r.userData.def, kind = r.userData.kind;
+  const r = tc.object; if (!r) return; if (r === edWProxy) return edWorldFromProxy();
+  const def = r.userData.def, kind = r.userData.kind;
   def.pos = [r2(r.position.x), r2(r.position.y), r2(r.position.z)];
   if (kind === 'object') { const e = new THREE.Euler().setFromQuaternion(r.quaternion, 'YXZ'); def.rot = [r2(e.x / DEG), r2(e.y / DEG), r2(e.z / DEG)]; def.scale = [r2(r.scale.x), r2(r.scale.y), r2(r.scale.z)];
     if (def.rot.every(v => v === 0)) delete def.rot; if (def.scale.every(v => v === 1)) delete def.scale; }
   else { const e = new THREE.Euler().setFromQuaternion(r.quaternion, 'YXZ'); def.h = r2(((e.y / DEG) % 360 + 360) % 360); }
   r.userData.json = JSON.stringify(def); edEmit('transform');
 });
+
+/* ---------------- cidade original: prédios/marcos gerados pelo código (entidades WENT, placements.js) ---------------- */
+ED.wApplied = new Map(); ED.wIndex = new Map();
+const edWProxy = new THREE.Object3D(); edWProxy.name = 'entidade'; scene.add(edWProxy);
+const selWBox = new THREE.Box3Helper(new THREE.Box3(), 0xffc400); selWBox.visible = false; selWBox.material.depthTest = false; selWBox.renderOrder = 999; scene.add(selWBox);
+/* índice malha -> trechos de vértices de cada entidade (para achar o prédio clicado) */
+function edWorldIndex() {
+  ED.wIndex.clear();
+  const add = (mesh, s0, s1, e) => { if (!mesh) return; let l = ED.wIndex.get(mesh); if (!l) ED.wIndex.set(mesh, l = []); l.push([s0, s1, e]); };
+  for (const e of WENT.list) { for (const s of e.segs) add(s.m.__mesh, s.start, s.end, e); for (const s of e.gsegs) add(s.mesh, s.start, s.end, e); }
+  for (const l of ED.wIndex.values()) l.sort((a, b) => a[0] - b[0]);
+}
+function edPickWorld(ray) {
+  if (!ED.wIndex.size) return null;
+  edRay.ray.copy(ray);
+  const meshes = [...ED.wIndex.keys()].filter(m => m.visible), hits = edRay.intersectObjects(meshes, false);
+  let best = null;
+  for (const h of hits) {
+    if (!h.face) continue; const l = ED.wIndex.get(h.object), v = h.face.a; let lo = 0, hi = l.length - 1, found = null;
+    while (lo <= hi) { const mid = (lo + hi) >> 1, s = l[mid]; if (v < s[0]) hi = mid - 1; else if (v >= s[1]) lo = mid + 1; else { found = s[2]; break; } }
+    if (!found) break;                                                // bateu em chão/rua/calçada antes de um prédio
+    const ov = ED.map.world[found.id]; if (ov && ov.del) continue;
+    best = { id: 'w:' + found.id, d: h.distance }; break;
+  }
+  // objetos soltos das entidades (ex.: Cristo)
+  const objs = []; for (const e of WENT.list) for (const o of e.objs) if (o.visible) objs.push([o, e]);
+  if (objs.length) { const oh = edRay.intersectObjects(objs.map(x => x[0]), true)[0];
+    if (oh && (!best || oh.distance < best.d)) { let o = oh.object; while (o && !objs.some(x => x[0] === o)) o = o.parent; const p = objs.find(x => x[0] === o); if (p) best = { id: 'w:' + p[1].id, d: oh.distance }; } }
+  return best;
+}
+/* aplica no mundo o que mudou em ED.map.world (desfazer/refazer também passa por aqui) */
+function edWorldSync() {
+  const W = ED.map.world || {}, ids = new Set([...Object.keys(W), ...ED.wApplied.keys()]);
+  for (const id of ids) {
+    const e = WENT.byId.get(id); if (!e) continue;
+    const ov = W[id] && Object.keys(W[id]).length ? W[id] : null, js = ov ? JSON.stringify(ov) : null;
+    if ((ED.wApplied.get(id) || null) === js) continue;
+    entApply(e, ov); if (js) ED.wApplied.set(id, js); else ED.wApplied.delete(id);
+  }
+}
+function edAttachWorld() {
+  const e = wEnt(ED.sel), ov = ED.map.world[e.id] || {}, d = ov.d || [0, 0, 0]; entInit(e);
+  edWProxy.position.set(e.pivot.x + d[0], e.pivot.y + d[1], e.pivot.z + d[2]); edWProxy.rotation.set(0, (ov.r || 0) * DEG, 0); edWProxy.scale.setScalar(ov.s || 1); edWProxy.updateMatrixWorld(true);
+  selBox.visible = false; selWBox.box.copy(entBox(e, ov)); selWBox.visible = !ov.del;
+  if (ov.del || ED.tool === 'select' || ED.placing) { tc.detach(); return; }
+  tc.attach(edWProxy); tc.setMode(ED.tool); tc.setSpace('local');
+  tc.showX = tc.showZ = ED.tool !== 'rotate'; tc.showY = true;
+  tc.setTranslationSnap(ED.snap ? ED.snapMove : null); tc.setRotationSnap(ED.snap ? ED.snapRot * DEG : null); tc.setScaleSnap(ED.snap ? 0.05 : null);
+}
+function edWorldFromProxy() {
+  const e = wEnt(ED.sel); if (!e) return; const p = edWProxy, ov = {};
+  const d = [r2(p.position.x - e.pivot.x), r2(p.position.y - e.pivot.y), r2(p.position.z - e.pivot.z)], r = r2(new THREE.Euler().setFromQuaternion(p.quaternion, 'YXZ').y / DEG);
+  const s = r2(ED.tool === 'scale' ? (p.scale.x + p.scale.y + p.scale.z) / 3 : p.scale.x); p.scale.setScalar(s);
+  if (d.some(v => v !== 0)) ov.d = d; if (r) ov.r = r; if (s !== 1) ov.s = s;
+  if (Object.keys(ov).length) ED.map.world[e.id] = ov; else delete ED.map.world[e.id];
+  edWorldSync(); selWBox.box.copy(entBox(e, ov)); edEmit('transform');
+}
+function edWorldRestore(id) { edChange(() => { delete ED.map.world[id]; }); edReconcile(); }
 
 /* ---------------- colocar objetos da biblioteca ---------------- */
 function edStartPlacing(tpl) {
@@ -219,12 +287,15 @@ function edRotatePlacing(deg) { if (ED.placing) { ED.placing.yaw = ((ED.placing.
 
 /* ---------------- ações ---------------- */
 function edDelete() {
-  const id = ED.sel; if (!id) return; if (id === 'spawn') { edChange(() => { delete ED.map.spawn; }); }
+  const id = ED.sel; if (!id) return;
+  if (isW(id)) { edChange(() => { ED.map.world[id.slice(2)] = { del: 1 }; }); ED.sel = null; edReconcile(); edToast('Apagado do mapa original (dá para restaurar na lista da cena)'); return; }
+  if (id === 'spawn') { edChange(() => { delete ED.map.spawn; }); }
   else edChange(() => { ED.map.objects = ED.map.objects.filter(o => o.id !== id); ED.map.vehicles = ED.map.vehicles.filter(o => o.id !== id); });
   ED.sel = null; edReconcile(); edToast('Apagado');
 }
 function edDuplicate() {
-  const id = ED.sel, def = id && id !== 'spawn' && edDef(id); if (!def) return;
+  const id = ED.sel; if (isW(id)) { edToast('Prédios do mapa original ainda não duplicam: use um objeto da biblioteca.'); return; }
+  const def = id && id !== 'spawn' && edDef(id); if (!def) return;
   const copy = JSON.parse(JSON.stringify(def)), kind = edKind(id); copy.id = edNewId(kind === 'vehicle' ? 'v' : 'o');
   const r = ED.roots.get(id), bb = new THREE.Box3().setFromObject(r), w = Math.max(1, bb.max.x - bb.min.x);
   copy.pos = [r2(copy.pos[0] + w + (ED.snap ? ED.snapMove : 0.5)), copy.pos[1], copy.pos[2]];
@@ -232,7 +303,9 @@ function edDuplicate() {
 }
 /* G: assenta no chão (relevo, calçada ou objeto embaixo) */
 function edDrop() {
-  const id = ED.sel, r = id && ED.roots.get(id), def = id && edDef(id); if (!r || !def) return;
+  const id = ED.sel;
+  if (isW(id)) { const e = wEnt(id), ov = Object.assign({}, ED.map.world[e.id] || {}), b = entBox(e, ov), c = b.getCenter(new THREE.Vector3()), g = edGroundBelow(c.x, b.max.y + 0.5, c.z, null), d = (ov.d || [0, 0, 0]).slice(); d[1] = r2(d[1] + g - b.min.y); ov.d = d; edChange(() => { ED.map.world[e.id] = ov; }); edReconcile(); return; }
+  const r = id && ED.roots.get(id), def = id && edDef(id); if (!r || !def) return;
   r.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(r), c = bb.getCenter(new THREE.Vector3());
   const g = edGroundBelow(c.x, bb.max.y + 0.5, c.z, r), off = r.userData.kind === 'object' ? (r.position.y - bb.min.y) : 0;
   edChange(() => { def.pos = [def.pos[0], r2(g + off), def.pos[2]]; }); edReconcile();
@@ -249,7 +322,8 @@ async function edApi(route, data) {
   const j = await r.json().catch(() => ({ ok: false, error: 'resposta inválida (' + r.status + ')' })); if (!j.ok) throw new Error(j.error || 'falhou'); return j;
 }
 async function edSave() {
-  const text = edStringify(ED.map);
+  const m = Object.assign({}, ED.map), t = typeof ttEncode === 'function' ? ttEncode() : null; if (t) m.terrain = t;
+  const text = edStringify(m);
   if (!ED.api) {            // sem servidor do editor: baixa o arquivo
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = ED.file.split('/').pop(); a.click();
     edToast('Sem o servidor do editor: arquivo baixado. Coloque-o em ' + ED.file, 5000); return false;
@@ -292,7 +366,7 @@ function edKeyDown(e) {
   if (c && e.code === 'KeyY') { e.preventDefault(); edRedo(); return; }
   if (c && e.code === 'KeyD') { e.preventDefault(); edDuplicate(); return; }
   if (e.code === 'F5') { e.preventDefault(); edPlay(); return; }
-  if (e.code === 'Escape') { if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
+  if (e.code === 'Escape') { if (TT.on) ttSetOn(false); else if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
   if (e.code === 'Delete' || e.code === 'Backspace') { e.preventDefault(); edDelete(); return; }
   if (fly.rmb || c) return;                                          // voando: WASD/QE são da câmera
   if (ED.placing && e.code === 'KeyR') { edRotatePlacing(e.shiftKey ? -15 : 15); edMovePlacing(edLastMouse); return; }
@@ -301,6 +375,8 @@ function edKeyDown(e) {
   if (e.code === 'KeyF') edFocus();
   if (e.code === 'KeyG') edDrop();
   if (e.code === 'KeyT') edSetTop(!ED.top);
+  if (e.code === 'KeyB') ttSetOn(!TT.on);
+  if (TT.on && (e.code === 'BracketLeft' || e.code === 'BracketRight')) { TT.radius = Math.max(4, Math.min(240, TT.radius * (e.code === 'BracketRight' ? 1.2 : 1 / 1.2))); ttRing(); edEmit('terrain'); }
   if (e.code === 'KeyX') edSetSnap(!ED.snap);
   if (e.code === 'KeyL') edSetSpace(ED.space === 'world' ? 'local' : 'world');
 }
@@ -317,6 +393,7 @@ function edInstallInput() {
     cv.focus(); fly.lx = e.clientX; fly.ly = e.clientY; fly.moved = 0;
     if (e.button === 2) { fly.rmb = true; cv.setPointerCapture(e.pointerId); if (ED.placing) { /* botão direito também cancela a colocação se não arrastar */ } }
     if (e.button === 1) { fly.mmb = true; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
+    if (e.button === 0 && TT.on) { cv.setPointerCapture(e.pointerId); ttStrokeBegin(e); }
   });
   cv.addEventListener('pointermove', e => {
     edLastMouse = { clientX: e.clientX, clientY: e.clientY };
@@ -324,12 +401,14 @@ function edInstallInput() {
     if (fly.rmb && !ED.top) { fly.yaw -= dx * 0.0042; fly.pitch = Math.max(-1.55, Math.min(1.55, fly.pitch - dy * 0.0042)); edCamApply(); }
     else if (fly.rmb && ED.top || fly.mmb) { const k = Math.max(0.05, (fly.y - carGroundHeight(fly.x, fly.z)) * 0.0016); const c = Math.cos(fly.yaw), s = Math.sin(fly.yaw);
       fly.x -= (dx * c + dy * s) * k; fly.z -= (-dx * s + dy * c) * k; edCamApply(); }
-    if (ED.placing) edMovePlacing(e);
+    if (TT.on) { if (!fly.rmb && !fly.mmb) ttMove(e); }
+    else if (ED.placing) edMovePlacing(e);
     else if (!fly.rmb && !fly.mmb) { const t = edGroundT(edMouseRay(e)); if (t !== null) edEmit('cursor', edRay.ray.at(t, new THREE.Vector3())); }
   });
   cv.addEventListener('pointerup', e => {
     if (e.button === 2) { fly.rmb = false; if (ED.placing && fly.moved < 4) edCancelPlacing(); }
     if (e.button === 1) fly.mmb = false;
+    if (e.button === 0 && TT.on) { ttStrokeEnd(); return; }
     if (e.button === 0 && fly.moved < 5 && !tc.dragging) {
       if (ED.placing) edCommitPlacing(e.shiftKey);
       else if (!tc.axis) edSelect(edPick(e));
@@ -354,6 +433,7 @@ function edFrame(now) {
   requestAnimationFrame(edFrame);
   const dt = Math.min(0.05, (now - edLast) / 1000); if (typeof adaptResolution === 'function') adaptResolution(now - edLast); edLast = now;
   edFlyUpdate(dt);
+  if (TT.stroke) ttApply(dt);
   windU.value = now / 1000;
   const look = new THREE.Vector3(); camera.getWorldDirection(look); const t = ED.top ? fly.y - carGroundHeight(fly.x, fly.z) : 60;
   camTarget.set(fly.x + look.x * t, 0, fly.z + look.z * t);
@@ -380,7 +460,7 @@ async function edStart() {
   else { const s = ED.map.spawn && ED.map.spawn.pos, x = s ? s[0] : blockC(4), z = s ? s[2] : blockC(4); fly.x = x; fly.z = z + 70; fly.y = carGroundHeight(x, z) + 55; fly.yaw = 0; fly.pitch = -0.62; }
   addEventListener('beforeunload', () => { try { sessionStorage.setItem('neonEngineCam', JSON.stringify({ x: fly.x, y: fly.y, z: fly.z, yaw: fly.yaw, pitch: fly.pitch, speed: fly.speed })); } catch (e) { /* ignora */ } });
   hour = 13.5; updateSky(0); edCamApply();
-  edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
+  edWorldIndex(); ttInit(); edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
   await edLoadModels();
   if (typeof edUiStart === 'function') edUiStart();
   requestAnimationFrame(edFrame);

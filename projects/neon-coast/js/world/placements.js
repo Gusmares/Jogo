@@ -111,8 +111,26 @@ function mapParams(def) {
   return Object.assign(out, def.p || {});
 }
 /* monta UMA instância (grupo na posição/rotação/escala do arquivo). Modelos chegam depois (carregam em segundo plano). */
+/* modelos 3D importados (FBX/OBJ/DAE/… convertidos para GLB pelo editor): assets/objects/<id>/model.glb */
+const MAP_GLB = new Map();
+function mapNeedGLTF() {
+  if (THREE.GLTFLoader) return Promise.resolve();
+  if (!mapNeedGLTF.p) mapNeedGLTF.p = new Promise((ok, fail) => { const s = document.createElement('script'); s.src = 'vendor/GLTFLoader.js'; s.onload = ok; s.onerror = () => fail(new Error('vendor/GLTFLoader.js')); document.head.appendChild(s); });
+  return mapNeedGLTF.p;
+}
+function mapLoadGLB(id) {
+  if (!MAP_GLB.has(id)) MAP_GLB.set(id, mapNeedGLTF().then(() => new Promise((ok, fail) => new THREE.GLTFLoader().load('assets/objects/' + id + '/model.glb', g => {
+    g.scene.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) if (m.map) m.map.anisotropy = 4; } });
+    ok(g.scene); }, undefined, fail))));
+  return MAP_GLB.get(id);
+}
 function mapBuildObject(def) {
   const root = new THREE.Group(); root.userData.def = def; mapApplyTransform(root, def);
+  if (def.type === 'gltf') {
+    root.userData.ready = mapLoadGLB(def.ref).then(src => { const v = src.clone(true); root.add(v); root.userData.visual = v; return root; })
+      .catch(e => { console.warn('Mapa: modelo 3D', def.ref, e); const v = mapMissing(); root.add(v); root.userData.visual = v; return root; });
+    return root;
+  }
   if (def.type === 'model') {
     root.userData.ready = loadVehicleType(def.ref).then(type => {
       const lod = new THREE.LOD(), hi = new THREE.Mesh(type.geo.body, type.mats); hi.castShadow = hi.receiveShadow = true; lod.addLevel(hi, 0);
@@ -197,8 +215,61 @@ function updateMapGens(dt, force) {
     if (d < 220 && (force || d > 70 || !inCamView(G.def.pos[0], G.def.pos[2]))) mapSpawnGen(G);
   }
 }
+/* ---------------- alterações na cidade original (entidades do mundo, collision.js: WENT) ----------------
+   MAPDATA.world = { "<id da entidade>": { d: [dx, dy, dz], r: graus (em torno de Y), s: escala } | { del: 1 } }.
+   Mexe só nos vértices da entidade dentro das malhas juntadas, nas colisões dela e nos objetos soltos que ela criou. */
+const _ev = new THREE.Vector3(), _em = new THREE.Matrix4(), _en = new THREE.Matrix3();
+function entInit(e) {
+  if (e.orig) return e;
+  e.parts = [];
+  for (const s of e.segs) if (s.m.__mesh) e.parts.push({ mesh: s.m.__mesh, start: s.start, end: s.end });
+  for (const s of e.gsegs) e.parts.push({ mesh: s.mesh, start: s.start, end: s.end });
+  e.orig = e.parts.map(p => { const g = p.mesh.geometry, P = g.attributes.position, N = g.attributes.normal; return { p: P.array.slice(p.start * 3, p.end * 3), n: N ? N.array.slice(p.start * 3, p.end * 3) : null }; });
+  e.objOrig = e.objs.map(o => ({ p: o.position.clone(), q: o.quaternion.clone(), s: o.scale.clone(), v: o.visible }));
+  e.colsNow = e.cols.slice(); e.colOrig = e.cols.map(b => Object.assign({}, b));
+  const bb = new THREE.Box3();
+  for (const o of e.orig) for (let i = 0; i < o.p.length; i += 3) bb.expandByPoint(_ev.set(o.p[i], o.p[i + 1], o.p[i + 2]));
+  for (const o of e.objs) { o.updateMatrixWorld(true); bb.union(new THREE.Box3().setFromObject(o)); }
+  if (bb.isEmpty()) bb.setFromCenterAndSize(new THREE.Vector3(e.x, 0, e.z), new THREE.Vector3(1, 1, 1));
+  e.box = bb; e.pivot = bb.getCenter(new THREE.Vector3()); e.pivot.y = bb.min.y;
+  return e;
+}
+/* matriz da alteração (em volta do pé do centro da entidade) */
+function entMatrix(e, ov) {
+  entInit(e); const m = new THREE.Matrix4(), d = (ov && ov.d) || [0, 0, 0], s = ov && ov.del ? 1e-4 : (ov && ov.s) || 1;
+  m.makeTranslation(e.pivot.x + d[0], e.pivot.y + d[1], e.pivot.z + d[2]).multiply(_em.makeRotationY(((ov && ov.r) || 0) * DEG)).multiply(new THREE.Matrix4().makeScale(s, s, s)).multiply(new THREE.Matrix4().makeTranslation(-e.pivot.x, -e.pivot.y, -e.pivot.z));
+  return m;
+}
+function entApply(e, ov) {
+  entInit(e); const M = entMatrix(e, ov), touched = new Set(); _en.getNormalMatrix(M);
+  e.parts.forEach((pt, k) => {
+    const g = pt.mesh.geometry, P = g.attributes.position.array, N = g.attributes.normal && g.attributes.normal.array, o = e.orig[k], b = pt.start * 3;
+    for (let i = 0; i < o.p.length; i += 3) { _ev.set(o.p[i], o.p[i + 1], o.p[i + 2]).applyMatrix4(M); P[b + i] = _ev.x; P[b + i + 1] = _ev.y; P[b + i + 2] = _ev.z; }
+    if (N && o.n && !(ov && ov.del)) for (let i = 0; i < o.n.length; i += 3) { _ev.set(o.n[i], o.n[i + 1], o.n[i + 2]).applyMatrix3(_en).normalize(); N[b + i] = _ev.x; N[b + i + 1] = _ev.y; N[b + i + 2] = _ev.z; }
+    g.attributes.position.needsUpdate = true; if (N) g.attributes.normal.needsUpdate = true; touched.add(g);
+  });
+  for (const g of touched) g.computeBoundingSphere();
+  e.objs.forEach((o, k) => { const O = e.objOrig[k]; _em.compose(O.p, O.q, O.s).premultiply(M); _em.decompose(o.position, o.quaternion, o.scale); o.visible = O.v && !(ov && ov.del); });
+  for (const b of e.colsNow) removeCollider(b);
+  e.colsNow = [];
+  if (!(ov && ov.del)) for (const c of e.colOrig) {
+    const bb = new THREE.Box3(new THREE.Vector3(c.x0, c.y0 !== undefined ? c.y0 : 0, c.z0), new THREE.Vector3(c.x1, c.h !== undefined ? c.h : 10, c.z1)).applyMatrix4(M);
+    const nb = Object.assign({}, c, { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z }); if (c.h !== undefined) nb.h = bb.max.y; if (c.y0 !== undefined) nb.y0 = bb.min.y;
+    addCollider(nb); e.colsNow.push(nb);
+  }
+  e.applied = ov ? JSON.stringify(ov) : null;
+}
+/* caixa atual da entidade (com a alteração) */
+function entBox(e, ov) { entInit(e); return e.box.clone().applyMatrix4(entMatrix(e, ov)); }
+function applyWorldEdits() {
+  const W = MAPDATA.world && typeof MAPDATA.world === 'object' ? MAPDATA.world : {}; let miss = 0;
+  for (const [id, ov] of Object.entries(W)) { const e = WENT.byId.get(id); if (e) entApply(e, ov); else miss++; }
+  if (miss) console.warn('Mapa: ' + miss + ' alteração(ões) da cidade original não acharam o prédio (a planta mudou?)');
+}
+
 /* ---------------- partida no jogo ---------------- */
 if (!window.NEON_EDITOR) {
+  applyWorldEdits();
   buildMapObjects();
   if (MAPDATA.spawn && Array.isArray(MAPDATA.spawn.pos)) { player.x = MAPDATA.spawn.pos[0]; player.z = MAPDATA.spawn.pos[2]; player.y = carGroundHeight(player.x, player.z); player.h = (MAPDATA.spawn.h || 0) * DEG; }
   setInterval(() => { if (typeof started !== 'undefined' && started && !paused) updateMapGens(0.5); }, 500);

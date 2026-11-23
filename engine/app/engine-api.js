@@ -7,7 +7,7 @@ module.exports = function engineApi(opts) {
   const root = opts.root, desktop = !!opts.desktop, jobs = new Map(), P = require(path.join(opts.engine || path.resolve(__dirname, '..'), 'tools', 'project.js')), engineTools = path.join(P.ENGINE, 'tools');
   let jobSeq = 0;
   const send = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
-  const body = req => new Promise((ok, fail) => { let n = 0; const parts = []; req.on('data', d => { n += d.length; if (n > 40e6) { fail(new Error('pedido grande demais')); req.destroy(); } else parts.push(d); }); req.on('end', () => { try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(e); } }); req.on('error', fail); });
+  const body = req => new Promise((ok, fail) => { let n = 0; const parts = []; req.on('data', d => { n += d.length; if (n > 600e6) { fail(new Error('pedido grande demais')); req.destroy(); } else parts.push(d); }); req.on('end', () => { try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(e); } }); req.on('error', fail); });
   const mapPath = rel => { if (typeof rel !== 'string' || !/^maps\/[\w\-\/]+\.json$/.test(rel) || rel.includes('..')) throw new Error('arquivo de mapa inválido: ' + rel); return path.join(root, rel); };
   /* roda um script de tools/ com o Node (no app desktop, o próprio Electron em modo Node) e guarda a saída num "job" */
   function runJob(script, args, label) {
@@ -27,6 +27,8 @@ module.exports = function engineApi(opts) {
       if (id.startsWith('_')) continue;
       try { const m = JSON.parse(fs.readFileSync(path.join(dir, id, 'model.json'), 'utf8')); out.push({ id, name: m.name || id, kind: m.kind || 'car', dims: m.dims || null }); } catch (e) { /* pasta sem model.json */ }
     }
+    const od = path.join(root, 'assets/objects');                    // modelos 3D importados (GLB)
+    if (fs.existsSync(od)) for (const id of fs.readdirSync(od)) { try { const m = JSON.parse(fs.readFileSync(path.join(od, id, 'object.json'), 'utf8')); if (fs.existsSync(path.join(od, id, 'model.glb'))) out.push({ id, name: m.name || id, kind: 'object3d', dims: m.dims || null, source: m.source || null }); } catch (e) { /* sem object.json */ } }
     return out.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   }
   function backup(file) {
@@ -55,6 +57,15 @@ module.exports = function engineApi(opts) {
         fs.mkdirSync(path.dirname(file), { recursive: true }); backup(file);
         const tmp = file + '.tmp'; fs.writeFileSync(tmp, text, 'utf8'); fs.renameSync(tmp, file);
         return send(res, 200, { ok: true, file: b.file, bytes: Buffer.byteLength(text) });
+      }
+      if (route === 'save-object') {                                       // modelo 3D convertido para GLB no editor
+        const id = String(b.id || '').toLowerCase(); if (!/^[a-z0-9_]{2,60}$/.test(id)) throw new Error('ID inválido (letras minúsculas, números e _)');
+        const buf = Buffer.from(String(b.glb || ''), 'base64'); if (buf.length < 20 || buf.toString('ascii', 0, 4) !== 'glTF') throw new Error('GLB inválido');
+        const dir = path.join(root, 'assets/objects', id); fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, 'model.glb'), buf);
+        const meta = { id, name: String(b.name || id).slice(0, 80), kind: 'object3d', format: 'glb', dims: b.dims || null, source: b.source || null, triangles: b.triangles || null, imported: new Date().toISOString() };
+        fs.writeFileSync(path.join(dir, 'object.json'), JSON.stringify(meta, null, 2));
+        return send(res, 200, { ok: true, id, bytes: buf.length });
       }
       if (route === 'import') {
         if (!b.dff || !b.txd) throw new Error('escolha o .dff e o .txd');

@@ -149,7 +149,7 @@ function buildFavela(F) {
     ST.ok++;
     const hf = clamp((Hq(x, z) - 2) / 40, 0, 1), floors = clamp(1 + Math.floor(R(0, 1.25) + hf * 1.0 + m * m * (F.city === 'rj' ? 1.1 : 0.55)), 1, F.city === 'rj' ? 5 : 4), brick = fr() < 0.45, yTop = hMax + 0.12 + floors * 2.8;
     Object.assign(H, { y0: hMin, top: yTop, floors, flat: false });
-    placed.push(H); addH(H);
+    placed.push(H); addH(H); entBegin('casa-favela', 'Casa (favela)', x, z);   // cada casa é uma entidade editável
     const col = brick ? hexRGB(pickOf([0xffffff, 0xf2e2d6, 0xe9cfc0])) : hexRGB(pickOf(PAINT));
     // pavimento de cima recuado e deslocado (puxadinho): silhueta irregular, não um cubo
     let uW = W, uD = D, uOX = 0, uOZ = 0, yLow = yTop;
@@ -167,6 +167,7 @@ function buildFavela(F) {
       if (fr() < 0.2) rbox(RH, R(-RW / 5, RW / 5), R(-RD / 5, RD / 5), yTop + 0.24, RW * 0.5, 2.3, RD * 0.5, hexRGB(pickOf(PAINT)));
       if (fr() < 0.16) for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) rbox(RH, sx * (RW / 2 - 0.2), sz * (RD / 2 - 0.2), yTop + 0.24, 0.12, 1.4, 0.12, hexRGB(0x5a4a3a));     // vergalhões da próxima laje
     } else flat.gable(RH.x, yTop, RH.z, RW + 0.5, RD + 0.5, R(0.9, 1.6), hexRGB(fr() < 0.5 ? pickOf(TERRA) : pickOf(ZINC)), yaw, RW < RD ? false : true);
+    entEnd();
   }
   FAVELA.houseAt = (x, z, m) => { for (const h of housesNear(x, z)) if (inObb(h, x, z, m || 0)) return h; return null; };
   walls.forEach((w, i) => scene.add(w.build(wallMats[i])));

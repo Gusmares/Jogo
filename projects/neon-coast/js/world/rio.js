@@ -88,7 +88,7 @@ const RIO_PROPS = new Mesher();
 })();
 
 /* ---------------- Cristo Redentor no topo do Corcovado ---------------- */
-(function buildCristo() {
+worldEntity('cristo', 'Cristo Redentor', RIO.corcovado.x, RIO.corcovado.z, function buildCristo() {
   const C = RIO.corcovado; let bx = C.x, bz = C.z, by = -1e9;
   for (let a = -40; a <= 40; a += 4) for (let b = -40; b <= 40; b += 4) { const h = Hq(C.x + a, C.z + b); if (h > by) { by = h; bx = C.x + a; bz = C.z + b; } }
   const stone = new THREE.MeshLambertMaterial({ color: 0xd9d5cb }), g = new THREE.Group(), add = (geo, x, y, z) => { const m = new THREE.Mesh(geo, stone); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
@@ -102,10 +102,10 @@ const RIO_PROPS = new Mesher();
   g.position.set(bx, by - 0.5, bz); g.rotation.y = Math.atan2(RJ.cx - bx, RJ.cz - bz) - Math.PI / 2; scene.add(g);     // de braços abertos para a cidade
   addCollider({ x0: bx - 7, x1: bx + 7, z0: bz - 7, z1: bz + 7, h: 40 });
   RIO.cristo = { x: bx, y: by, z: bz };
-})();
+}, 'cristo');
 
 /* ---------------- bondinho do Pão de Açúcar ---------------- */
-(function buildBondinho() {
+worldEntity('bondinho', 'Bondinho do Pão de Açúcar', RIO.paoAcucar.x, RIO.paoAcucar.z, function buildBondinho() {
   const top = R => { let b = -1e9, px = R.x, pz = R.z; for (let a = -12; a <= 12; a += 3) for (let c = -12; c <= 12; c += 3) { const h = Hq(R.x + a, R.z + c); if (h > b) { b = h; px = R.x + a; pz = R.z + c; } } return [px, b, pz]; };
   const U = top(RIO.urca), Pq = top(RIO.paoAcucar), shore = [RJ.x1 - 20, 8, RJ.z1 + 30];
   for (const [p, h] of [[U, 7], [Pq, 7], [shore, 7]]) { RIO_PROPS.box(p[0], p[1] - 0.5, p[2], 6, h + 0.5, 5, hexRGB(0xc9c4b8)); }
@@ -119,7 +119,7 @@ const RIO_PROPS = new Mesher();
     const upd = () => { const t = 0.5 - 0.5 * Math.cos((performance.now() / 1000 / 40 + ph) * Math.PI * 2), s = -Math.sin(t * Math.PI) * 4; cab.position.set(lerp(a[0], b[0], t), lerp(a[1], b[1], t) + 6 + s - 1.6, lerp(a[2], b[2], t)); };
     upd(); cab.onBeforeRender = upd;
   });
-})();
+}, 'bondinho');
 
 /* placas de boas-vindas nas entradas das cidades */
 (function welcomeSigns() {

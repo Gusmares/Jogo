@@ -38,20 +38,20 @@ async function thumbPump() {
 
 /* ---------------- biblioteca ---------------- */
 let libTab = 'prefab';
-const KIND_NAME = { car: 'Carros', bike: 'Motos', bus: 'Ônibus e caminhões', object: 'Objetos importados', prop: 'Armas e acessórios' };
+const KIND_NAME = { car: 'Carros', bike: 'Motos', bus: 'Ônibus e caminhões', object3d: 'Modelos 3D importados (FBX, GLB, OBJ…)', object: 'Objetos do GTA SA (DFF)', prop: 'Armas e acessórios' };
 function libItems() {
   const q = $e('edLibSearch').value.trim().toLowerCase(), m = s => !q || s.toLowerCase().includes(q);
   if (libTab === 'prefab') return Object.entries(MAP_PREFABS).filter(([k, v]) => m(v.name + ' ' + v.cat)).map(([k, v]) => ({ key: 'p:' + k, cat: v.cat, name: v.name, tpl: { type: 'prefab', ref: k },
     thumb: () => mapBuildObject({ type: 'prefab', ref: k }) }));
-  const kinds = libTab === 'model' ? ['object', 'prop'] : ['car', 'bike', 'bus'];
+  const kinds = libTab === 'model' ? ['object3d', 'object', 'prop'] : ['car', 'bike', 'bus'];
   return ED.models.filter(x => kinds.includes(x.kind) && m(x.name + ' ' + x.id)).sort((a, b) => kinds.indexOf(a.kind) - kinds.indexOf(b.kind) || a.name.localeCompare(b.name, 'pt-BR')).map(x => ({ key: 'm:' + x.id, cat: KIND_NAME[x.kind] || x.kind, name: x.name, sub: x.id,
-    tpl: libTab === 'model' ? { type: 'model', ref: x.id } : { model: x.id },
-    thumb: () => loadVehicleType(x.id).then(t => libTab === 'vehicle' || x.kind !== 'object' && x.kind !== 'prop' ? makeVehicleMesh(t, 0x9aa4ae) : new THREE.Mesh(t.geo.body, t.mats)) }));
+    tpl: x.kind === 'object3d' ? { type: 'gltf', ref: x.id } : libTab === 'model' ? { type: 'model', ref: x.id } : { model: x.id },
+    thumb: () => x.kind === 'object3d' ? mapLoadGLB(x.id).then(s => s.clone(true)) : loadVehicleType(x.id).then(t => libTab === 'vehicle' || x.kind !== 'object' && x.kind !== 'prop' ? makeVehicleMesh(t, 0x9aa4ae) : new THREE.Mesh(t.geo.body, t.mats)) }));
 }
 function renderLib() {
   const box = $e('edLib'); box.textContent = '';
   const items = libItems(); let cat = null, grid = null;
-  if (!items.length) box.append(el('p', { class: 'ed-empty' }, libTab === 'model' ? 'Nenhum objeto importado ainda. Use "Importar DFF" para trazer um objeto de mod (.dff + .txd).' : 'Nada encontrado.'));
+  if (!items.length) box.append(el('p', { class: 'ed-empty' }, libTab === 'model' ? 'Nenhum modelo importado ainda. Use "Importar" (FBX, GLB, OBJ, DAE, STL… ou DFF do GTA SA).' : 'Nada encontrado.'));
   const io = new IntersectionObserver(ents => ents.forEach(en => { if (!en.isIntersecting) return; io.unobserve(en.target); const it = en.target.__it;
     thumbOf(it.key, it.thumb).then(u => { if (u) en.target.querySelector('.th').style.backgroundImage = 'url(' + u + ')'; }); }), { root: box });
   for (const it of items) {
@@ -69,7 +69,9 @@ function renderOutliner() {
   if (ED.map.spawn) rows.push(['spawn', 'Ponto de partida', 'partida']);
   for (const d of ED.map.vehicles) rows.push([d.id, edLabel(d), 'carro']);
   for (const d of ED.map.objects) rows.push([d.id, edLabel(d), d.type === 'model' ? 'modelo' : (MAP_PREFABS[d.ref] || {}).cat || '']);
-  $e('edCount').textContent = ED.map.objects.length + ' objetos · ' + ED.map.vehicles.length + ' carros';
+  const W = Object.entries(ED.map.world || {}); if (ED.sel && ED.sel.startsWith('w:') && !ED.map.world[ED.sel.slice(2)]) W.unshift([ED.sel.slice(2), {}]);
+  for (const [wid, ov] of W) rows.push(['w:' + wid, edLabel(null, 'w:' + wid), ov.del ? 'original · apagado' : Object.keys(ov).length ? 'original · alterado' : 'original']);
+  $e('edCount').textContent = ED.map.objects.length + ' objetos · ' + ED.map.vehicles.length + ' carros · ' + Object.keys(ED.map.world || {}).length + ' alterações no original';
   const shown = rows.filter(r => !q || (r[1] + ' ' + r[0] + ' ' + r[2]).toLowerCase().includes(q));
   if (!shown.length) box.append(el('p', { class: 'ed-empty' }, rows.length ? 'Nada com esse nome.' : 'O mapa ainda não tem objetos colocados. Escolha algo na biblioteca à esquerda.'));
   for (const [id, name, tag] of shown.slice(0, 600))
@@ -107,7 +109,10 @@ function selectInput(options, value, onSet) {
 }
 let inspId = null;
 function renderInspector() {
+  { const a = document.activeElement;                       // digitando num campo: não recria o painel (perderia o cursor)
+    if (inspId && inspId === ED.sel && !ED.placing && a && $e('edInspector').contains(a) && (a.type === 'number' || a.type === 'text')) return refreshInspectorNumbers(); }
   const box = $e('edInspector'), id = ED.sel, def = id && edDef(id); inspId = id; box.textContent = '';
+  if (TT.on) return renderTerrainPanel(box);
   if (ED.placing) { box.append(el('p', { class: 'ed-empty' }, 'Colocando: ', el('b', {}, edLabel(ED.placing.def)), '. Clique no mapa. R gira 15°, Shift+clique coloca vários, Esc ou botão direito cancela.')); return; }
   if (!def) {
     box.append(el('p', { class: 'ed-empty' }, 'Nada selecionado. Clique num objeto do mapa ou da lista.'),
@@ -116,6 +121,7 @@ function renderInspector() {
     return;
   }
   const kind = edKind(id), upd = fn => { fn(); edUpdated(id); };
+  if (kind === 'world') return renderWorldInspector(box, id);
   box.append(el('div', { class: 'ed-insp-head' }, el('b', {}, edLabel(def)), el('small', {}, kind === 'object' ? (def.type === 'model' ? 'modelo · ' + def.ref : 'objeto · ' + def.ref) : kind === 'vehicle' ? 'gerador de carro' : 'onde o jogador começa')));
   if (kind !== 'spawn') { const n = el('input', { type: 'text', value: def.name || '', placeholder: edLabel(Object.assign({}, def, { name: '' })) });
     n.addEventListener('focus', () => edBegin()); n.addEventListener('input', () => { def.name = n.value || undefined; if (!def.name) delete def.name; }); n.addEventListener('change', () => { edCommit(); renderOutliner(); }); box.append(field('Nome', n)); }
@@ -155,9 +161,39 @@ function renderInspector() {
     el('button', { onclick: edDrop, title: 'G' }, 'Assentar no chão'), kind !== 'spawn' ? el('button', { onclick: edDuplicate, title: 'Ctrl+D' }, 'Duplicar') : null,
     el('button', { onclick: edFocus, title: 'F' }, 'Focar'), el('button', { class: 'danger', onclick: edDelete, title: 'Del' }, 'Apagar')));
 }
+function renderWorldInspector(box, id) {
+  const e = WENT.byId.get(id.slice(2)), wid = e.id, ov = () => ED.map.world[wid] || {}, cur = ov();
+  const setOv = fn => { const o = JSON.parse(JSON.stringify(ov())); fn(o); for (const k of Object.keys(o)) if (o[k] === undefined) delete o[k];
+    if (o.d && o.d.every(v => v === 0)) delete o.d; if (o.r === 0) delete o.r; if (o.s === 1) delete o.s;
+    if (Object.keys(o).length) ED.map.world[wid] = o; else delete ED.map.world[wid]; edReconcile(); };
+  box.append(el('div', { class: 'ed-insp-head' }, el('b', {}, e.name), el('small', {}, 'mapa original · ' + wid)));
+  if (cur.del) {
+    box.append(el('p', { class: 'ed-warn' }, 'Apagado: não aparece no jogo.'), el('div', { class: 'ed-actions' }, el('button', { class: 'primary', onclick: () => edWorldRestore(wid) }, 'Restaurar')));
+    return;
+  }
+  box.append(el('p', { class: 'ed-hint' }, 'Prédio gerado pelo código da cidade. Dá para mover, girar, mudar o tamanho e apagar; a alteração fica salva no mapa.'));
+  box.append(vec3Row('Deslocar', cur.d, [0, 0, 0], v => setOv(o => { o.d = v.map(r2); }), { step: 0.5 }));
+  box.append(field('Girar °', numField('↻', cur.r || 0, v => setOv(o => { o.r = r2(v); }), { step: 5 })));
+  box.append(field('Escala', numField('×', cur.s || 1, v => setOv(o => { o.s = Math.max(0.05, r2(v)); }), { step: 0.05, min: 0.05 })));
+  box.append(el('div', { class: 'ed-actions' },
+    el('button', { onclick: edDrop, title: 'G' }, 'Assentar no chão'), el('button', { onclick: edFocus, title: 'F' }, 'Focar'),
+    Object.keys(cur).length ? el('button', { onclick: () => edWorldRestore(wid) }, 'Restaurar original') : null,
+    el('button', { class: 'danger', onclick: edDelete, title: 'Del' }, 'Apagar')));
+}
+function renderTerrainPanel(box) {
+  box.append(el('div', { class: 'ed-insp-head' }, el('b', {}, 'Esculpir terreno'), el('small', {}, 'B liga/desliga · Esc sai')));
+  const brushes = el('div', { class: 'ed-brushes' }, Object.entries(TT_BRUSHES).map(([k, n]) => el('button', { class: TT.brush === k ? 'on' : '', onclick: () => { TT.brush = k; renderInspector(); } }, n)));
+  const slider = (label, key, min, max, step, unit) => { const v = el('span', { class: 'ed-sv' }, TT[key] + ' ' + unit), r = el('input', { type: 'range', min, max, step, value: TT[key] });
+    r.addEventListener('input', () => { TT[key] = +r.value; v.textContent = TT[key] + ' ' + unit; ttRing(); }); return el('div', { class: 'ed-field' }, el('span', { class: 'ed-lab' }, label), el('div', { class: 'ed-slider' }, r, v)); };
+  box.append(brushes, slider('Tamanho', 'radius', 4, 240, 1, 'm'), slider('Força', 'strength', 0.5, 40, 0.5, 'm/s'),
+    el('p', { class: 'ed-hint' }, 'Segure o botão esquerdo e passe sobre o terreno. Shift inverte (subir ↔ descer). [ e ] mudam o tamanho. Nivelar usa a altura de onde você começou. Baixar o chão abaixo do mar vira água; subir no mar cria terra.'),
+    el('p', { class: 'ed-hint' }, 'Árvores e grama se acomodam ao relevo novo quando o mundo recarrega (salvar e abrir de novo, ou testar no jogo). Prédios e ruas não sobem junto: deixe a cidade plana.'),
+    el('div', { class: 'ed-actions' }, el('button', { onclick: ttResetAll }, 'Relevo original'), el('button', { class: 'primary', onclick: () => ttSetOn(false) }, 'Concluir')));
+}
 /* o gizmo mexeu: só atualiza os números (sem recriar o painel) */
 function refreshInspectorNumbers() {
   const def = ED.sel && edDef(ED.sel); if (!def || inspId !== ED.sel) return renderInspector();
+  if (edKind(ED.sel) === 'world') { const w = ED.map.world[ED.sel.slice(2)] || {}, ins = $e('edInspector').querySelectorAll('.ed-num input'), v = (w.d || [0, 0, 0]).concat([w.r || 0, w.s || 1]); ins.forEach((inp, k) => { if (document.activeElement !== inp && v[k] !== undefined) inp.value = v[k]; }); return; }
   const rows = $e('edInspector').querySelectorAll('.ed-vec'), vals = [def.pos, def.rot || [0, 0, 0], def.scale || [1, 1, 1]];
   rows.forEach((r, i) => r.querySelectorAll('input').forEach((inp, k) => { if (document.activeElement !== inp && vals[i]) inp.value = Math.round(vals[i][k] * 1000) / 1000; }));
   const hd = $e('edInspector').querySelectorAll('.ed-num input'); if (edKind(ED.sel) !== 'object' && hd.length > 3 && document.activeElement !== hd[3]) hd[3].value = def.h || 0;
@@ -277,7 +313,7 @@ function edUiStart() {
   $e('edTopView').addEventListener('click', () => edSetTop(!ED.top));
   $e('edUndo').addEventListener('click', edUndo); $e('edRedo').addEventListener('click', edRedo);
   $e('edSave').addEventListener('click', edSave); $e('edPlay').addEventListener('click', edPlay); $e('edBuild').addEventListener('click', openBuild);
-  $e('edPlan').addEventListener('click', openPlan); $e('edImport').addEventListener('click', openImport);
+  $e('edPlan').addEventListener('click', openPlan); $e('edExport').addEventListener('click', openExport); $e('edTerrain').addEventListener('click', () => ttSetOn(!TT.on)); edOn('terrain', renderInspector); $e('edImport').addEventListener('click', openImport3D);
   $e('edModalClose').addEventListener('click', closeModal); $e('edModal').addEventListener('pointerdown', e => { if (e.target === $e('edModal')) closeModal(); });
   $e('edModal').addEventListener('keydown', e => { if (e.code === 'Escape') closeModal(); });
   const hr = $e('edHour'); hr.addEventListener('input', () => { hour = +hr.value; updateSky(0); const h = Math.floor(hour) % 24, m = Math.round((hour % 1) * 60); $e('edHourVal').textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); });

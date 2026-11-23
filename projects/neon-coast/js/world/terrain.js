@@ -158,6 +158,8 @@ function rawH(x,z){
 for(let iz=0;iz<=NZ;iz++)for(let ix=0;ix<=NX;ix++){
   const i=iz*W1+ix;HG[i]=rawH(X0+ix*CS,Z0+iz*CS);LDG[i]=_ld;SWG[i]=_sw;WCG[i]=_wc;HFG[i]=_hf;
 }
+/* relevo esculpido no NEON ENGINE (maps/world.json -> terrain), somado antes de água, vegetação e estradas */
+const TERRAIN_DELTA=mapTerrainDelta(HG.length,W1);if(TERRAIN_DELTA)for(let i=0;i<HG.length;i++)HG[i]+=TERRAIN_DELTA[i];
 function Hq(x,z){
   const fx=(x-X0)/CS,fz=(z-Z0)/CS;
   if(fx<0||fz<0||fx>=NX||fz>=NZ)return -12;
@@ -191,7 +193,8 @@ function nearestWater(x,z){
   }
   return[X0+ix*CS,Z0+iz*CS];
 }
-/* malha do terreno com cores por bioma */
+/* malha do terreno com cores por bioma (TERRAIN: referências usadas pelo editor para esculpir ao vivo) */
+const TERRAIN={geo:null,tiles:[],tw:0,th:0,color:null};
 const mkCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
 const toTex=(c,rep)=>{const t=new THREE.CanvasTexture(c);t.anisotropy=8;if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;};
 function texDetail(){const cv=mkCanvas(256,256),g=cv.getContext('2d'),r=mulberry32(3);g.fillStyle='#ececec';g.fillRect(0,0,256,256);
@@ -200,8 +203,11 @@ function texDetail(){const cv=mkCanvas(256,256),g=cv.getContext('2d'),r=mulberry
 {
   const NV=W1*(NZ+1),pos=new Float32Array(NV*3),uv=new Float32Array(NV*2),col=new Float32Array(NV*3);
   for(let iz=0;iz<=NZ;iz++)for(let ix=0;ix<=NX;ix++){
-    const i=iz*W1+ix,x=X0+ix*CS,z=Z0+iz*CS,h=HG[i];
-    pos[i*3]=x;pos[i*3+1]=h;pos[i*3+2]=z;uv[i*2]=x*0.1;uv[i*2+1]=z*0.1;
+    const i=iz*W1+ix,x=X0+ix*CS,z=Z0+iz*CS;
+    pos[i*3]=x;pos[i*3+1]=HG[i];pos[i*3+2]=z;uv[i*2]=x*0.1;uv[i*2+1]=z*0.1;terrainColor(i,col);
+  }
+  function terrainColor(i,col){
+    const NV=HG.length,ix=i%W1,iz=(i-ix)/W1,x=X0+ix*CS,z=Z0+iz*CS,h=HG[i];
     const sxn=(HG[Math.min(i+1,NV-1)]-HG[Math.max(i-1,0)])/(2*CS),szn=(HG[Math.min(i+W1,NV-1)]-HG[Math.max(i-W1,0)])/(2*CS);
     const slope=Math.hypot(sxn,szn),sw=SWG[i],hf=HFG[i];
     const n1=fbm(x*0.02,z*0.02,3),n2=vnoise(x*0.2,z*0.2);
@@ -217,19 +223,21 @@ function texDetail(){const cv=mkCanvas(256,256),g=cv.getContext('2d'),r=mulberry
     mix(favelaMask(x,z)*0.8,[0.5,0.34,0.24]);
     const k=0.88+0.24*n2;col[i*3]=c[0]*k;col[i*3+1]=c[1]*k;col[i*3+2]=c[2]*k;
   }
+  TERRAIN.color=terrainColor;
   const idx=new Uint32Array(NX*NZ*6);let p=0;
   for(let iz=0;iz<NZ;iz++)for(let ix=0;ix<NX;ix++){const a=iz*W1+ix,b=a+1,c=a+W1,d=c+1;idx[p++]=a;idx[p++]=c;idx[p++]=b;idx[p++]=b;idx[p++]=c;idx[p++]=d;}
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
   g.setIndex(new THREE.BufferAttribute(idx,1));g.computeVertexNormals();
   const tmat=new THREE.MeshLambertMaterial({vertexColors:true,map:texDetail()}),TT=8,tw=Math.ceil(NX/TT),th=Math.ceil(NZ/TT);
+  TERRAIN.geo=g;TERRAIN.tw=tw;TERRAIN.th=th;
   for(let bz=0;bz<TT;bz++)for(let bx=0;bx<TT;bx++){
     const ids=[];for(let iz=bz*th;iz<Math.min(NZ,(bz+1)*th);iz++)for(let ix=bx*tw;ix<Math.min(NX,(bx+1)*tw);ix++){const a=iz*W1+ix,b=a+1,c=a+W1,d=c+1;ids.push(a,c,b,b,c,d);}
     if(!ids.length)continue;
     const tg=new THREE.BufferGeometry();['position','color','uv','normal'].forEach(k=>tg.setAttribute(k,g.getAttribute(k)));tg.setIndex(new THREE.BufferAttribute(new Uint32Array(ids),1));
     {const x0=X0+bx*tw*CS,x1=X0+Math.min(NX,(bx+1)*tw)*CS,z0=Z0+bz*th*CS,z1=Z0+Math.min(NZ,(bz+1)*th)*CS;let hmin=1e9,hmax=-1e9;for(let iz=bz*th;iz<=Math.min(NZ,(bz+1)*th);iz+=2)for(let ix=bx*tw;ix<=Math.min(NX,(bx+1)*tw);ix+=2){const h=HG[iz*W1+ix];if(h<hmin)hmin=h;if(h>hmax)hmax=h;}
      tg.boundingSphere=new THREE.Sphere(new THREE.Vector3((x0+x1)/2,(hmin+hmax)/2,(z0+z1)/2),Math.hypot((x1-x0)/2,(z1-z0)/2,(hmax-hmin)/2)+4);}
-    const tm=new THREE.Mesh(tg,tmat);tm.receiveShadow=true;scene.add(tm);
+    const tm=new THREE.Mesh(tg,tmat);tm.receiveShadow=true;scene.add(tm);TERRAIN.tiles.push({mesh:tm,bx,bz});
   }
 }
 

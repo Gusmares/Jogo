@@ -30,9 +30,10 @@ class GeoBatch {
     for (const b of this.map.values()) {
       let nv = 0, ni = 0; for (const g of b.geos) { nv += g.attributes.position.count; ni += g.index.count; }
       const P = new Float32Array(nv * 3), N = new Float32Array(nv * 3), U = new Float32Array(nv * 2), I = new Uint32Array(ni), hasC = !!b.geos[0].attributes.color, C = hasC ? new Float32Array(nv * 3) : null; let vo = 0, io = 0;
-      for (const g of b.geos) { if (hasC) C.set(g.attributes.color.array, vo * 3); P.set(g.attributes.position.array, vo * 3); N.set(g.attributes.normal.array, vo * 3); U.set(g.attributes.uv.array, vo * 2); const ix = g.index.array; for (let i = 0; i < ix.length; i++) I[io + i] = ix[i] + vo; vo += g.attributes.position.count; io += ix.length; g.dispose(); }
+      const es = []; for (const g of b.geos) { if (g.__ent) es.push([g.__ent, vo, vo + g.attributes.position.count]); if (hasC) C.set(g.attributes.color.array, vo * 3); P.set(g.attributes.position.array, vo * 3); N.set(g.attributes.normal.array, vo * 3); U.set(g.attributes.uv.array, vo * 2); const ix = g.index.array; for (let i = 0; i < ix.length; i++) I[io + i] = ix[i] + vo; vo += g.attributes.position.count; io += ix.length; g.dispose(); }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); if (hasC) g.setAttribute('color', new THREE.BufferAttribute(C, 3)); g.setIndex(new THREE.BufferAttribute(I, 1)); g.computeBoundingSphere();
       const m = new THREE.Mesh(g, b.mat); m.castShadow = !!cast; m.receiveShadow = receive !== false; scene.add(m);
+      for (const [e, s0, s1] of es) e.gsegs.push({ mesh: m, start: s0, end: s1 });          // entidades do mundo (editor): onde cada prédio foi parar na malha juntada
     }
     this.map.clear();
   }
@@ -78,3 +79,15 @@ const MAPDATA=(()=>{
 })();
 /* planta de uma cidade: a do arquivo do mapa (se válida, mesmo tamanho) ou a do código */
 function mapLayout(id,def){const L=MAPDATA.layouts&&MAPDATA.layouts[id];return Array.isArray(L)&&L.length===def.length&&L.every((r,k)=>typeof r==='string'&&r.length===def[k].length)?L:def;}
+/* relevo esculpido no editor: MAPDATA.terrain = { unit: metros por passo, rows: { "<linha iz>": base64 de Int16 (deslocamento de cada ponto da linha) } }.
+   Somado à grade de alturas (terrain.js) logo depois de gerada, antes de água, vegetação e estradas olharem para ela. */
+function mapTerrainDelta(n, w) {
+  const T = MAPDATA.terrain, out = new Float32Array(n); if (!T || !T.rows) return null;
+  const u = +T.unit || 0.05; let any = false;
+  for (const [k, b64] of Object.entries(T.rows)) {
+    const iz = +k; if (!(iz >= 0) || iz * w >= n) continue;
+    try { const bin = atob(b64), a = new Int16Array(new Uint8Array([...bin].map(c => c.charCodeAt(0))).buffer); for (let ix = 0; ix < Math.min(w, a.length); ix++) if (a[ix]) { out[iz * w + ix] = a[ix] * u; any = true; } }
+    catch (e) { console.warn('Mapa: linha de relevo inválida', k); }
+  }
+  return any ? out : null;
+}

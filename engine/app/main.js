@@ -80,7 +80,10 @@ async function start() {
         const r = await editorWin.webContents.executeJavaScript(`(async()=>{for(let i=0;i<120&&(typeof ED==='undefined'||document.getElementById('edBoot'));i++)await new Promise(r=>setTimeout(r,500));
           if(typeof ED==='undefined')return{ok:false,erro:document.getElementById('edBootMsg').textContent+' '+document.getElementById('edBootErr').textContent};
           return{ok:true,projeto:ED.project&&ED.project.manifest&&ED.project.manifest.name,pasta:ED.project&&ED.project.root,api:ED.api,desktop:ED.desktop,arquivo:ED.file,objetos:ED.map.objects.length,carros:ED.map.vehicles.length,modelos:ED.models.length,prefabs:Object.keys(MAP_PREFABS).length,erros:document.getElementById('edBootErr')?document.getElementById('edBootErr').textContent:''}})()`);
-        console.log('EDITOR SELFTEST', JSON.stringify(r)); editorWin.__allowClose = true; app.exit(r.ok ? 0 : 3);
+        console.log('EDITOR SELFTEST', JSON.stringify(r));
+        const si = process.argv.indexOf('--script');                   // teste extra: roda um script dentro do editor e imprime o resultado
+        if (r.ok && si > 0) { try { const out = await editorWin.webContents.executeJavaScript(fs.readFileSync(process.argv[si + 1], 'utf8')); console.log('EDITOR SCRIPT', JSON.stringify(out)); } catch (err) { console.log('EDITOR SCRIPT FALHOU', err.message); r.ok = false; } }
+        editorWin.__allowClose = true; app.exit(r.ok ? 0 : 3);
       } catch (err) { console.log('EDITOR SELFTEST FALHOU:', err.message); app.exit(4); }
     }, 500));
   }
