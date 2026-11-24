@@ -28,7 +28,7 @@ module.exports = function engineApi(opts) {
       try { const m = JSON.parse(fs.readFileSync(path.join(dir, id, 'model.json'), 'utf8')); out.push({ id, name: m.name || id, kind: m.kind || 'car', dims: m.dims || null }); } catch (e) { /* pasta sem model.json */ }
     }
     const od = path.join(root, 'assets/objects');                    // modelos 3D importados (GLB)
-    if (fs.existsSync(od)) for (const id of fs.readdirSync(od)) { try { const m = JSON.parse(fs.readFileSync(path.join(od, id, 'object.json'), 'utf8')); if (fs.existsSync(path.join(od, id, 'model.glb'))) out.push({ id, name: m.name || id, kind: 'object3d', dims: m.dims || null, source: m.source || null }); } catch (e) { /* sem object.json */ } }
+    if (fs.existsSync(od)) for (const id of fs.readdirSync(od)) { try { const m = JSON.parse(fs.readFileSync(path.join(od, id, 'object.json'), 'utf8')); if (fs.existsSync(path.join(od, id, 'model.glb'))) out.push({ id, name: m.name || id, kind: 'object3d', dims: m.dims || null, source: m.source || null, cat: m.cat || null, veg: !!m.veg }); } catch (e) { /* sem object.json */ } }
     return out.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   }
   function backup(file) {
@@ -66,6 +66,11 @@ module.exports = function engineApi(opts) {
         const meta = { id, name: String(b.name || id).slice(0, 80), kind: 'object3d', format: 'glb', dims: b.dims || null, source: b.source || null, triangles: b.triangles || null, imported: new Date().toISOString() };
         fs.writeFileSync(path.join(dir, 'object.json'), JSON.stringify(meta, null, 2));
         return send(res, 200, { ok: true, id, bytes: buf.length });
+      }
+      if (route === 'gta4-import') {                                       // modelos do GTA IV exportados com o OpenIV (.wdr/.wdd/.wft + .wtd)
+        if (!b.dir || !fs.existsSync(b.dir)) throw new Error('escolha a pasta com os arquivos do GTA IV');
+        const args = [b.dir, '--cat', String(b.cat || 'GTA IV').slice(0, 60)]; if (b.brasil) args.push('--brasil'); if (b.grama) args.push('--grama');
+        return send(res, 200, { ok: true, job: runJob('gta4-import.js', args, 'Importar do GTA IV').id });
       }
       if (route === 'import') {
         if (!b.dff || !b.txd) throw new Error('escolha o .dff e o .txd');

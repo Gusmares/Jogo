@@ -134,6 +134,8 @@ const M={
   flower:new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.6})
 };
 /* geometrias de cartões cruzados */
+/* texturas de planta do GTA IV (assets/world/gta4/*.png, geradas por engine/tools/gta4-import.js --grama na cópia local do jogo): trocam a textura desenhada quando existem */
+function ivTexture(name,mat){new THREE.TextureLoader().load('assets/world/gta4/'+name+'.png',t=>{t.anisotropy=4;mat.map=t;mat.needsUpdate=true;},undefined,()=>{});return mat;}
 function cardsGeo(w,h,n,cy){
   const pos=[],uv=[],nor=[],idx=[];
   for(let i=0;i<n;i++){
@@ -161,14 +163,14 @@ function updateVegetationCulling(){
 const WHITE=new THREE.Color(1,1,1),dum=new THREE.Object3D();dum.rotation.order='YXZ';
 class Inst{
   constructor(geo,mat){this.geo=geo;this.mat=mat;this.m=[];this.c=[];}
-  add(x,y,z,sx,sy,sz,ry,rx,color){dum.position.set(x,y,z);dum.rotation.set(rx||0,ry||0,0);dum.scale.set(sx,sy,sz);dum.updateMatrix();this.m.push(dum.matrix.clone());this.c.push(color||null);}
+  add(x,y,z,sx,sy,sz,ry,rx,color){dum.position.set(x,y,z);dum.rotation.set(rx||0,ry||0,0);dum.scale.set(sx,sy,sz);dum.updateMatrix();this.m.push(dum.matrix.clone());this.c.push(color||null);return this.m.length-1;}
   build(cast,range){
     if(!this.m.length)return null;
-    const CELL=280,cells=new Map(),useC=this.c.some(Boolean);
+    const CELL=280,cells=new Map(),useC=this.c.some(Boolean);this.where=[];   // where[i] = [malha, índice na malha] (o editor move/apaga árvores)
     this.m.forEach((m,i)=>{const k=Math.floor(m.elements[12]/CELL)+','+Math.floor(m.elements[14]/CELL);let l=cells.get(k);if(!l){l=[];cells.set(k,l);}l.push(i);});
     for(const [k,ids] of cells){
       const mesh=new THREE.InstancedMesh(this.geo,this.mat,ids.length);let sx=0,sz=0;
-      ids.forEach((id,j)=>{mesh.setMatrixAt(j,this.m[id]);sx+=this.m[id].elements[12];sz+=this.m[id].elements[14];if(useC)mesh.setColorAt(j,this.c[id]||WHITE);});
+      ids.forEach((id,j)=>{this.where[id]=[mesh,j];mesh.setMatrixAt(j,this.m[id]);sx+=this.m[id].elements[12];sz+=this.m[id].elements[14];if(useC)mesh.setColorAt(j,this.c[id]||WHITE);});
       mesh.frustumCulled=false;mesh.castShadow=!!cast;scene.add(mesh);
       let r=0;const cx=sx/ids.length,cz=sz/ids.length;ids.forEach(id=>{r=Math.max(r,Math.hypot(this.m[id].elements[12]-cx,this.m[id].elements[14]-cz));});
       VEG_CHUNKS.push({mesh,cx,cz,r:r+14,range:range||650,cast:!!cast});

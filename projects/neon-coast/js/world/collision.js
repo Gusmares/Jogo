@@ -34,13 +34,13 @@ function entBegin(kind, name, x, z, id) {
   if (WENT.cur) { WENT.depth++; return WENT.cur; }                     // dentro de outra entidade: faz parte dela
   const base = id || kind + '@' + Math.round(x) + ',' + Math.round(z); let k = base, n = 1;
   while (WENT.byId.has(k)) k = base + '#' + (++n);
-  const e = { id: k, kind, name, x, z, segs: [], geos: [], gsegs: [], cols: [], objs: [], city: typeof curCityId !== 'undefined' ? curCityId : null };
+  const e = { id: k, kind, name, x, z, segs: [], geos: [], gsegs: [], cols: [], objs: [], inst: [], city: typeof curCityId !== 'undefined' ? curCityId : null };
   WENT.byId.set(k, e); WENT.cur = e; return e;
 }
 function entEnd() {
   if (WENT.depth) { WENT.depth--; return; }
   const e = WENT.cur; WENT.cur = null; if (!e) return;
-  if (e.segs.length || e.geos.length || e.objs.length) WENT.list.push(e); else WENT.byId.delete(e.id);
+  if (e.segs.length || e.geos.length || e.objs.length || e.inst.length) WENT.list.push(e); else WENT.byId.delete(e.id);
 }
 function worldEntity(kind, name, x, z, fn, id) { entBegin(kind, name, x, z, id); try { return fn(); } finally { entEnd(); } }
 /* embrulha um gerador f(x, z, ...) para que cada chamada vire uma entidade */
@@ -57,6 +57,7 @@ for (const k of ['quad', 'tri']) {
 { const b = Mesher.prototype.build; Mesher.prototype.build = function () { const m = b.apply(this, arguments); this.__mesh = m; return m; }; }
 { const a = GeoBatch.prototype.add; GeoBatch.prototype.add = function (geo) { if (WENT.cur) { geo.__ent = WENT.cur; WENT.cur.geos.push(geo); } return a.apply(this, arguments); }; }
 { const ac = addCollider; addCollider = function (b) { if (WENT.cur) { b.__ent = WENT.cur; WENT.cur.cols.push(b); } return ac(b); }; }
+if (typeof Inst !== 'undefined') { const ia = Inst.prototype.add; Inst.prototype.add = function () { const i = ia.apply(this, arguments); if (WENT.cur) WENT.cur.inst.push([this, i]); return i; }; }   // árvores (instâncias de vegetation.js)
 { const sa = scene.add; scene.add = function (...o) { if (WENT.cur) WENT.cur.objs.push(...o); return sa.apply(this, o); }; }
 /* tira uma caixa de colisão da grade (o editor move/apaga prédios) */
 function removeCollider(b) {

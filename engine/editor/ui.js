@@ -44,7 +44,7 @@ function libItems() {
   if (libTab === 'prefab') return Object.entries(MAP_PREFABS).filter(([k, v]) => m(v.name + ' ' + v.cat)).map(([k, v]) => ({ key: 'p:' + k, cat: v.cat, name: v.name, tpl: { type: 'prefab', ref: k },
     thumb: () => mapBuildObject({ type: 'prefab', ref: k }) }));
   const kinds = libTab === 'model' ? ['object3d', 'object', 'prop'] : ['car', 'bike', 'bus'];
-  return ED.models.filter(x => kinds.includes(x.kind) && m(x.name + ' ' + x.id)).sort((a, b) => kinds.indexOf(a.kind) - kinds.indexOf(b.kind) || a.name.localeCompare(b.name, 'pt-BR')).map(x => ({ key: 'm:' + x.id, cat: KIND_NAME[x.kind] || x.kind, name: x.name, sub: x.id,
+  return ED.models.filter(x => kinds.includes(x.kind) && m(x.name + ' ' + x.id + ' ' + (x.cat || ''))).sort((a, b) => kinds.indexOf(a.kind) - kinds.indexOf(b.kind) || String(a.cat || '').localeCompare(String(b.cat || '')) || a.name.localeCompare(b.name, 'pt-BR')).map(x => ({ key: 'm:' + x.id, cat: x.cat || KIND_NAME[x.kind] || x.kind, name: x.name, sub: x.id,
     tpl: x.kind === 'object3d' ? { type: 'gltf', ref: x.id } : libTab === 'model' ? { type: 'model', ref: x.id } : { model: x.id },
     thumb: () => x.kind === 'object3d' ? mapLoadGLB(x.id).then(s => s.clone(true)) : loadVehicleType(x.id).then(t => libTab === 'vehicle' || x.kind !== 'object' && x.kind !== 'prop' ? makeVehicleMesh(t, 0x9aa4ae) : new THREE.Mesh(t.geo.body, t.mats)) }));
 }
@@ -113,6 +113,7 @@ function renderInspector() {
     if (inspId && inspId === ED.sel && !ED.placing && a && $e('edInspector').contains(a) && (a.type === 'number' || a.type === 'text')) return refreshInspectorNumbers(); }
   const box = $e('edInspector'), id = ED.sel, def = id && edDef(id); inspId = id; box.textContent = '';
   if (TT.on) return renderTerrainPanel(box);
+  if (VB.on) return renderVegPanel(box);
   if (ED.placing) { box.append(el('p', { class: 'ed-empty' }, 'Colocando: ', el('b', {}, edLabel(ED.placing.def)), '. Clique no mapa. R gira 15°, Shift+clique coloca vários, Esc ou botão direito cancela.')); return; }
   if (!def) {
     box.append(el('p', { class: 'ed-empty' }, 'Nada selecionado. Clique num objeto do mapa ou da lista.'),
@@ -313,7 +314,7 @@ function edUiStart() {
   $e('edTopView').addEventListener('click', () => edSetTop(!ED.top));
   $e('edUndo').addEventListener('click', edUndo); $e('edRedo').addEventListener('click', edRedo);
   $e('edSave').addEventListener('click', edSave); $e('edPlay').addEventListener('click', edPlay); $e('edBuild').addEventListener('click', openBuild);
-  $e('edPlan').addEventListener('click', openPlan); $e('edExport').addEventListener('click', openExport); $e('edTerrain').addEventListener('click', () => ttSetOn(!TT.on)); edOn('terrain', renderInspector); $e('edImport').addEventListener('click', openImport3D);
+  $e('edPlan').addEventListener('click', openPlan); $e('edExport').addEventListener('click', openExport); $e('edTerrain').addEventListener('click', () => ttSetOn(!TT.on)); $e('edVeg').addEventListener('click', () => vbSetOn(!VB.on)); edOn('terrain', renderInspector); $e('edImport').addEventListener('click', openImport3D);
   $e('edModalClose').addEventListener('click', closeModal); $e('edModal').addEventListener('pointerdown', e => { if (e.target === $e('edModal')) closeModal(); });
   $e('edModal').addEventListener('keydown', e => { if (e.code === 'Escape') closeModal(); });
   const hr = $e('edHour'); hr.addEventListener('input', () => { hour = +hr.value; updateSky(0); const h = Math.floor(hour) % 24, m = Math.round((hour % 1) * 60); $e('edHourVal').textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'); });

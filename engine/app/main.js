@@ -38,7 +38,7 @@ function useProject(root) {
   delete require.cache[require.resolve('./engine-api')];
   const api = require('./engine-api')({
     root: current, engine: ENGINE, desktop: true, recent,
-    pick: async b => { const r = await dialog.showOpenDialog(editorWin, { title: b.title || 'Escolher arquivo', properties: ['openFile'].concat(b.multi ? ['multiSelections'] : []), filters: b.filters || [] }); return r.canceled ? [] : r.filePaths; },
+    pick: async b => { const r = await dialog.showOpenDialog(editorWin, { title: b.title || 'Escolher arquivo', properties: [b.dir ? 'openDirectory' : 'openFile'].concat(b.multi ? ['multiSelections'] : []), filters: b.filters || [] }); return r.canceled ? [] : r.filePaths; },
     play: async b => openGame(b),
     reveal: p => shell.showItemInFolder(p),
     openProject: async b => { const root = b.root && P.isProject(b.root) ? b.root : await pickProjectFolder(); if (!root) return false; setTimeout(() => { useProject(root); loadEditor(); }, 50); return true; }

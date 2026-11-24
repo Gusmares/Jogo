@@ -179,7 +179,7 @@ function edAttach() {
   if (wEnt(ED.sel)) return edAttachWorld();
   selWBox.visible = false;
   const r = ED.sel && ED.roots.get(ED.sel);
-  if (!r || ED.tool === 'select' || ED.placing || TT.on) { tc.detach(); } else {
+  if (!r || ED.tool === 'select' || ED.placing || TT.on || VB.on) { tc.detach(); } else {
     const kind = r.userData.kind, mode = kind !== 'object' && ED.tool === 'scale' ? 'translate' : ED.tool;
     tc.attach(r); tc.setMode(mode); tc.setSpace(kind !== 'object' ? 'local' : ED.space);
     tc.showX = tc.showZ = !(mode === 'rotate' && kind !== 'object'); tc.showY = true;
@@ -209,6 +209,9 @@ function edWorldIndex() {
   const add = (mesh, s0, s1, e) => { if (!mesh) return; let l = ED.wIndex.get(mesh); if (!l) ED.wIndex.set(mesh, l = []); l.push([s0, s1, e]); };
   for (const e of WENT.list) { for (const s of e.segs) add(s.m.__mesh, s.start, s.end, e); for (const s of e.gsegs) add(s.mesh, s.start, s.end, e); }
   for (const l of ED.wIndex.values()) l.sort((a, b) => a[0] - b[0]);
+  // árvores: cada instância (tronco, galho, folhas) aponta para a entidade dela
+  ED.wInst = new Set();
+  for (const e of WENT.list) for (const [I, i] of (e.inst || [])) { const w = I.where && I.where[i]; if (!w) continue; const u = w[0].userData; (u.instEnt = u.instEnt || [])[w[1]] = e; ED.wInst.add(w[0]); }
 }
 function edPickWorld(ray) {
   if (!ED.wIndex.size) return null;
@@ -222,6 +225,9 @@ function edPickWorld(ray) {
     const ov = ED.map.world[found.id]; if (ov && ov.del) continue;
     best = { id: 'w:' + found.id, d: h.distance }; break;
   }
+  // árvores e arbustos (instâncias)
+  if (ED.wInst && ED.wInst.size) { const ih = edRay.intersectObjects([...ED.wInst], false);
+    for (const h of ih) { const e = h.object.userData.instEnt && h.object.userData.instEnt[h.instanceId]; if (!e) continue; const ov = ED.map.world[e.id]; if (ov && ov.del) continue; if (!best || h.distance < best.d) best = { id: 'w:' + e.id, d: h.distance }; break; } }
   // objetos soltos das entidades (ex.: Cristo)
   const objs = []; for (const e of WENT.list) for (const o of e.objs) if (o.visible) objs.push([o, e]);
   if (objs.length) { const oh = edRay.intersectObjects(objs.map(x => x[0]), true)[0];
@@ -366,7 +372,7 @@ function edKeyDown(e) {
   if (c && e.code === 'KeyY') { e.preventDefault(); edRedo(); return; }
   if (c && e.code === 'KeyD') { e.preventDefault(); edDuplicate(); return; }
   if (e.code === 'F5') { e.preventDefault(); edPlay(); return; }
-  if (e.code === 'Escape') { if (TT.on) ttSetOn(false); else if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
+  if (e.code === 'Escape') { if (TT.on) ttSetOn(false); else if (VB.on) vbSetOn(false); else if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
   if (e.code === 'Delete' || e.code === 'Backspace') { e.preventDefault(); edDelete(); return; }
   if (fly.rmb || c) return;                                          // voando: WASD/QE são da câmera
   if (ED.placing && e.code === 'KeyR') { edRotatePlacing(e.shiftKey ? -15 : 15); edMovePlacing(edLastMouse); return; }
@@ -376,6 +382,8 @@ function edKeyDown(e) {
   if (e.code === 'KeyG') edDrop();
   if (e.code === 'KeyT') edSetTop(!ED.top);
   if (e.code === 'KeyB') ttSetOn(!TT.on);
+  if (e.code === 'KeyV') vbSetOn(!VB.on);
+  if (VB.on && (e.code === 'BracketLeft' || e.code === 'BracketRight')) { VB.radius = Math.max(1, Math.min(60, Math.round(VB.radius * (e.code === 'BracketRight' ? 1.25 : 0.8)))); vbRing(false); edEmit('terrain'); }
   if (TT.on && (e.code === 'BracketLeft' || e.code === 'BracketRight')) { TT.radius = Math.max(4, Math.min(240, TT.radius * (e.code === 'BracketRight' ? 1.2 : 1 / 1.2))); ttRing(); edEmit('terrain'); }
   if (e.code === 'KeyX') edSetSnap(!ED.snap);
   if (e.code === 'KeyL') edSetSpace(ED.space === 'world' ? 'local' : 'world');
@@ -394,6 +402,7 @@ function edInstallInput() {
     if (e.button === 2) { fly.rmb = true; cv.setPointerCapture(e.pointerId); if (ED.placing) { /* botão direito também cancela a colocação se não arrastar */ } }
     if (e.button === 1) { fly.mmb = true; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
     if (e.button === 0 && TT.on) { cv.setPointerCapture(e.pointerId); ttStrokeBegin(e); }
+    if (e.button === 0 && VB.on) { cv.setPointerCapture(e.pointerId); vbBegin(e); }
   });
   cv.addEventListener('pointermove', e => {
     edLastMouse = { clientX: e.clientX, clientY: e.clientY };
@@ -402,6 +411,7 @@ function edInstallInput() {
     else if (fly.rmb && ED.top || fly.mmb) { const k = Math.max(0.05, (fly.y - carGroundHeight(fly.x, fly.z)) * 0.0016); const c = Math.cos(fly.yaw), s = Math.sin(fly.yaw);
       fly.x -= (dx * c + dy * s) * k; fly.z -= (-dx * s + dy * c) * k; edCamApply(); }
     if (TT.on) { if (!fly.rmb && !fly.mmb) ttMove(e); }
+    else if (VB.on) { if (!fly.rmb && !fly.mmb) vbMove(e); }
     else if (ED.placing) edMovePlacing(e);
     else if (!fly.rmb && !fly.mmb) { const t = edGroundT(edMouseRay(e)); if (t !== null) edEmit('cursor', edRay.ray.at(t, new THREE.Vector3())); }
   });
@@ -409,6 +419,7 @@ function edInstallInput() {
     if (e.button === 2) { fly.rmb = false; if (ED.placing && fly.moved < 4) edCancelPlacing(); }
     if (e.button === 1) fly.mmb = false;
     if (e.button === 0 && TT.on) { ttStrokeEnd(); return; }
+    if (e.button === 0 && VB.on) { vbEnd(); return; }
     if (e.button === 0 && fly.moved < 5 && !tc.dragging) {
       if (ED.placing) edCommitPlacing(e.shiftKey);
       else if (!tc.axis) edSelect(edPick(e));
@@ -434,6 +445,7 @@ function edFrame(now) {
   const dt = Math.min(0.05, (now - edLast) / 1000); if (typeof adaptResolution === 'function') adaptResolution(now - edLast); edLast = now;
   edFlyUpdate(dt);
   if (TT.stroke) ttApply(dt);
+  if (VB.stroke) vbFrame(dt);
   windU.value = now / 1000;
   const look = new THREE.Vector3(); camera.getWorldDirection(look); const t = ED.top ? fly.y - carGroundHeight(fly.x, fly.z) : 60;
   camTarget.set(fly.x + look.x * t, 0, fly.z + look.z * t);
@@ -460,7 +472,7 @@ async function edStart() {
   else { const s = ED.map.spawn && ED.map.spawn.pos, x = s ? s[0] : blockC(4), z = s ? s[2] : blockC(4); fly.x = x; fly.z = z + 70; fly.y = carGroundHeight(x, z) + 55; fly.yaw = 0; fly.pitch = -0.62; }
   addEventListener('beforeunload', () => { try { sessionStorage.setItem('neonEngineCam', JSON.stringify({ x: fly.x, y: fly.y, z: fly.z, yaw: fly.yaw, pitch: fly.pitch, speed: fly.speed })); } catch (e) { /* ignora */ } });
   hour = 13.5; updateSky(0); edCamApply();
-  edWorldIndex(); ttInit(); edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
+  edWorldIndex(); ttInit(); vbInit(); edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
   await edLoadModels();
   if (typeof edUiStart === 'function') edUiStart();
   requestAnimationFrame(edFrame);

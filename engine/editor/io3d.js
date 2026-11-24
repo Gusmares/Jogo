@@ -239,7 +239,7 @@ function openImport3D() {
     el('p', { class: 'ed-hint' }, 'FBX, glTF/GLB, OBJ (+MTL), DAE, STL, PLY e 3DS — os formatos que a Unity, a Unreal, o Blender e o SketchUp exportam. Texturas: PNG, JPG, TGA, DDS, BMP.'),
     field('Arquivos', fileIn), field('ou a pasta', dirIn), field('Nome', name), field('ID', id), field('Unidade do arquivo', unit),
     el('div', { class: 'ed-checks' }, el('label', { class: 'ed-check' }, zUp, 'Z para cima (3ds Max, SketchUp, STL)'), el('label', { class: 'ed-check' }, center, 'Base no chão e centro na origem')),
-    prev, el('div', { class: 'ed-actions' }, el('button', { onclick: openImport }, 'GTA SA (DFF + TXD)…'), el('span', { class: 'ed-spacer' }), go)), true);
+    prev, el('div', { class: 'ed-actions' }, el('button', { onclick: openImport }, 'GTA SA (DFF + TXD)…'), el('button', { onclick: openImportIV }, 'GTA IV (OpenIV)…'), el('span', { class: 'ed-spacer' }), go)), true);
 }
 function openExport() {
   const sel = ED.sel ? ioSelection() : null, fmt = el('select', {}, el('option', { value: 'glb' }, 'GLB (glTF binário, com texturas)'), el('option', { value: 'obj' }, 'OBJ (só geometria)'));
@@ -269,4 +269,24 @@ function openExport() {
     el('h4', {}, 'Região do mapa (em volta de onde a câmera aponta)'), el('div', { class: 'ed-field' }, el('span', { class: 'ed-lab' }, 'Raio'), el('div', { class: 'ed-slider' }, radius, rv)),
     el('div', { class: 'ed-checks' }, chk('terrain', 'Terreno'), chk('city', 'Cidade (prédios, ruas, árvores)'), chk('objects', 'Objetos colocados'), chk('center', 'Centralizar na origem')),
     el('div', { class: 'ed-actions' }, el('span', { class: 'ed-spacer' }), el('button', { class: 'primary', onclick: () => run('region') }, 'Exportar região')), status), true);
+}
+
+/* ---------- GTA IV: pasta com .wdr/.wdd/.wft + .wtd exportados com o OpenIV ---------- */
+function openImportIV() {
+  const dir = el('input', { type: 'text', placeholder: 'C:\\...\\export\\vegetacao' }), cat = el('input', { type: 'text', value: 'Vegetação (GTA IV)' });
+  const br = el('input', { type: 'checkbox' }), grass = el('input', { type: 'checkbox' }), log = el('pre', { class: 'ed-log' }), go = el('button', { class: 'primary' }, 'Converter para a biblioteca');
+  const pick = async () => { try { const r = await edApi('pick', { title: 'Pasta com os arquivos do GTA IV', dir: true }); if (r.files && r.files[0]) dir.value = r.files[0]; } catch (e) { edToast(e.message); } };
+  go.addEventListener('click', async () => {
+    go.disabled = true; log.textContent = 'Convertendo…';
+    try { const { job } = await edApi('gta4-import', { dir: dir.value.trim(), cat: cat.value.trim(), brasil: br.checked, grama: grass.checked });
+      const j = await edJob(job, t => { log.textContent = t; log.scrollTop = log.scrollHeight; });
+      if (j.code === 0) { await edLoadModels(); setLibTab('model'); log.textContent += '\nPronto: os objetos estão na aba Modelos, categoria "' + cat.value + '".'; } else log.textContent += '\nNão deu certo (código ' + j.code + ').';
+    } catch (e) { log.textContent = 'Erro: ' + e.message; }
+    go.disabled = false;
+  });
+  modal('Importar do GTA IV', el('div', {},
+    el('p', { class: 'ed-hint' }, 'Os .img do GTA IV têm o índice criptografado: abra-os no OpenIV, selecione os objetos (ou tudo) e use Exportar para uma pasta. Traga também os .wtd (texturas) — às vezes ficam em outro .img com o mesmo nome do .ide. Boas fontes: pc/data/maps/props/vegetation/ext_veg.img (árvores e plantas), props/roadside/ (lixeiras, lixo, postes, placas, semáforos, cercas), props/street/ (bancos, hidrantes, caixas elétricas).'),
+    field('Pasta', el('div', { class: 'ed-pick' }, dir, ED.desktop ? el('button', { onclick: pick }, 'Procurar…') : null)), field('Categoria', cat),
+    el('div', { class: 'ed-checks' }, el('label', { class: 'ed-check' }, br, 'Adaptar para o Brasil (cores de lixeira, hidrante, poste, placas)'), el('label', { class: 'ed-check' }, grass, 'Texturas de planta viram moitas (ex.: plantsmgr.wtd)')),
+    el('div', { class: 'ed-actions' }, el('span', { class: 'ed-spacer' }), go), log));
 }

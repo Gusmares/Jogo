@@ -187,12 +187,34 @@ function mapAddCollider(root, def) {
   addCollider({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, h: bb.max.y, y0: bb.min.y, map: true });
 }
 const mapObjects = [];
+/* vegetação pintada no editor ("veg": 1): plantas iguais viram instâncias, em blocos de 200 m que somem de longe (como a vegetação do mapa) */
+function buildVegGroup(defs) {
+  const d0 = defs[0], tmpl = mapBuildObject({ type: d0.type, ref: d0.ref, p: d0.p });
+  tmpl.userData.ready.then(() => {
+    tmpl.updateMatrixWorld(true); const meshes = []; tmpl.traverse(o => { if (o.isMesh) meshes.push(o); });
+    const cells = new Map(); for (const d of defs) { const k = Math.floor(d.pos[0] / 200) + ',' + Math.floor(d.pos[2] / 200); let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(d); }
+    const R = new THREE.Object3D(), m = new THREE.Matrix4();
+    for (const l of cells.values()) {
+      let cx = 0, cz = 0; l.forEach(d => { cx += d.pos[0]; cz += d.pos[2]; }); cx /= l.length; cz /= l.length; let r = 0; l.forEach(d => { r = Math.max(r, Math.hypot(d.pos[0] - cx, d.pos[2] - cz)); });
+      for (const ms of meshes) {
+        const im = new THREE.InstancedMesh(ms.geometry, ms.material, l.length);
+        l.forEach((d, i) => { mapApplyTransform(R, d); R.updateMatrix(); im.setMatrixAt(i, m.multiplyMatrices(R.matrix, ms.matrixWorld)); });
+        const mats = Array.isArray(ms.material) ? ms.material : [ms.material]; im.castShadow = !mats.some(x => x.transparent || x.alphaTest > 0) || d0.type === 'prefab'; im.receiveShadow = true; im.frustumCulled = false; scene.add(im);
+        if (typeof VEG_CHUNKS !== 'undefined') VEG_CHUNKS.push({ mesh: im, cx, cz, r: r + 12, range: d0.type === 'gltf' ? 220 : 520, cast: im.castShadow });
+      }
+    }
+    const F = d0.type === 'prefab' ? MAP_PREFABS[d0.ref] : null;
+    if (F && F.col) for (const d of defs) { const s = d.scale ? Math.max(d.scale[0], d.scale[2]) : 1, rr_ = F.col * s; if (d.solid !== false) addCollider({ x0: d.pos[0] - rr_, x1: d.pos[0] + rr_, z0: d.pos[2] - rr_, z1: d.pos[2] + rr_, h: d.pos[1] + 8, y0: d.pos[1], map: true }); }
+  });
+}
 function buildMapObjects() {
-  const list = Array.isArray(MAPDATA.objects) ? MAPDATA.objects : [];
+  const list = Array.isArray(MAPDATA.objects) ? MAPDATA.objects : [], veg = new Map();
   for (const def of list) {
+    if (def.veg && (def.type === 'gltf' || def.type === 'prefab')) { const k = def.type + '|' + def.ref + '|' + JSON.stringify(def.p || null); let l = veg.get(k); if (!l) veg.set(k, l = []); l.push(def); continue; }
     const root = mapBuildObject(def); scene.add(root); mapObjects.push(root);
     root.userData.ready.then(() => { const f = mapFlags(def); if (f.solid) mapAddCollider(root, def); if (f.walk) mapAddSurface(root, def, f); });
   }
+  for (const defs of veg.values()) buildVegGroup(defs);
 }
 /* ---------------- geradores de carro ---------------- */
 const mapGens = (Array.isArray(MAPDATA.vehicles) ? MAPDATA.vehicles : []).map(g => ({ def: g, car: null, cd: 0 }));
@@ -227,11 +249,14 @@ function entInit(e) {
   e.orig = e.parts.map(p => { const g = p.mesh.geometry, P = g.attributes.position, N = g.attributes.normal; return { p: P.array.slice(p.start * 3, p.end * 3), n: N ? N.array.slice(p.start * 3, p.end * 3) : null }; });
   e.objOrig = e.objs.map(o => ({ p: o.position.clone(), q: o.quaternion.clone(), s: o.scale.clone(), v: o.visible }));
   e.colsNow = e.cols.slice(); e.colOrig = e.cols.map(b => Object.assign({}, b));
+  e.instOrig = (e.inst || []).map(([I, i]) => I.m[i].clone());                                   // árvores: matrizes originais das instâncias
   const bb = new THREE.Box3();
   for (const o of e.orig) for (let i = 0; i < o.p.length; i += 3) bb.expandByPoint(_ev.set(o.p[i], o.p[i + 1], o.p[i + 2]));
   for (const o of e.objs) { o.updateMatrixWorld(true); bb.union(new THREE.Box3().setFromObject(o)); }
+  (e.inst || []).forEach(([I], k) => { if (!I.geo.boundingBox) I.geo.computeBoundingBox(); bb.union(I.geo.boundingBox.clone().applyMatrix4(e.instOrig[k])); });
   if (bb.isEmpty()) bb.setFromCenterAndSize(new THREE.Vector3(e.x, 0, e.z), new THREE.Vector3(1, 1, 1));
   e.box = bb; e.pivot = bb.getCenter(new THREE.Vector3()); e.pivot.y = bb.min.y;
+  if (e.inst && e.inst.length && !e.parts.length) { e.pivot.x = e.instOrig[0].elements[12]; e.pivot.z = e.instOrig[0].elements[14]; e.pivot.y = e.instOrig[0].elements[13]; }
   return e;
 }
 /* matriz da alteração (em volta do pé do centro da entidade) */
@@ -249,6 +274,7 @@ function entApply(e, ov) {
     g.attributes.position.needsUpdate = true; if (N) g.attributes.normal.needsUpdate = true; touched.add(g);
   });
   for (const g of touched) g.computeBoundingSphere();
+  (e.inst || []).forEach(([I, i], k) => { const w = I.where && I.where[i]; if (!w) return; w[0].setMatrixAt(w[1], _em.multiplyMatrices(M, e.instOrig[k])); w[0].instanceMatrix.needsUpdate = true; });
   e.objs.forEach((o, k) => { const O = e.objOrig[k]; _em.compose(O.p, O.q, O.s).premultiply(M); _em.decompose(o.position, o.quaternion, o.scale); o.visible = O.v && !(ov && ov.del); });
   for (const b of e.colsNow) removeCollider(b);
   e.colsNow = [];
@@ -269,7 +295,7 @@ function applyWorldEdits() {
 
 /* ---------------- partida no jogo ---------------- */
 if (!window.NEON_EDITOR) {
-  applyWorldEdits();
+  addEventListener('DOMContentLoaded', applyWorldEdits);              // depois de todos os scripts: vale também para o que é criado depois deste arquivo (vida de rua)
   buildMapObjects();
   if (MAPDATA.spawn && Array.isArray(MAPDATA.spawn.pos)) { player.x = MAPDATA.spawn.pos[0]; player.z = MAPDATA.spawn.pos[2]; player.y = carGroundHeight(player.x, player.z); player.h = (MAPDATA.spawn.h || 0) * DEG; }
   setInterval(() => { if (typeof started !== 'undefined' && started && !paused) updateMapGens(0.5); }, 500);

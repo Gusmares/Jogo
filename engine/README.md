@@ -48,6 +48,11 @@ A física dos carros tem um **modo GTA IV** (padrão; F7 no jogo alterna com o m
 ## IA e movimento estilo GTA IV
 Pedestres com personalidade e jeito de andar próprios, reações a eventos (tiro, briga, batida, atropelamento, roubo de carro…), motoristas que fogem, largam o carro ou descem irritados, polícia com linha de visão e círculo de busca, e movimento do jogador com inércia. Estudo e medidas em [`docs/ia-gta4.md`](docs/ia-gta4.md). Para testar IA dentro do jogo: `npx electron projects/neon-coast/tools/run-game-script.js <script.js>` (o script pode usar `__run(segundos)`).
 
+## Vegetação, rua e GTA IV
+- **Pincel de vegetação (V)**: pinta árvores, palmeiras, arbustos e plantas (prontas ou importadas) com densidade e escala aleatórias; Shift apaga (inclusive árvores originais). Cada **árvore original** do mapa também é selecionável/movível/apagável, como os prédios.
+- **Vida de rua** (`js/world/street-life.js`): saco e pilha de lixo, caçamba de entulho, hidrante, placa de rua azul de SP com nome de rua, poste de concreto, entulho, palete, papelão (biblioteca: "Rua (Brasil)") espalhados pela cidade como entidades editáveis; lixo miúdo nas calçadas e sarjetas; **pombos** que ciscam e voam com susto.
+- **Importar do GTA IV** (.wdr/.wdd/.wft + .wtd exportados com o OpenIV), com adaptação de cores para o Brasil. Detalhes em [`docs/assets-gta4.md`](docs/assets-gta4.md).
+
 ## Comandos (na raiz do repositório)
 | Comando | O que faz |
 |---|---|

@@ -149,4 +149,4 @@ function stepCars(dt){
   }
 }
 function perimPoint(s,h){const L=2*h;s=((s%(4*L))+4*L)%(4*L);const side=Math.floor(s/L),t=s-side*L;return side===0?[-h+t,-h]:side===1?[h,-h+t]:side===2?[h-t,h]:[-h,h-t];}
-function updatePeds(dt){if(typeof updateNpcs==='function')updateNpcs(dt);}
+function updatePeds(dt){if(typeof updateNpcs==='function')updateNpcs(dt);if(typeof updatePigeons==='function')updatePigeons(dt);}
