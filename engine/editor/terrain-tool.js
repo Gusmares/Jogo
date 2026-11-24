@@ -11,7 +11,7 @@ function ttInit() {
   TT.ring = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x40e0ff, depthTest: false, transparent: true, opacity: 0.95 })); TT.ring.renderOrder = 998; TT.ring.visible = false; TT.ring.frustumCulled = false; scene.add(TT.ring);
 }
 function ttSetOn(v) {
-  TT.on = v; if (v) { edCancelPlacing(); edSelect(null); if (typeof VB !== 'undefined' && VB.on) vbSetOn(false); } else { TT.stroke = null; }
+  TT.on = v; if (v) { edCancelPlacing(); edSelect(null); if (typeof VB !== 'undefined' && VB.on) vbSetOn(false); if (typeof SK !== 'undefined' && SK.on) skSetOn(false); } else { TT.stroke = null; }
   TT.ring.visible = v && !!TT.cursor; document.body.classList.toggle('ed-terrain', v);
   const b = document.getElementById('edTerrain'); if (b) b.classList.toggle('on', v);
   edAttach(); edEmit('terrain');

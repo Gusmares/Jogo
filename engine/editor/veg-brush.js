@@ -14,7 +14,7 @@ function vbInit() {
   VB.ring = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x7dff6a, depthTest: false, transparent: true })); VB.ring.renderOrder = 998; VB.ring.visible = false; VB.ring.frustumCulled = false; scene.add(VB.ring);
 }
 function vbSetOn(v) {
-  VB.on = v; if (v) { edCancelPlacing(); edSelect(null); if (TT.on) ttSetOn(false); } else VB.stroke = null;
+  VB.on = v; if (v) { edCancelPlacing(); edSelect(null); if (TT.on) ttSetOn(false); if (typeof SK !== 'undefined' && SK.on) skSetOn(false); } else VB.stroke = null;
   VB.ring.visible = v && !!VB.cursor; document.body.classList.toggle('ed-veg', v);
   const b = document.getElementById('edVeg'); if (b) b.classList.toggle('on', v);
   edAttach(); edEmit('terrain');

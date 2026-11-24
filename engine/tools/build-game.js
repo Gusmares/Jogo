@@ -18,7 +18,7 @@ const include = ((man.build && man.build.include) || ['index.html', 'package.jso
 /* entra: o que está em build.include (e as pastas no caminho até lá); fica de fora: o resto e as cópias de segurança do mapa */
 const keep = rel => {
   if (rel === '') return false;
-  if (/^\/maps\/\.backup(\/|$)/.test(rel)) return true;
+  if (/^\/maps\/\.backup(\/|$)/.test(rel) || /^\/data\/\.backup(\/|$)/.test(rel) || /^\/data\/.*\.(bak|tmp)$/.test(rel)) return true;      // cópias de segurança e temporários dos editores (mapa, sockets) não vão no executável
   return !include.some(inc => rel === inc || rel.startsWith(inc + '/') || inc.startsWith(rel + '/'));
 };
 console.log('Projeto: ' + man.name + ' (' + root + ')');

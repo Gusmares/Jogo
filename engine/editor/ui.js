@@ -112,6 +112,7 @@ function renderInspector() {
   { const a = document.activeElement;                       // digitando num campo: não recria o painel (perderia o cursor)
     if (inspId && inspId === ED.sel && !ED.placing && a && $e('edInspector').contains(a) && (a.type === 'number' || a.type === 'text')) return refreshInspectorNumbers(); }
   const box = $e('edInspector'), id = ED.sel, def = id && edDef(id); inspId = id; box.textContent = '';
+  if (SK.on) return renderSocketPanel(box);
   if (TT.on) return renderTerrainPanel(box);
   if (VB.on) return renderVegPanel(box);
   if (ED.placing) { box.append(el('p', { class: 'ed-empty' }, 'Colocando: ', el('b', {}, edLabel(ED.placing.def)), '. Clique no mapa. R gira 15°, Shift+clique coloca vários, Esc ou botão direito cancela.')); return; }

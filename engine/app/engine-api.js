@@ -1,5 +1,6 @@
 // NEON ENGINE — API local do editor (rotas /__engine/*), usada pelo app desktop (editor/app/main.js) e pelo servidor de desenvolvimento (tools/serve.js).
-// Só aceita pedidos da própria máquina (o servidor escuta em 127.0.0.1) e só escreve dentro de maps/.
+// Só aceita pedidos da própria máquina (o servidor escuta em 127.0.0.1) e só escreve dentro de maps/ (e no data/sockets.json fixo).
+// Anti-CSRF / DNS rebinding: todo pedido precisa de Host e (quando houver) Origin = 127.0.0.1:<porta> ou localhost:<porta> da própria engine; POST ainda exige Content-Type application/json (form/fetch simples de outra página não consegue).
 'use strict';
 const fs = require('fs'), path = require('path'), { spawn } = require('child_process');
 
@@ -7,7 +8,14 @@ module.exports = function engineApi(opts) {
   const root = opts.root, desktop = !!opts.desktop, jobs = new Map(), P = require(path.join(opts.engine || path.resolve(__dirname, '..'), 'tools', 'project.js')), engineTools = path.join(P.ENGINE, 'tools');
   let jobSeq = 0;
   const send = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
-  const body = req => new Promise((ok, fail) => { let n = 0; const parts = []; req.on('data', d => { n += d.length; if (n > 600e6) { fail(new Error('pedido grande demais')); req.destroy(); } else parts.push(d); }); req.on('end', () => { try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(e); } }); req.on('error', fail); });
+  const body = (req, max = 600e6) => new Promise((ok, fail) => { let n = 0, over = false; const parts = []; req.on('data', d => { if (over) return; n += d.length; if (n > max) { over = true; parts.length = 0; fail(new Error('pedido grande demais (máximo ' + Math.round(max / 1024) + ' KB)')); req.resume(); } else parts.push(d); }); req.on('end', () => { if (over) return; try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(new Error('JSON inválido: ' + e.message)); } }); req.on('error', fail); });
+  const SOCKETS_FILE = path.join(root, 'data', 'sockets.json'), { socketsValidate, LIM: SOCKETS_LIM } = require(path.join(__dirname, '..', 'tools', 'sockets-validate.js'));      // caminho FIXO: nunca vem do cliente
+  const sameOrigin = req => {                                           // true se Host (e Origin, quando existe) são o endereço local desta engine
+    const port = req.socket && req.socket.localPort, hosts = ['127.0.0.1:' + port, 'localhost:' + port], h = req.headers.host, o = req.headers.origin;
+    if (!port || typeof h !== 'string' || !hosts.includes(h.toLowerCase())) return false;
+    if (o !== undefined && !hosts.some(x => String(o).toLowerCase() === 'http://' + x)) return false;
+    return true;
+  };
   const mapPath = rel => { if (typeof rel !== 'string' || !/^maps\/[\w\-\/]+\.json$/.test(rel) || rel.includes('..')) throw new Error('arquivo de mapa inválido: ' + rel); return path.join(root, rel); };
   /* roda um script de tools/ com o Node (no app desktop, o próprio Electron em modo Node) e guarda a saída num "job" */
   function runJob(script, args, label) {
@@ -44,13 +52,32 @@ module.exports = function engineApi(opts) {
     const url = req.url.split('?')[0];
     if (!url.startsWith('/__engine/')) return false;
     const route = url.slice('/__engine/'.length);
+    if (!sameOrigin(req)) { send(res, 403, { ok: false, error: 'origem não permitida' }); req.resume(); return true; }
+    if (req.method === 'POST' && !/^application\/json\s*(;|$)/i.test(String(req.headers['content-type'] || ''))) { send(res, 415, { ok: false, error: 'use Content-Type: application/json' }); req.resume(); return true; }
     (async () => {
       if (route === 'ping') return send(res, 200, { ok: true, desktop, root: desktop ? root : undefined });
       if (route === 'project') return send(res, 200, { ok: true, root: desktop ? root : undefined, folder: path.basename(root), manifest: P.readManifest(root), projects: P.listProjects().map(p => ({ name: p.name, folder: path.basename(p.root), root: desktop ? p.root : undefined, current: path.resolve(p.root) === path.resolve(root) })), recent: opts.recent ? opts.recent() : [] });
       if (route === 'models') return send(res, 200, { ok: true, models: listModels() });
       if (route === 'maps') { const d = path.join(root, 'maps'); return send(res, 200, { ok: true, maps: fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.json')).map(f => 'maps/' + f) : [] }); }
+      if (route === 'sockets' && req.method === 'GET') {                   // sockets e anexos das armas (data/sockets.json)
+        const empty = { version: 1, weapons: {} }; let raw;
+        try { raw = fs.readFileSync(SOCKETS_FILE, 'utf8'); } catch (e) { if (e.code === 'ENOENT') return send(res, 200, { ok: true, exists: false, invalid: false, data: empty }); console.error('sockets: leitura falhou:', e); return send(res, 200, { ok: true, exists: true, invalid: true, erro: 'não foi possível ler data/sockets.json', data: empty }); }
+        let v; try { v = socketsValidate(JSON.parse(raw)); } catch (e) { v = { ok: false, erro: 'JSON inválido: ' + e.message }; }
+        // arquivo existe mas não presta: invalid:true (o editor avisa e bloqueia o salvar até o usuário confirmar, para não sobrescrever e perder dados)
+        return send(res, 200, v.ok ? { ok: true, exists: true, invalid: false, data: v.data } : { ok: true, exists: true, invalid: true, erro: v.erro, data: empty });
+      }
       if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'use POST' });
-      const b = await body(req);
+      const b = await body(req, route === 'save-sockets' ? SOCKETS_LIM.bytes : undefined);
+      if (route === 'save-sockets') {
+        const v = socketsValidate(b); if (!v.ok) throw new Error('sockets inválidos: ' + v.erro);
+        const text = JSON.stringify(v.data, null, 2) + '\n', tmp = SOCKETS_FILE + '.tmp';
+        try {
+          fs.mkdirSync(path.dirname(SOCKETS_FILE), { recursive: true });
+          if (fs.existsSync(SOCKETS_FILE)) { const bd = path.join(path.dirname(SOCKETS_FILE), '.backup'); fs.mkdirSync(bd, { recursive: true }); fs.copyFileSync(SOCKETS_FILE, path.join(bd, 'sockets.json.bak')); }     // data/.backup/ fica fora do build
+          fs.writeFileSync(tmp, text, 'utf8'); fs.renameSync(tmp, SOCKETS_FILE);
+        } catch (e) { try { fs.unlinkSync(tmp); } catch (e2) { /* não existia */ } console.error('save-sockets: falha ao gravar:', e); return send(res, 500, { ok: false, error: 'falha ao gravar o arquivo' }); }
+        return send(res, 200, { ok: true, bytes: Buffer.byteLength(text), weapons: Object.keys(v.data.weapons).length });
+      }
       if (route === 'save') {
         const file = mapPath(b.file), text = typeof b.text === 'string' ? b.text : JSON.stringify(b.data, null, 1);
         JSON.parse(text);                                                   // não grava JSON quebrado

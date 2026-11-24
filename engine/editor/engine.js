@@ -179,7 +179,7 @@ function edAttach() {
   if (wEnt(ED.sel)) return edAttachWorld();
   selWBox.visible = false;
   const r = ED.sel && ED.roots.get(ED.sel);
-  if (!r || ED.tool === 'select' || ED.placing || TT.on || VB.on) { tc.detach(); } else {
+  if (!r || ED.tool === 'select' || ED.placing || TT.on || VB.on || SK.on) { tc.detach(); } else {
     const kind = r.userData.kind, mode = kind !== 'object' && ED.tool === 'scale' ? 'translate' : ED.tool;
     tc.attach(r); tc.setMode(mode); tc.setSpace(kind !== 'object' ? 'local' : ED.space);
     tc.showX = tc.showZ = !(mode === 'rotate' && kind !== 'object'); tc.showY = true;
@@ -325,7 +325,7 @@ function edCenterRay() { edRay.setFromCamera(new THREE.Vector2(0, 0), camera); r
 /* ---------------- servidor local (salvar, importar, testar, gerar .exe) ---------------- */
 async function edApi(route, data) {
   const r = await fetch('__engine/' + route, data === undefined ? { cache: 'no-store' } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-  const j = await r.json().catch(() => ({ ok: false, error: 'resposta inválida (' + r.status + ')' })); if (!j.ok) throw new Error(j.error || 'falhou'); return j;
+  const j = await r.json().catch(() => ({ ok: false, error: 'resposta inválida (' + r.status + ')' })); if (!j.ok && !(route === 'sockets' && j.weapons)) throw new Error(j.error || 'falhou'); return j;      // (sockets: aceita o formato antigo, o próprio arquivo sem ok)
 }
 async function edSave() {
   const m = Object.assign({}, ED.map), t = typeof ttEncode === 'function' ? ttEncode() : null; if (t) m.terrain = t;
@@ -364,6 +364,7 @@ function edKeyDown(e) {
     if (!edTyping(e) && (e.target === document.body || e.target === renderer.domElement)) e.stopImmediatePropagation();
     return;
   }
+  if (SK.on && skKey(e)) return;                                     // editor de sockets: atalhos próprios (W/E, Espaço, Ctrl+Z/Y/S, Esc)
   if (edTyping(e)) return;
   e.stopImmediatePropagation();
   fly.keys[e.code] = true; const c = e.ctrlKey || e.metaKey;
@@ -372,7 +373,7 @@ function edKeyDown(e) {
   if (c && e.code === 'KeyY') { e.preventDefault(); edRedo(); return; }
   if (c && e.code === 'KeyD') { e.preventDefault(); edDuplicate(); return; }
   if (e.code === 'F5') { e.preventDefault(); edPlay(); return; }
-  if (e.code === 'Escape') { if (TT.on) ttSetOn(false); else if (VB.on) vbSetOn(false); else if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
+  if (e.code === 'Escape') { if (SK.on) skSetOn(false); else if (TT.on) ttSetOn(false); else if (VB.on) vbSetOn(false); else if (ED.placing) edCancelPlacing(); else edSelect(null); return; }
   if (e.code === 'Delete' || e.code === 'Backspace') { e.preventDefault(); edDelete(); return; }
   if (fly.rmb || c) return;                                          // voando: WASD/QE são da câmera
   if (ED.placing && e.code === 'KeyR') { edRotatePlacing(e.shiftKey ? -15 : 15); edMovePlacing(edLastMouse); return; }
@@ -383,6 +384,7 @@ function edKeyDown(e) {
   if (e.code === 'KeyT') edSetTop(!ED.top);
   if (e.code === 'KeyB') ttSetOn(!TT.on);
   if (e.code === 'KeyV') vbSetOn(!VB.on);
+  if (e.code === 'KeyK') skSetOn(!SK.on);
   if (VB.on && (e.code === 'BracketLeft' || e.code === 'BracketRight')) { VB.radius = Math.max(1, Math.min(60, Math.round(VB.radius * (e.code === 'BracketRight' ? 1.25 : 0.8)))); vbRing(false); edEmit('terrain'); }
   if (TT.on && (e.code === 'BracketLeft' || e.code === 'BracketRight')) { TT.radius = Math.max(4, Math.min(240, TT.radius * (e.code === 'BracketRight' ? 1.2 : 1 / 1.2))); ttRing(); edEmit('terrain'); }
   if (e.code === 'KeyX') edSetSnap(!ED.snap);
@@ -407,7 +409,8 @@ function edInstallInput() {
   cv.addEventListener('pointermove', e => {
     edLastMouse = { clientX: e.clientX, clientY: e.clientY };
     const dx = e.clientX - fly.lx, dy = e.clientY - fly.ly; fly.lx = e.clientX; fly.ly = e.clientY; fly.moved += Math.abs(dx) + Math.abs(dy);
-    if (fly.rmb && !ED.top) { fly.yaw -= dx * 0.0042; fly.pitch = Math.max(-1.55, Math.min(1.55, fly.pitch - dy * 0.0042)); edCamApply(); }
+    if (SK.on) { if (fly.rmb || fly.mmb) skOrbit(dx, dy); }
+    else if (fly.rmb && !ED.top) { fly.yaw -= dx * 0.0042; fly.pitch = Math.max(-1.55, Math.min(1.55, fly.pitch - dy * 0.0042)); edCamApply(); }
     else if (fly.rmb && ED.top || fly.mmb) { const k = Math.max(0.05, (fly.y - carGroundHeight(fly.x, fly.z)) * 0.0016); const c = Math.cos(fly.yaw), s = Math.sin(fly.yaw);
       fly.x -= (dx * c + dy * s) * k; fly.z -= (-dx * s + dy * c) * k; edCamApply(); }
     if (TT.on) { if (!fly.rmb && !fly.mmb) ttMove(e); }
@@ -418,6 +421,7 @@ function edInstallInput() {
   cv.addEventListener('pointerup', e => {
     if (e.button === 2) { fly.rmb = false; if (ED.placing && fly.moved < 4) edCancelPlacing(); }
     if (e.button === 1) fly.mmb = false;
+    if (e.button === 0 && SK.on) return;
     if (e.button === 0 && TT.on) { ttStrokeEnd(); return; }
     if (e.button === 0 && VB.on) { vbEnd(); return; }
     if (e.button === 0 && fly.moved < 5 && !tc.dragging) {
@@ -427,6 +431,7 @@ function edInstallInput() {
   });
   cv.addEventListener('wheel', e => {
     e.preventDefault();
+    if (SK.on) { skZoom(e.deltaY); return; }
     if (fly.rmb) { fly.speed = Math.max(2, Math.min(600, fly.speed * (e.deltaY < 0 ? 1.2 : 1 / 1.2))); edToast('Velocidade da câmera: ' + Math.round(fly.speed) + ' m/s', 900); return; }
     const ray = edMouseRay(e), t = edGroundT(ray), d = (t || 60) * (e.deltaY < 0 ? 0.18 : -0.22);
     fly.x += ray.direction.x * d; fly.y += ray.direction.y * d; fly.z += ray.direction.z * d; edCamApply();
@@ -443,7 +448,7 @@ function edResize() {
 function edFrame(now) {
   requestAnimationFrame(edFrame);
   const dt = Math.min(0.05, (now - edLast) / 1000); if (typeof adaptResolution === 'function') adaptResolution(now - edLast); edLast = now;
-  edFlyUpdate(dt);
+  edFlyUpdate(dt); if (SK.on) skFrame(dt);
   if (TT.stroke) ttApply(dt);
   if (VB.stroke) vbFrame(dt);
   windU.value = now / 1000;
@@ -472,7 +477,7 @@ async function edStart() {
   else { const s = ED.map.spawn && ED.map.spawn.pos, x = s ? s[0] : blockC(4), z = s ? s[2] : blockC(4); fly.x = x; fly.z = z + 70; fly.y = carGroundHeight(x, z) + 55; fly.yaw = 0; fly.pitch = -0.62; }
   addEventListener('beforeunload', () => { try { sessionStorage.setItem('neonEngineCam', JSON.stringify({ x: fly.x, y: fly.y, z: fly.z, yaw: fly.yaw, pitch: fly.pitch, speed: fly.speed })); } catch (e) { /* ignora */ } });
   hour = 13.5; updateSky(0); edCamApply();
-  edWorldIndex(); ttInit(); vbInit(); edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
+  edWorldIndex(); ttInit(); vbInit(); skInit(); edInstallInput(); edReconcile(); edSetTool('translate'); edSetSnap(true); setDirty(false);
   await edLoadModels();
   if (typeof edUiStart === 'function') edUiStart();
   requestAnimationFrame(edFrame);

@@ -25,7 +25,15 @@ const WSTYLE = {
   katana:  { melee: true, fire: 'sword_1', combo: ['sword_1', 'sword_2', 'sword_3'], dmg: 85, reach: 2.4, range: 2.5, snd: null, spread: 0, kick: 0 }
 };
 const WORDER = ['pistol', 'taser', 'deagle', 'smg', 'sawnoff', 'smg2', 'rifle', 'sniper', 'shotgun', 'spas', 'knife', 'katana'];
-const wAnim = w => WEAPON_ANIM[w && w.id] || WEAPON_ANIM.taurus_247;
+/* A.lhand / A.muzzle podem ser sobrescritos por data/sockets.json (sockets.js); sem sobrescrita devolve o próprio objeto base (idêntico ao de antes) */
+const _wanimCache = {};
+function wAnim(w) {
+  const base = WEAPON_ANIM[w && w.id] || WEAPON_ANIM.taurus_247, ov = (WEAPON_ANIM[w && w.id] && typeof socketOverride === 'function') ? socketOverride(w.id) : null;
+  if (!ov || (!ov.lhand && ov.muzzle === null)) return base;
+  const c = _wanimCache[w.id], rev = typeof SOCKETS !== 'undefined' ? SOCKETS.rev : 0; if (c && c.base === base && c.rev === rev) return c.A;
+  const A = Object.assign({}, base); if (ov.lhand) A.lhand = ov.lhand.slice(); if (ov.muzzle !== null) A.muzzle = ov.muzzle;
+  _wanimCache[w.id] = { base, rev, A }; return A;
+}
 const weaponReady = assetCatalogReady.then(async catalog => {
   const results = await Promise.allSettled(catalog.weapons.map(async w => ({ ...w, type: await loadVehicleType(w.id), ammo: w.capacity })));
   weapons.items = results.filter(r => r.status === 'fulfilled').map(r => r.value);
@@ -52,11 +60,27 @@ function calibrateGrip(item) {
   item.grip = hw.clone().invert().multiply(new THREE.Matrix4().compose(_gp, _gq, _one));
   a.group.rotation.y = sy; a.group.position.copy(sp); a.group.scale.setScalar(ss); a.ap.name = ''; return item.grip;
 }
+/* empunhadura efetiva = grip calibrado + delta de data/sockets.json (grip da arma + byAnim do clipe ativo): pos = grip.pos + delta.pos; rotação da malha = gripQ * Euler(delta.rot, XYZ) (no eixo da própria arma). weapons.gripQ fica BASE (calibrado, usado por alignWeaponArm); weapons.meshQ = rotação final */
+const _sgq = new THREE.Quaternion(), _sge = new THREE.Euler(), _sgv = new THREE.Vector3(), _sgs = new THREE.Vector3(), _sgb = new THREE.Quaternion(), _sge2 = new THREE.Quaternion(), _sgbp = new THREE.Vector3();
+/* chave de byAnim do clipe ativo: a MESMA que o editor de sockets grava (engine/editor/socket-tool.js, skSetClip). Com clipe de overlay (tiro/recarga de uma ou duas mãos, parado: base IDLE_stance + overlay) a chave é o nome do OVERLAY;
+   andando mirando (GunMove_*, que também tem overlay de mira) a chave é o clipe base; sem overlay, o clipe base. socketDelta compara em minúsculas. */
+function socketClipKey(ap) { if (!ap) return ''; const n = ap.name || ''; return ap.overlay && ap.overlay.name && !/^gunmove_/i.test(n) ? ap.overlay.name : n; }
+function weaponGripApply(w, clip) {
+  if (!w || !w.grip) return false;
+  const rev = typeof SOCKETS !== 'undefined' ? SOCKETS.rev : 0, key = w.id + '|' + (clip || '') + '|' + rev;
+  if (weapons.gripKey === key && weapons.gripSrc === w.grip && weapons.gripPos) return false;
+  w.grip.decompose(_sgbp, _sgb, _sgs);
+  const d = typeof socketDelta === 'function' ? socketDelta(w.id, clip || '') : null, k = Math.PI / 180;
+  if (d) { _sgv.set(_sgbp.x + d.pos[0], _sgbp.y + d.pos[1], _sgbp.z + d.pos[2]); _sge.set(d.rot[0] * k, d.rot[1] * k, d.rot[2] * k, 'XYZ'); _sgq.copy(_sgb).multiply(_sge2.setFromEuler(_sge)); } else { _sgv.copy(_sgbp); _sgq.copy(_sgb); }
+  weapons.gripPos = _sgv.clone(); weapons.gripQ = _sgb.clone(); weapons.meshQ = _sgq.clone(); weapons.gripKey = key; weapons.gripSrc = w.grip;      // sempre objetos NOVOS: nada que outro código guardou (ex.: o editor de sockets) é mutado aqui
+  if (weapons.mesh) { weapons.mesh.position.copy(_sgv); weapons.mesh.quaternion.copy(_sgq); weapons.mesh.scale.copy(_sgs); }
+  return true;
+}
 function attachWeapon() {
   const w = weapons.items[weapons.selected], a = player.actor; if (!w || !a || !weapons.mesh) return;
   if (!w.grip) calibrateGrip(w); if (!w.grip) return;
   const hand = a.bones[a.index.rhand]; if (weapons.mesh.parent !== hand) hand.add(weapons.mesh);
-  w.grip.decompose(weapons.mesh.position, weapons.mesh.quaternion, weapons.mesh.scale); weapons.gripPos = weapons.mesh.position.clone(); weapons.gripQ = weapons.mesh.quaternion.clone();
+  weapons.gripKey = null; weaponGripApply(w, socketClipKey(a.ap));
 }
 function equipWeapon(i) {
   if (player.dead || player.car) return;
@@ -74,9 +98,9 @@ function restWeaponPose(a, A, k) {
   const h = player.h, fx = Math.sin(h), fz = Math.cos(h), lx = Math.cos(h), lz = -Math.sin(h);            // frente e esquerda do personagem
   if (A.twoHand) _rv2.set(fx * 0.6 + lx * 0.66, -0.52, fz * 0.6 + lz * 0.66).normalize();             // "pronto-baixo": atravessado no peito
   else _rv2.set(fx * 0.32, -1, fz * 0.32).normalize();                                                  // pistola/SMG apontando para o chão, à frente do pé
-  _rv1.copy(_rvx).applyQuaternion(weapons.gripQ).applyQuaternion(_rq1).normalize();                    // cano atual (pose de mira) no mundo
+  _rv1.copy(_rvx).applyQuaternion(weapons.meshQ || weapons.gripQ).applyQuaternion(_rq1).normalize();                    // cano atual (pose de mira) no mundo
   _rq2.setFromUnitVectors(_rv1, _rv2);
-  const local = _rq1.clone().invert().multiply(_rq2).multiply(_rq1).multiply(weapons.gripQ);            // de volta para o espaço da mão
+  const local = _rq1.clone().invert().multiply(_rq2).multiply(_rq1).multiply(weapons.meshQ || weapons.gripQ);            // de volta para o espaço da mão
   weapons.mesh.quaternion.slerp(local, k);
 }
 /* mirando: botão direito, ou logo depois de atirar (a pose de mira se mantém por um instante) */
@@ -209,9 +233,10 @@ function updateWeapons(dt) {
   if (weapons.mesh) {
     weapons.mesh.visible = active && !!player.actor && weapons.swap < 0.2;
     const pa = player.actor; if (pa && weapons.mesh.parent !== pa.bones[pa.index.rhand]) attachWeapon();
+    if (w && weapons.gripPos) weaponGripApply(w, pa ? socketClipKey(pa.ap) : '');                // delta de sockets pelo clipe ativo (só recalcula quando muda)
     if (weapons.mesh.visible && weapons.gripPos) {                    // coice: a arma recua e o cano sobe um pouco e volta
       const A = wAnim(w), back = weapons.sinceShot < 0.12 ? 0.05 * (1 - weapons.sinceShot / 0.12) : 0, up = weapons.sinceShot < 0.16 ? (A.holdFire ? 0.13 : 0.05) * (1 - weapons.sinceShot / 0.16) : 0;
-      weapons.mesh.position.set(weapons.gripPos.x + back, weapons.gripPos.y, weapons.gripPos.z); weapons.mesh.quaternion.copy(weapons.gripQ); weapons.mesh.rotateZ(-up);
+      weapons.mesh.position.set(weapons.gripPos.x + back, weapons.gripPos.y, weapons.gripPos.z); weapons.mesh.quaternion.copy(weapons.meshQ || weapons.gripQ); weapons.mesh.rotateZ(-up);
       // arma em descanso (sem mirar): cano para baixo ao lado do corpo (uma mão) ou atravessada na frente do peito (duas mãos); transição suave para a mira
       const rest = !aiming && weapons.reloading <= 0 && !A.melee ? 1 : 0; weapons.restK = (weapons.restK || 0) + (rest - (weapons.restK || 0)) * Math.min(1, dt * 10);
       if (weapons.restK > 0.01 && pa) restWeaponPose(pa, A, weapons.restK);
