@@ -237,7 +237,7 @@ function texDetail(){const cv=mkCanvas(256,256),g=cv.getContext('2d'),r=mulberry
     const tg=new THREE.BufferGeometry();['position','color','uv','normal'].forEach(k=>tg.setAttribute(k,g.getAttribute(k)));tg.setIndex(new THREE.BufferAttribute(new Uint32Array(ids),1));
     {const x0=X0+bx*tw*CS,x1=X0+Math.min(NX,(bx+1)*tw)*CS,z0=Z0+bz*th*CS,z1=Z0+Math.min(NZ,(bz+1)*th)*CS;let hmin=1e9,hmax=-1e9;for(let iz=bz*th;iz<=Math.min(NZ,(bz+1)*th);iz+=2)for(let ix=bx*tw;ix<=Math.min(NX,(bx+1)*tw);ix+=2){const h=HG[iz*W1+ix];if(h<hmin)hmin=h;if(h>hmax)hmax=h;}
      tg.boundingSphere=new THREE.Sphere(new THREE.Vector3((x0+x1)/2,(hmin+hmax)/2,(z0+z1)/2),Math.hypot((x1-x0)/2,(z1-z0)/2,(hmax-hmin)/2)+4);}
-    const tm=new THREE.Mesh(tg,tmat);tm.receiveShadow=true;scene.add(tm);TERRAIN.tiles.push({mesh:tm,bx,bz});
+    const tm=new THREE.Mesh(tg,tmat);tm.receiveShadow=true;scene.add(tm);farCullAdd(tm);TERRAIN.tiles.push({mesh:tm,bx,bz});
   }
 }
 

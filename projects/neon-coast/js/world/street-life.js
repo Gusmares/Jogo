@@ -19,6 +19,33 @@ function slStreetSign(line1, line2) {
   g.font = '12px Arial, sans-serif'; g.fillText(line2, 128, 51, 236);
   const t = new THREE.CanvasTexture(c); t.anisotropy = 4; const m = new THREE.MeshLambertMaterial({ map: t }); slSignTex.set(k, m); return m;
 }
+/* SL_SIGN_BATCH: as placas de rua (poste + 2 placas) eram 1 grupo de 4 objetos e ~3 chamadas de desenho CADA (≈216 chamadas e ≈110 materiais só nelas).
+   Agora os postes e as placas entram em malhas juntadas por bloco de 320 m (GeoBatch, editável pelo editor) e todas as placas dividem um atlas de texturas (256x64 por placa).
+   false = volta ao modo antigo (objeto solto por placa). */
+const SL_SIGN_BATCH = !NOBATCH && true;
+const SLA = { pages: [], map: new Map(), W: 1024, H: 2048, per: 4 * 32 };
+function slAtlasSlot(line1, line2) {
+  const k = line1 + '|' + line2; let s = SLA.map.get(k); if (s) return s;
+  let p = SLA.pages[SLA.pages.length - 1];
+  if (!p || p.n >= SLA.per) { const c = document.createElement('canvas'); c.width = SLA.W; c.height = SLA.H; const t = new THREE.CanvasTexture(c); t.anisotropy = 4; p = { g: c.getContext('2d'), t, n: 0, mat: new THREE.MeshLambertMaterial({ map: t, side: THREE.DoubleSide }) }; SLA.pages.push(p); }
+  const i = p.n++, x = (i % 4) * 256, y = Math.floor(i / 4) * 64, g = p.g;               // mesmo desenho de slStreetSign, deslocado para o espaço da placa no atlas
+  g.fillStyle = '#123f8c'; g.fillRect(x, y, 256, 64); g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(x + 4, y + 4, 248, 56);
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = 'bold 24px Arial, sans-serif'; g.fillText(line1, x + 128, y + 32, 236);
+  g.font = '12px Arial, sans-serif'; g.fillText(line2, x + 128, y + 51, 236); p.t.needsUpdate = true;
+  s = { page: p, u0: x / SLA.W, u1: (x + 256) / SLA.W, v0: 1 - (y + 64) / SLA.H, v1: 1 - y / SLA.H }; SLA.map.set(k, s); return s;
+}
+const SL_POLE_MAT = new THREE.MeshLambertMaterial({ color: 0x5d6166 }), SL_SIGN_GB = new GeoBatch(320);
+function slSignGeo(sl) {                                           // placa 1,00 x 0,25 m com o UV do espaço dela no atlas
+  const g = new THREE.PlaneGeometry(1.0, 0.25), uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, sl.u0 + (sl.u1 - sl.u0) * uv.getX(i), sl.v0 + (sl.v1 - sl.v0) * uv.getY(i));
+  return g;
+}
+function slSignBatched(x, y, z, nameA, nameB, bairro) {            // mesma geometria do modo antigo: poste de 2,9 m, placa A em y=2,75 e placa B girada 90° em y=2,48
+  const a = slAtlasSlot(nameA, bairro), b = slAtlasSlot(nameB, bairro);
+  SL_SIGN_GB.add(new THREE.CylinderGeometry(0.04, 0.05, 2.9, 8).translate(0, 1.45, 0), SL_POLE_MAT, x, y, z);
+  SL_SIGN_GB.add(slSignGeo(a).translate(0, 2.75, 0), a.page.mat, x, y, z);
+  SL_SIGN_GB.add(slSignGeo(b).rotateY(Math.PI / 2).translate(0, 2.48, 0), b.page.mat, x, y, z);
+}
 const SLP = {
   bag(m, x, y, z, s, col) { s = s || 1; col = col || [0.07, 0.07, 0.08]; m.dome(x, y, z, 0.33 * s, 0.42 * s, col, 9); m.cone(x, y + 0.38 * s, z, 0.08 * s, 0.16 * s, col.map(v => v * 1.2), 6); },
   pile(m, x, y, z, yaw, n) { const s = Math.sin(yaw), c = Math.cos(yaw); n = n || 4;
@@ -63,7 +90,7 @@ if (typeof MAP_PREFABS !== 'undefined') Object.assign(MAP_PREFABS, {
 
 /* ---------- espalha pela cidade (cada peça é uma entidade editável) ---------- */
 const SL_BATCH = new (class { constructor() { this.cells = new Map(); } at(x, z) { const k = Math.floor(x / 150) + ',' + Math.floor(z / 150); let m = this.cells.get(k); if (!m) this.cells.set(k, m = new Mesher()); return m; }
-  build() { for (const m of this.cells.values()) if (m.v) { const o = m.build(propMat); o.castShadow = true; o.receiveShadow = true; scene.add(o); } } })();
+  build() { for (const m of this.cells.values()) if (m.v) { const o = m.build(propMat); o.castShadow = true; o.receiveShadow = true; scene.add(o); farCullAdd(o); } } })();
 const slRnd = mulberry32(777);
 const slR = (a, b) => a + (b - a) * slRnd();
 /* ponto na calçada do quarteirão (lado 0..3, posição u ao longo, d = distância do centro) */
@@ -77,11 +104,16 @@ const SL_LITTER = { paper: [], cup: [], can: [], pet: [], butt: [], leaf: [] };
     const at = (side, u, d) => slSidewalk(b, side, u, d), y = 0.3;
     // placa de rua numa esquina (nomes pelas ruas que se cruzam ali)
     if (slRnd() < 0.85) { const sx = slRnd() < 0.5 ? -1 : 1, sz = slRnd() < 0.5 ? -1 : 1, x = b.cx + sx * 26.9, z = b.cz + sz * 26.9;
-      worldEntity('placa-rua', 'Placa de rua', x, z, () => { const G = new THREE.Group(), pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.9, 8).translate(0, 1.45, 0), new THREE.MeshLambertMaterial({ color: 0x5d6166 })); G.add(pole);
+      worldEntity('placa-rua', 'Placa de rua', x, z, () => {
         const n1 = roadName(b.city, 'x', b.i + (sx > 0 ? 1 : 0)), n2 = roadName(b.city, 'z', b.j + (sz > 0 ? 1 : 0)), bairro = (typeof zoneName === 'function' ? zoneName(b.cx, b.cz) : '').toUpperCase().slice(0, 28);
-        const s1 = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.25), slStreetSign(n2, bairro)); s1.position.set(0, 2.75, 0); s1.material.side = THREE.DoubleSide;
-        const s2 = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.25), slStreetSign(n1, bairro)); s2.rotation.y = Math.PI / 2; s2.position.set(0, 2.48, 0); s2.material.side = THREE.DoubleSide;
-        G.add(s1, s2); G.position.set(x, y, z); scene.add(G); addRound(x, z, 0.1); }); }
+        if (SL_SIGN_BATCH) slSignBatched(x, y, z, n2, n1, bairro);
+        else {
+          const G = new THREE.Group(), pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.9, 8).translate(0, 1.45, 0), new THREE.MeshLambertMaterial({ color: 0x5d6166 })); G.add(pole);
+          const s1 = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.25), slStreetSign(n2, bairro)); s1.position.set(0, 2.75, 0); s1.material.side = THREE.DoubleSide;
+          const s2 = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.25), slStreetSign(n1, bairro)); s2.rotation.y = Math.PI / 2; s2.position.set(0, 2.48, 0); s2.material.side = THREE.DoubleSide;
+          G.add(s1, s2); G.position.set(x, y, z); scene.add(G);
+        }
+        addRound(x, z, 0.1); }); }
     // hidrante
     if (slRnd() < 0.55) { const side = Math.floor(slRnd() * 4), p = at(side, slR(-20, 20), 27.2); worldEntity('hidrante', 'Hidrante', p[0], p[1], () => { SLP.hidrante(SL_BATCH.at(p[0], p[1]), p[0], y, p[1]); addRound(p[0], p[1], 0.2); }); }
     // sacos de lixo encostados nos prédios (mais em área comercial)
@@ -100,7 +132,7 @@ const SL_LITTER = { paper: [], cup: [], can: [], pet: [], butt: [], leaf: [] };
       SL_LITTER[kind].push([p[0], yy, p[1], slR(0, 6.28), slRnd()]);
     }
   }
-  SL_BATCH.build();
+  SL_BATCH.build(); SL_SIGN_GB.flush(false, false);
   /* lixo miúdo: uma malha instanciada por tipo */
   const dum = new THREE.Object3D(), colOf = { paper: () => [0.92, 0.91, 0.86], cup: () => slRnd() < 0.5 ? [0.95, 0.95, 0.95] : [0.85, 0.15, 0.12], can: () => [[0.75, 0.1, 0.1], [0.1, 0.3, 0.75], [0.7, 0.7, 0.72], [0.1, 0.55, 0.2]][Math.floor(slRnd() * 4)], pet: () => [0.55, 0.75, 0.6], butt: () => [0.9, 0.75, 0.5], leaf: () => [0.55 + slRnd() * 0.2, 0.42, 0.2] };
   const geoOf = { paper: new THREE.PlaneGeometry(0.22, 0.28).rotateX(-Math.PI / 2).translate(0, 0.012, 0), cup: new THREE.CylinderGeometry(0.04, 0.03, 0.1, 7).rotateZ(Math.PI / 2).translate(0, 0.04, 0),

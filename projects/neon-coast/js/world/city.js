@@ -11,14 +11,16 @@ function boxUV(w, h, d, tw, th, y0) {
 const palmSpots = [], lampSpots = [], parkSet = new Set(), parkTrees = [], CITY_BLOCKS = [];
 const cityBatch = new GeoBatch(310);
 /* detalhes (telhados, faixas, letreiros) divididos em células de 150 m: cada uma é culling próprio (antes era uma malha só para a cidade inteira) */
+/* BIG_CELLS: faixas de pedestre/marcas (cityMarks) e letreiros (citySigns) são pouca geometria, sem sombra: células de 300 m em vez de 150 m (menos chamadas de desenho). false = tudo em 150 m como antes. */
+const BIG_CELLS = !NOBATCH && true;
 class CellMesher {
-  constructor() { this.cells = new Map(); }
-  at(x, z) { const k = Math.floor(x / 150) + ',' + Math.floor(z / 150); let m = this.cells.get(k); if (!m) this.cells.set(k, m = new Mesher()); return m; }
+  constructor(size) { this.cells = new Map(); this.size = size || 150; }
+  at(x, z) { const k = Math.floor(x / this.size) + ',' + Math.floor(z / this.size); let m = this.cells.get(k); if (!m) this.cells.set(k, m = new Mesher()); return m; }
   box(x, y, z, ...a) { this.at(x, z).box(x, y, z, ...a); } cyl(x, y, z, ...a) { this.at(x, z).cyl(x, y, z, ...a); } gable(x, y, z, ...a) { this.at(x, z).gable(x, y, z, ...a); }
   quad(p, ...a) { this.at(p[0], p[2]).quad(p, ...a); }
-  build(mat, shadows) { for (const m of this.cells.values()) { const mesh = m.build(mat, shadows); scene.add(mesh); } }
+  build(mat, shadows) { for (const m of this.cells.values()) { const mesh = m.build(mat, shadows); scene.add(mesh); farCullAdd(mesh); } }
 }
-const cityFlat = new CellMesher(), cityMarks = new CellMesher(), citySigns = new CellMesher();
+const cityFlat = new CellMesher(), cityMarks = new CellMesher(BIG_CELLS ? 300 : 150), citySigns = new CellMesher(BIG_CELLS ? 300 : 150);
 /* mapa dos distritos: LAYOUT[j][i]  T=centro de torres  M=comércio/misto  R=residencial  I=industrial  P=parque  Z=praça  S=estádio  C=shopping */
 const LAYOUT = ['IIRRRMMR', 'IMRRMMTR', 'RMMTTMMR', 'RMTTZTMP', 'PMTTTTMR', 'RMMTTMCR', 'RRMMMMSR', 'IIRRRPRR'];
 /* Rio (10 x 6): zona norte residencial perto dos morros, Centro com torres, Maracanã, aterro/parque e a orla com prédios de frente para o mar (A) */

@@ -33,7 +33,7 @@ class SPCells {
   box(x, y, z, ...a) { this.at(x, z).box(x, y, z, ...a); } cyl(x, y, z, ...a) { this.at(x, z).cyl(x, y, z, ...a); } cone(x, y, z, ...a) { this.at(x, z).cone(x, y, z, ...a); }
   dome(x, y, z, ...a) { this.at(x, z).dome(x, y, z, ...a); } gable(x, y, z, ...a) { this.at(x, z).gable(x, y, z, ...a); }
   quad(p, ...a) { this.at(p[0], p[2]).quad(p, ...a); } tri(p, ...a) { this.at(p[0], p[2]).tri(p, ...a); } beam(a, ...r) { this.at(a[0], a[2]).beam(a, ...r); }
-  build(mat, shadows) { for (const m of this.cells.values()) if (m.v) scene.add(m.build(mat, shadows)); }
+  build(mat, shadows) { for (const m of this.cells.values()) if (m.v) { const mesh = m.build(mat, shadows); scene.add(mesh); farCullAdd(mesh); } }
 }
 /* cúpula (calota elipsoidal); p0..p1 = faixa de ângulo (deixa a frente aberta, p. ex. no orelhão); inner = desenha por dentro */
 Mesher.prototype.dome = function (cx, y0, cz, r, h, col, seg, p0, p1, inner) {

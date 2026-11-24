@@ -1,0 +1,17 @@
+
+(electron) 'console-message' arguments are deprecated and will be removed. Please use Event<WebContentsConsoleMessageEventParams> object instead.
+[6324:1124/133958.538:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Acesso negado. (0x5)
+[6324:1124/133958.541:ERROR:net\disk_cache\disk_cache.cc:293] Unable to create cache
+[6324:1124/133958.541:ERROR:gpu\ipc\host\gpu_disk_cache.cc:737] Gpu Cache Creation failed: -2
+[6324:1124/133958.764:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Acesso negado. (0x5)
+[6324:1124/133958.764:ERROR:net\disk_cache\disk_cache.cc:293] Unable to create cache
+[6324:1124/133958.765:ERROR:gpu\ipc\host\gpu_disk_cache.cc:737] Gpu Cache Creation failed: -2
+[renderer] Electron Security Warning (Insecure Content-Security-Policy) This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.
+SELFTEST {"ok":true,"viaturas":6,"patrulhaPorUnidade":{"rp":2,"rocam":2,"tor":1},"modelosProntos":["palio_rp","pmsp_viatura_seda_pm_sp","pmsp_viatura_seda_3_pm_sp","pmsp_viatura_seda_2_pm_sp","moto_rocam","spin_rp","br_benson","br_willard","fn_fal","taurus_247","w_ak47","br_pcj600","w_sniper","w_mp5lng","w_micro_uzi","w_tec9","w_desert_eagle","w_colt45","w_chromegun","w_shotgspa","w_sawnoff","w_taser","w_knifecur","w_katana","hilux_tor","baixo_golfmk2","br_supergt","br_taxi","br_merit","br_hotrina","br_mesa","br_zr350","br_vincent","br_burrito"],"skinsProntas":["rp_lapd","rp_lvpd","pmsp_policial_pm_sp_280","pmsp_policial_pm_sp_281","tor","rocam","dif_pessoa_30","dias_pessoa_ramdonv1","band_pessoa_22","band_pessoa_16","player_emmet","fem_mulher_miyablue_mulher","dias_pessoa_stiv33","bvo_morador_bmori","zico7_pessoa_309","zico_pessoa_bfori_2","dif_pessoa_25","sk_traficante_anos90"],"motoComPolicial":2,"animacoes":{"pacotes":30,"jogador":"player_emmet","clipeJogador":"IDLE_stance","clipeMotociclista":"BIKEh_Ride"},"procurado":{"heat":0,"ultimoMotivo":"","estrelas":0},"triangulos":1}

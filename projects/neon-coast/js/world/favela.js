@@ -51,16 +51,16 @@ function buildFavela(F) {
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); return g;
     };
     const rm = new THREE.MeshLambertMaterial({ map: roadTexture('assets/world/roadnew4_256.png', 1) });
-    const road = new THREE.Mesh(geo(FAV_ROAD_HW, 7), rm); road.receiveShadow = true; scene.add(road);
+    const road = new THREE.Mesh(geo(FAV_ROAD_HW, 7), rm); road.receiveShadow = true; scene.add(road); farCullAdd(road);
     const tx = dashTex.clone(); tx.needsUpdate = true; tx.repeat.set(1, 1);
-    const line = new THREE.Mesh(geo(0.14, 4), new THREE.MeshBasicMaterial({ map: tx, transparent: true })); line.position.y = 0.03; scene.add(line);
+    const line = new THREE.Mesh(geo(0.14, 4), new THREE.MeshBasicMaterial({ map: tx, transparent: true })); line.position.y = 0.03; scene.add(line); farCullAdd(line);
     FAVELA.road = ring;
     // postes ao longo da ladeira
     const poles = []; let acc = 0;
     for (let i = 1; i < ring.length; i++) { acc += ring[i].s - ring[i - 1].s; if (acc > 30) { acc = 0; const q = ring[i], side = poles.length % 2 ? 1 : -1; poles.push([q.c[0] + q.nx * side * (FAV_ROAD_HW + 0.7), q.c[1] + q.nz * side * (FAV_ROAD_HW + 0.7)]); } }
     const pm = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.1, 0.14, 7, 6).translate(0, 3.5, 0), poleMat, poles.length), hm = new THREE.InstancedMesh(new THREE.BoxGeometry(1.2, 0.18, 0.45).translate(0, 7.1, 0), lampMat, poles.length), mm = new THREE.Matrix4();
     poles.forEach((p, i) => { mm.makeTranslation(p[0], Hq(p[0], p[1]), p[1]); pm.setMatrixAt(i, mm); hm.setMatrixAt(i, mm); addRound(p[0], p[1], 0.3); });
-    pm.frustumCulled = hm.frustumCulled = false; scene.add(pm, hm);
+    pm.frustumCulled = hm.frustumCulled = false; scene.add(pm, hm); farCullAdd(pm); farCullAdd(hm);
     // arco de entrada com o nome da comunidade
     const q = ring[9], hh = Hq(q.c[0], q.c[1]);
     const ac = mkCanvas(1024, 160), g = ac.getContext('2d'); g.fillStyle = '#1f6b3a'; g.fillRect(0, 0, 1024, 160); g.fillStyle = '#f2c500'; g.fillRect(0, 0, 1024, 12); g.fillRect(0, 148, 1024, 12);
@@ -170,7 +170,7 @@ function buildFavela(F) {
     entEnd();
   }
   FAVELA.houseAt = (x, z, m) => { for (const h of housesNear(x, z)) if (inObb(h, x, z, m || 0)) return h; return null; };
-  walls.forEach((w, i) => scene.add(w.build(wallMats[i])));
+  walls.forEach((w, i) => scene.add(farCullAdd(w.build(wallMats[i]))));
 
   /* --- piso das vielas (concreto) e escadarias nos trechos íngremes --- */
   {
@@ -192,15 +192,15 @@ function buildFavela(F) {
         for (let k = 0; k < steps; k++) { const t = (k + 0.5) / steps, x = p[0] + dx * t, z = p[1] + dz * t, top = Math.round(Hq(x, z) / 0.18) * 0.18 + 0.05; paving.box(x, top - 0.5, z, 0.4, 0.5, AHW * 1.8, k % 2 ? hexRGB(0xa09d95) : hexRGB(0x93908a), { yaw }); }
       }
     }
-    scene.add(paving.build(propMat, false));
+    scene.add(farCullAdd(paving.build(propMat, false)));
   }
-  scene.add(flat.build(propMat));
+  scene.add(farCullAdd(flat.build(propMat)));
   {                                                                 // caixas d'água azuis e antenas
     const m = new THREE.Matrix4();
     const tm = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.62, 0.62, 1.05, 10).translate(0, 0.52, 0), new THREE.MeshLambertMaterial({ color: 0x2e7bc4 }), Math.max(1, tanks.length));
-    tanks.forEach((t, i) => { m.makeTranslation(t[0], t[1], t[2]); tm.setMatrixAt(i, m); }); tm.count = tanks.length; tm.castShadow = true; tm.frustumCulled = false; scene.add(tm);
+    tanks.forEach((t, i) => { m.makeTranslation(t[0], t[1], t[2]); tm.setMatrixAt(i, m); }); tm.count = tanks.length; tm.castShadow = true; tm.frustumCulled = false; scene.add(tm); farCullAdd(tm);
     const dm = new THREE.InstancedMesh(new THREE.ConeGeometry(0.45, 0.22, 12).rotateX(-1.1).translate(0, 1.0, 0), new THREE.MeshLambertMaterial({ color: 0xd8d8d8 }), Math.max(1, dishes.length));
-    dishes.forEach((t, i) => { m.makeTranslation(t[0], t[1], t[2]); dm.setMatrixAt(i, m); }); dm.count = dishes.length; dm.frustumCulled = false; scene.add(dm);
+    dishes.forEach((t, i) => { m.makeTranslation(t[0], t[1], t[2]); dm.setMatrixAt(i, m); }); dm.count = dishes.length; dm.frustumCulled = false; scene.add(dm); farCullAdd(dm);
   }
   {                                                                 // postes de madeira nas vielas e fios (entre postes e entre lajes)
     const props0 = new Mesher(), pts = [], poles = [];
@@ -214,8 +214,8 @@ function buildFavela(F) {
       const b = pickOf(cands), ax = a.x + R(-1, 1), az = a.z + R(-1, 1), bx = b.x + R(-1, 1), bz = b.z + R(-1, 1), ay = a.top + 0.9, by = b.top + 0.9, sg = d => -Math.sin(d * Math.PI) * 0.9;
       for (let q = 0; q < 4; q++) { const t0 = q / 4, t1 = (q + 1) / 4; pts.push(lerp(ax, bx, t0), lerp(ay, by, t0) + sg(t0), lerp(az, bz, t0), lerp(ax, bx, t1), lerp(ay, by, t1) + sg(t1), lerp(az, bz, t1)); }
     }
-    scene.add(props0.build(propMat));
-    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); const lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0x15151a })); lines.frustumCulled = false; scene.add(lines);
+    scene.add(farCullAdd(props0.build(propMat)));
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); const lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0x15151a })); lines.frustumCulled = false; scene.add(lines); farCullAdd(lines);
   }
 
   /* --- quadra de futebol/praça no fim da ladeira --- */
@@ -266,7 +266,7 @@ function buildFavela(F) {
       k++; break;
     }
   }
-  scene.add(props.build(propMat));
+  scene.add(farCullAdd(props.build(propMat)));
 
   /* --- grafo de caminhos (ladeira + vielas): policiais e moradores andam por ele sem atravessar casas --- */
   {

@@ -159,6 +159,25 @@ const VEG_CHUNKS=[],_vf=new THREE.Frustum(),_vm=new THREE.Matrix4(),_vs=new THRE
 function updateVegetationCulling(){
   camera.updateMatrixWorld();_vm.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);_vf.setFromProjectionMatrix(_vm);const cp=camera.position;
   for(const c of VEG_CHUNKS){const d=Math.hypot(c.cx-cp.x,c.cz-cp.z)-c.r;let v=d<c.range;if(v){_vs.center.set(c.cx,Hq(c.cx,c.cz)+6,c.cz);_vs.radius=c.r+22;v=_vf.intersectsSphere(_vs)||d<60;}c.mesh.visible=v;if(c.cast)c.mesh.castShadow=d<80;}
+  if(FAR_CULL)updateFarCull();
+}
+/* Blocos estáticos (FARC) inteiramente além da névoa (profundidade de vista > fog.far) saem só como cor de névoa = cor do fundo: não desenhar não muda um pixel.
+   Só vale quando fundo e névoa têm a mesma cor (no pântano o fundo é misturado e a névoa encurta: aí tudo volta a ser desenhado). */
+const _fcD=new THREE.Vector3(),_fcB=new THREE.Box3(),_fcV=new THREE.Vector3(),_fcM=new THREE.Matrix4();
+function farSphere(m){            // esfera de mundo de uma malha (instanciada: cobre todas as instâncias; só para instâncias estáticas)
+  const g=m.geometry;if(!g.boundingSphere)g.computeBoundingSphere();if(!m.isInstancedMesh)return g.boundingSphere;
+  _fcB.makeEmpty();const gs=g.boundingSphere,a=m.instanceMatrix.array;
+  for(let i=0;i<m.count;i++){_fcM.fromArray(a,i*16);const k=Math.max(_fcM.getMaxScaleOnAxis(),1e-6);_fcV.copy(gs.center).applyMatrix4(_fcM);_fcB.expandByPoint(_fcV.clone().addScalar(gs.radius*k));_fcB.expandByPoint(_fcV.clone().addScalar(-gs.radius*k));}
+  const sp=new THREE.Sphere();_fcB.getBoundingSphere(sp);return sp;
+}
+function updateFarCull(){
+  const f=scene.fog,bg=scene.background,on=!!(f&&bg&&bg.isColor&&Math.abs(bg.r-f.color.r)+Math.abs(bg.g-f.color.g)+Math.abs(bg.b-f.color.b)<0.004);
+  camera.getWorldDirection(_fcD);const cp=camera.position,far=f?f.far+4:1e9;
+  for(const m of FARC){
+    let cull=false;
+    if(on){const s=m.isInstancedMesh?(m.__fs||(m.__fs=farSphere(m))):farSphere(m);cull=(s.center.x-cp.x)*_fcD.x+(s.center.y-cp.y)*_fcD.y+(s.center.z-cp.z)*_fcD.z-s.radius>far;}
+    if(cull!==!!m.__fc){m.__fc=cull;m.visible=!cull;}
+  }
 }
 const WHITE=new THREE.Color(1,1,1),dum=new THREE.Object3D();dum.rotation.order='YXZ';
 class Inst{

@@ -18,6 +18,17 @@ function fbm(x,z,o){let a=0.5,s=0,f=1,n=0;for(let i=0;i<o;i++){s+=a*vnoise(x*f,z
 const sdBox=(px,pz,cx,cz,hx,hz)=>{const qx=Math.abs(px-cx)-hx,qz=Math.abs(pz-cz)-hz;return Math.hypot(Math.max(qx,0),Math.max(qz,0))+Math.min(Math.max(qx,qz),0);};
 const smin=(a,b,k)=>{const h=clamp(0.5+0.5*(b-a)/k,0,1);return lerp(b,a,h)-k*h*(1-h);};
 
+/* ---- interruptores de otimização de desenho (engine/docs/desempenho-batching.md) ----
+   NOBATCH = true desliga TODAS de uma vez (também com ?nobatch=1 na URL, para medir antes/depois); cada uma tem seu interruptor no topo do arquivo dela. */
+const NOBATCH = typeof location !== 'undefined' && /[?&]nobatch=1/.test(location.search);
+const FAR_CULL = !NOBATCH && true;       // blocos estáticos (terreno, cidade) inteiros além da névoa (fog.far) não são desenhados: seriam só cor de névoa. Função: updateFarCull (foliage-lib.js)
+const FARC = [];
+function farCullAdd(m) {
+  if (!FAR_CULL || !m || !(m.isMesh || m.isLineSegments) || m.isSkinnedMesh) return m;
+  const ms = Array.isArray(m.material) ? m.material : [m.material]; if (!ms.every(x => x && x.fog !== false && !x.isShaderMaterial)) return m;
+  FARC.push(m); return m;
+}
+
 /* junta geometrias estáticas em poucas malhas (por material e por bloco de 150 m): menos chamadas de desenho, com culling por bloco */
 class GeoBatch {
   constructor(cell) { this.cell = cell || 150; this.map = new Map(); }
@@ -32,7 +43,7 @@ class GeoBatch {
       const P = new Float32Array(nv * 3), N = new Float32Array(nv * 3), U = new Float32Array(nv * 2), I = new Uint32Array(ni), hasC = !!b.geos[0].attributes.color, C = hasC ? new Float32Array(nv * 3) : null; let vo = 0, io = 0;
       const es = []; for (const g of b.geos) { if (g.__ent) es.push([g.__ent, vo, vo + g.attributes.position.count]); if (hasC) C.set(g.attributes.color.array, vo * 3); P.set(g.attributes.position.array, vo * 3); N.set(g.attributes.normal.array, vo * 3); U.set(g.attributes.uv.array, vo * 2); const ix = g.index.array; for (let i = 0; i < ix.length; i++) I[io + i] = ix[i] + vo; vo += g.attributes.position.count; io += ix.length; g.dispose(); }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); if (hasC) g.setAttribute('color', new THREE.BufferAttribute(C, 3)); g.setIndex(new THREE.BufferAttribute(I, 1)); g.computeBoundingSphere();
-      const m = new THREE.Mesh(g, b.mat); m.castShadow = !!cast; m.receiveShadow = receive !== false; scene.add(m);
+      const m = new THREE.Mesh(g, b.mat); m.castShadow = !!cast; m.receiveShadow = receive !== false; scene.add(m); farCullAdd(m);
       for (const [e, s0, s1] of es) e.gsegs.push({ mesh: m, start: s0, end: s1 });          // entidades do mundo (editor): onde cada prédio foi parar na malha juntada
     }
     this.map.clear();
