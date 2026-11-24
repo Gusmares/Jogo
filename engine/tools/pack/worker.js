@@ -67,7 +67,11 @@ function pickTex(cands, dir) {
 }
 function findTex(base, dir) {
   const lb = base.toLowerCase(), stem = lb.replace(/\.[a-z0-9]+$/, '');
-  return pickTex(PX.texIndex.names[lb], dir) || pickTex(PX.texIndex.stems[stem], dir) || pickTex(PX.texIndex.stems[stem.replace(/[^a-z0-9]+/g, '')], dir);
+  const hit = pickTex(PX.texIndex.names[lb], dir) || pickTex(PX.texIndex.stems[stem], dir) || pickTex(PX.texIndex.stems[stem.replace(/[^a-z0-9]+/g, '')], dir);
+  if (hit) return hit;
+  // nomes de arquivo truncados pelo exportador (ex.: "..._BaseColo.png", "..._Dama.png"): o arquivo existente é prefixo do pedido
+  if (stem.length > 20) { let best = null, bl = 0; for (const k of Object.keys(PX.texIndex.stems)) { if (k.length < 20 || k.length >= stem.length || k.length <= bl || !stem.startsWith(k)) continue; const tail = stem.slice(k.length); if (tail.length <= 3 || /basecolor|albedo|diffuse/.test(stem)) { best = k; bl = k.length; } } if (best) return pickTex(PX.texIndex.stems[best], dir); }
+  return null;
 }
 const imgPath = im => { const s = im && im.src; if (typeof s !== 'string') return null; if (s.startsWith('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==')) return { missing: decodeURIComponent(s.split('#')[1] || '?') }; const i = s.indexOf('/p/'); return i >= 0 ? { rel: decodeURIComponent(s.slice(i + 3).split('?')[0]) } : null; };
 
@@ -390,7 +394,7 @@ async function simplify(geo, ratio) {
   const pos = geo.attributes.position.array, nrm = geo.attributes.normal.array, uv = geo.attributes.uv ? geo.attributes.uv.array : null, n = pos.length / 3, attrs = new Float32Array(n * 5);
   for (let i = 0; i < n; i++) { attrs[i * 5] = nrm[i * 3]; attrs[i * 5 + 1] = nrm[i * 3 + 1]; attrs[i * 5 + 2] = nrm[i * 3 + 2]; if (uv) { attrs[i * 5 + 3] = uv[i * 2]; attrs[i * 5 + 4] = uv[i * 2 + 1]; } }
   const idx = Uint32Array.from(geo.index.array), want = Math.max(3, Math.floor(idx.length * ratio / 3) * 3);
-  const [r] = SIMP.simplifyWithAttributes(idx, pos, 3, attrs, 5, [0.3, 0.3, 0.3, 1.6, 1.6], null, want, 0.5, ['Sparse']);
+  const [r] = SIMP.simplifyWithAttributes(idx, pos, 3, attrs, 5, [0.3, 0.3, 0.3, 1.6, 1.6], null, want, 0.5, ['Sparse', 'Prune']);
   const map = new Map(), keep = []; for (const v of r) if (!map.has(v)) { map.set(v, keep.length); keep.push(v); }
   const g = new THREE.BufferGeometry(); for (const key of ['position', 'normal', 'uv', 'color']) { const A = geo.attributes[key]; if (!A) continue; const sz = A.itemSize, arr = new Float32Array(keep.length * sz); keep.forEach((v, i) => { for (let j = 0; j < sz; j++) arr[i * sz + j] = A.array[v * sz + j]; }); g.setAttribute(key, new THREE.BufferAttribute(arr, sz)); }
   g.setIndex(new THREE.BufferAttribute(keep.length > 65535 ? Uint32Array.from(r, v => map.get(v)) : Uint16Array.from(r, v => map.get(v)), 1)); return g;
@@ -417,6 +421,7 @@ function toStd(m, o) {
   else if (m.transparent && op < 0.98) { s.transparent = true; s.opacity = op; s.depthWrite = false; s.side = m.side; rep.mode = 'BLEND'; }
   else { rep.mode = 'OPACO'; if (m.side === THREE.DoubleSide) s.side = THREE.DoubleSide; }
   if (o.veg && rep.mode === 'MASK') s.side = THREE.DoubleSide;
+  if (s.metalness > 0.3) { s.metalness = 0.3; rep.metalCap = true; }   // o jogo não tem envMap: metal cheio renderiza preto; limita a 0,3 (o mapa de metal modula abaixo disso)
   return { mat: s, rep };
 }
 
@@ -433,6 +438,7 @@ async function buildUnit(e, frame, o) {
   if (!buckets.size) throw new Error('sem geometria');
   const box = new THREE.Box3(); let list = [];
   for (const [mat, geos] of buckets) { const g = mergeGeos(geos); g.computeBoundingBox(); box.union(g.boundingBox); list.push({ mat, g }); }
+  if (o.target) { const sz0 = box.getSize(new THREE.Vector3()), t = o.target, f = t.h ? t.h / sz0.y : t.max ? t.max / Math.max(sz0.x, sz0.y, sz0.z) : t.len ? t.len / Math.max(sz0.x, sz0.z) : 1; if (f > 0 && isFinite(f)) { const S = new THREE.Matrix4().makeScale(f, f, f); box.makeEmpty(); for (const x of list) { x.g.applyMatrix4(S); x.g.computeBoundingBox(); box.union(x.g.boundingBox); } o.warn.push('alvo aplicado: ×' + round(f, 4) + ' sobre a escala do arquivo'); } }
   let tris = list.reduce((s, x) => s + x.g.index.count / 3, 0), decimated = null;
   if (o.maxTris && tris > o.maxTris) {
     if (o.decimate) { const r = o.maxTris / tris; const nl = []; for (const x of list) nl.push({ mat: x.mat, g: x.g.index.count / 3 > 30 ? await simplify(x.g, r) : x.g }); list = nl; const t2 = list.reduce((s, x) => s + x.g.index.count / 3, 0); decimated = { de: Math.round(tris), para: Math.round(t2) }; tris = t2; box.makeEmpty(); for (const x of list) { x.g.computeBoundingBox(); box.union(x.g.boundingBox); } }
@@ -440,7 +446,7 @@ async function buildUnit(e, frame, o) {
   }
   const c = box.getCenter(new THREE.Vector3()), dx = -c.x, dy = -box.min.y, dz = -c.z, grp = new THREE.Group(); grp.name = e.nome;
   const texInfo = []; let i = 0;
-  for (const x of list) { x.g.translate(dx, dy, dz); x.g.computeBoundingSphere(); const { mat, rep } = toStd(x.mat, { maxTex: o.maxTex, veg: o.veg, vertexColors: o.vertexColors }); reps.push(rep); const mesh = new THREE.Mesh(x.g, mat); mesh.name = (mat.name || 'malha') + '_' + (i++); grp.add(mesh); }
+  for (const x of list) { x.g.translate(dx, dy, dz); x.g.computeBoundingSphere(); const { mat, rep } = toStd(x.mat, { maxTex: o.maxTex, veg: o.veg, vertexColors: o.vertexColors }); if (o.colors && !mat.map) { const k = Object.keys(o.colors).find(c => (mat.name || '').toLowerCase().includes(c.toLowerCase())); if (k) { mat.color.set(o.colors[k]); rep.cor = o.colors[k] + ' (' + (mat.name || '?') + ')'; o.warn.push('cor ' + o.colors[k] + ' no material ' + (mat.name || '?')); } } reps.push(rep); const mesh = new THREE.Mesh(x.g, mat); mesh.name = (mat.name || 'malha') + '_' + (i++); grp.add(mesh); }
   const size = box.getSize(new THREE.Vector3());
   return { group: grp, tris: Math.round(tris), dims: { width: round(size.x), height: round(size.y), len: round(size.z) }, reps, decimated };
 }
@@ -455,12 +461,15 @@ async function splitFile(rel, opt) {
   for (const e of entries) {
     if (e._lodDe) { skipped.push({ nome: e.nome, motivo: 'LOD ' + e.lodNivel + ' de outro modelo (registrado em "lods")' }); continue; }
     if (only && !only.some(k => e.slug.includes(slugOf(k)) || e.no.toLowerCase().includes(k) || e.nome.toLowerCase().includes(k))) continue;
+    const T = opt.tune || {}, hit = tbl => { if (!tbl) return null; const k = Object.keys(tbl).find(x => slugOf(x) === e.slug || x.toLowerCase() === e.no.toLowerCase()); return k === undefined ? null : tbl[k]; };
+    e._target = hit(T.targets); e._ocolors = T.colors || null;   // chaves = slug/nó ORIGINAL (antes de renomear)
+    { const nn = hit(T.names); if (nn) { e.nome = nn; e.slug = slugOf(nn) || e.slug; } }
     const own = opt.owned[rel + '|' + e.chave]; { let n = 2, nm = e.nome; while (usedNames.has(nm.toLowerCase())) nm = e.nome + ' ' + n++; usedNames.add(nm.toLowerCase()); e.nome = nm; }
     let id;
     if (own && !opt.redo) { skipped.push({ nome: e.nome, id: own, motivo: 'já importado antes (use --redo para refazer)' }); continue; }
     if (own) id = own; else { const base = (opt.prefix + e.slug).slice(0, 56).replace(/_+$/, ''); id = base; let n = 2; while (taken.has(id) || id.length < 2) id = base + '_' + n++; }
     taken.add(id);
-    const w = []; const o = { maxTex: opt.maxTex, maxTris: opt.maxTris, decimate: opt.decimate, veg: opt.veg || e.veg, vertexColors: true, warn: w };
+    const w = []; const o = { target: e._target, colors: e._ocolors, maxTex: opt.maxTex, maxTris: opt.maxTris, decimate: opt.decimate, veg: opt.veg || e.veg, vertexColors: true, warn: w };
     try {
       const r = await buildUnit(e, frame, o);
       if (r.skip) { skipped.push({ nome: e.nome, id, motivo: r.skip }); continue; }
@@ -488,21 +497,24 @@ async function verifyGLB(id) {
   const s = box.getSize(new THREE.Vector3());
   return { id, mb: round(buf.byteLength / 1048576, 2), meshes, tris: Math.round(tris), dims: { width: round(s.x), height: round(s.y), len: round(s.z) }, baseY: round(box.min.y, 3), centroX: round((box.min.x + box.max.x) / 2, 3), centroZ: round((box.min.z + box.max.z) / 2, 3), materiais: mats.size, mascaras: alpha, invisiveis: invis, texturas: [...new Set(texs)].join(' '), nan, _scene: gltf.scene };
 }
-async function sheet(ids, outName, cols) {
+async function sheet(ids, outName, cols, ref) {
   cols = Math.min(cols, ids.length); const W = 400 * cols, cell = 400, rows = Math.ceil(ids.length / cols), H = rows * cell;
   const rr = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: false }); rr.setSize(W, H); rr.setScissorTest(true); rr.outputEncoding = THREE.sRGBEncoding; rr.setClearColor(0x2a3140, 1);
-  const lines = []; let i = 0;
+  const lines = [], dl2 = []; let i = 0;
   for (const id of ids) {
-    let v; try { v = await verifyGLB(id); } catch (e) { lines.push(id + ': ' + e.message); i++; continue; }
+    let v; try { v = await verifyGLB(id); } catch (e) { lines.push(id + ': ' + e.message); dl2.push(null); i++; continue; }
     const sc = new THREE.Scene(); sc.background = new THREE.Color(0x3a4256); sc.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.1)); const dl = new THREE.DirectionalLight(0xffffff, 1.4); dl.position.set(3, 6, 4); sc.add(dl);
     const obj = v._scene; sc.add(obj); const g = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x586070, roughness: 1 })); g.rotation.x = -Math.PI / 2; g.position.y = -0.002; sc.add(g);
-    const bb = new THREE.Box3().setFromObject(obj), sz = bb.getSize(new THREE.Vector3()), r = Math.max(sz.length() * 0.5, 0.05), cam = new THREE.PerspectiveCamera(32, 1, r * 0.05, r * 40), cx = (i % cols) * cell, cy = (rows - 1 - Math.floor(i / cols)) * cell;
+    const bb0 = new THREE.Box3().setFromObject(obj); const fig = new THREE.Group(); fig.name = 'ref175';   // figura de referência: pessoa de 1,75 m ao lado do modelo
+    { const fm = new THREE.MeshStandardMaterial({ color: 0xff7a1a, roughness: .8 }); const body = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.17, 1.45, 14), fm); body.position.y = 0.725; const head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 10), fm); head.position.y = 1.6; fig.add(body, head); const cx0 = (bb0.min.x + bb0.max.x) / 2, w0 = bb0.max.x - bb0.min.x; fig.position.set(bb0.max.x + 0.45 + 0.2, 0, (bb0.min.z + bb0.max.z) / 2); void cx0; void w0; }
+    if (ref !== false) sc.add(fig);
+    const bb = new THREE.Box3().setFromObject(ref !== false ? new THREE.Group().add(obj.clone(), fig.clone()) : obj); if (ref !== false) { bb.min.y = 0; } const sz = bb.getSize(new THREE.Vector3()), r = Math.max(sz.length() * 0.5, 0.05), cam = new THREE.PerspectiveCamera(32, 1, r * 0.05, r * 40), cx = (i % cols) * cell, cy = (rows - 1 - Math.floor(i / cols)) * cell;
     const ctr = bb.getCenter(new THREE.Vector3()); cam.position.set(ctr.x + r * 2.1, ctr.y + r * 1.1, ctr.z + r * 2.6); cam.lookAt(ctr);
     rr.setViewport(cx, cy, cell, cell); rr.setScissor(cx, cy, cell, cell); rr.render(sc, cam); i++;
-    lines.push(id + ' ' + v.tris + ' tri ' + v.dims.width + 'x' + v.dims.height + 'x' + v.dims.len + ' m ' + v.mb + ' MB');
+    dl2.push(v.dims); lines.push(id + ' ' + v.tris + ' tri ' + v.dims.width + 'x' + v.dims.height + 'x' + v.dims.len + ' m ' + v.mb + ' MB');
   }
   const c2 = document.createElement('canvas'); c2.width = W; c2.height = H; const g2 = c2.getContext('2d'); g2.drawImage(rr.domElement, 0, 0); g2.font = '14px sans-serif';
-  ids.forEach((id, k) => { const x = (k % cols) * cell + 6, y = Math.floor(k / cols) * cell + 18; g2.fillStyle = 'rgba(0,0,0,.55)'; g2.fillRect(x - 4, y - 14, Math.min(cell - 8, g2.measureText(id).width + 10), 20); g2.fillStyle = '#fff'; g2.fillText(id, x, y); });
+  ids.forEach((id, k) => { const x = (k % cols) * cell + 6, y = Math.floor(k / cols) * cell + 18; g2.fillStyle = 'rgba(0,0,0,.55)'; g2.fillRect(x - 4, y - 14, Math.min(cell - 8, g2.measureText(id).width + 10), 20); g2.fillStyle = '#fff'; g2.fillText(id, x, y); const d = dl2[k]; if (d) { g2.fillStyle = 'rgba(0,0,0,.55)'; g2.fillRect(x - 4, y + 8, 250, 20); g2.fillStyle = '#ffd37a'; g2.fillText(d.width + ' x ' + d.height + ' x ' + d.len + ' m (L x A x C)', x, y + 23); } });
   const blob = await new Promise(r => c2.toBlob(r, 'image/png')); await post('_inventario/' + outName, blob, 'image/png'); rr.dispose(); return lines;
 }
 
@@ -513,7 +525,7 @@ window.packRun = async (cmd, a) => {
     if (cmd === 'inspect') return { ok: true, r: await inspectFile(a.file, a.opt || {}).then(r => { r.unidades = r.unidades.map(strip); return r; }) };
     if (cmd === 'split') return { ok: true, r: await splitFile(a.file, a.opt) };
     if (cmd === 'verify') { const out = []; for (const id of a.ids) { try { const v = await verifyGLB(id); delete v._scene; out.push(v); } catch (e) { out.push({ id, erro: e.message }); } } return { ok: true, r: out }; }
-    if (cmd === 'sheet') return { ok: true, r: await sheet(a.ids, a.out, a.cols || 4) };
+    if (cmd === 'sheet') return { ok: true, r: await sheet(a.ids, a.out, a.cols || 4, a.ref) };
     return { ok: false, erro: 'comando desconhecido ' + cmd };
   } catch (e) { return { ok: false, erro: e.message, stack: e.stack }; }
 };

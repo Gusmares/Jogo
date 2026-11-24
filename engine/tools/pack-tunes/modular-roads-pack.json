@@ -1,0 +1,9 @@
+{
+  "_doc": "modular-roads-pack: FBX em cm; largura de pista crua = 38 unidades. O jogo tem RW = 18 m de rua (js/core/util.js), então --scale 0.47368 (38 x 0,47368 = 18,0 m).",
+  "names": {
+    "rua_1x_reta": "Rua reta 1x", "rua_2x_reta": "Rua reta 2x", "rua_4x_reta": "Rua reta 4x",
+    "rua_l_cruzamento": "Rua cruzamento em L", "rua_t_cruzamento": "Rua cruzamento em T", "rua_x_cruzamento": "Rua cruzamento em X",
+    "rua_4x_half_circle": "Rua retorno semicircular 4x", "rua_2x_half_circle": "Rua retorno semicircular 2x", "rua_1x_half_circle": "Rua retorno semicircular 1x"
+  },
+  "targets": {}, "colors": {}
+}

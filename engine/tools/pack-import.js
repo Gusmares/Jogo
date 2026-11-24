@@ -11,7 +11,7 @@
 const fs = require('fs'), path = require('path'), crypto = require('crypto'), http = require('http'), { spawn, spawnSync } = require('child_process');
 const REPO = path.resolve(__dirname, '..', '..');
 const argv = process.argv.slice(2);
-const FLAGS_VAL = new Set(['cat', 'prefix', 'max-tex', 'only', 'max-tris', 'scale', 'mode', 'file', 'project', 'out', 'blender', 'cols']);
+const FLAGS_VAL = new Set(['cat', 'prefix', 'max-tex', 'only', 'max-tris', 'scale', 'mode', 'file', 'project', 'out', 'blender', 'cols', 'tune']);
 function parseArgs(a) { const o = { _: [] }; for (let i = 0; i < a.length; i++) { const x = a[i]; if (x.startsWith('--')) { const k = x.slice(2); if (FLAGS_VAL.has(k)) o[k] = a[++i]; else o[k] = true; } else o._.push(x); } return o; }
 const A = parseArgs(argv), CMD = A._[0];
 
@@ -225,7 +225,7 @@ async function cmdSplit() {
   const filter = A.file ? String(A.file).toLowerCase() : null;
   for (const rel of c.models) {
     if (filter && !rel.toLowerCase().includes(filter)) continue;
-    let r; try { r = await call('split', { file: rel, opt: Object.assign(pageOpts(pack), { pack, cat, prefix, maxTex, maxTris, decimate: !!A.decimate, veg: !!A.veg, dry: !!A.dry, redo: !!A.redo, only: A.only ? String(A.only).split(',').map(s => s.trim()).filter(Boolean) : null, existingIds: taken, owned }) }); }
+    let r; try { r = await call('split', { file: rel, opt: Object.assign(pageOpts(pack), { pack, cat, prefix, maxTex, maxTris, decimate: !!A.decimate, veg: !!A.veg, dry: !!A.dry, redo: !!A.redo, tune: A.tune ? JSON.parse(fs.readFileSync(path.resolve(String(A.tune)), 'utf8')) : null, only: A.only ? String(A.only).split(',').map(s => s.trim()).filter(Boolean) : null, existingIds: taken, owned }) }); }
     catch (e) { say('\n== ' + rel + '\nERRO: ' + e.message.split('\n')[0]); log.arquivos.push({ arquivo: rel, erro: e.message.split('\n')[0] }); continue; }
     r.feitos.forEach(m => { taken.push(m.id); madeIds.push(m.id); });
     say('\n== ' + rel + '  Z-up ' + (r.zUp ? 'SIM' : 'não') + ' (' + r.zUpMotivo + ')  escala ×' + r.escala + ' (' + r.escalaMotivo + ')  ' + r.detectados + ' modelos detectados');
@@ -243,7 +243,7 @@ async function cmdSplit() {
     say('VERIFICAÇÃO (cada GLB reaberto):'); say(pad('id', 36) + pad('MB', 7) + pad('malhas', 7) + pad('tris', 8) + pad('caixa (m)', 22) + pad('base y', 8) + 'texturas'); let bad = 0;
     for (const x of v) { if (x.erro) { bad++; say(pad(x.id, 36) + 'ERRO ' + x.erro); continue; } const sus = x.nan || !x.meshes || x.invisiveis || Math.abs(x.baseY) > 0.01; if (sus) bad++; say(pad(x.id, 36) + pad(x.mb, 7) + pad(x.meshes, 7) + pad(x.tris, 8) + pad(dimsStr(x.dims), 22) + pad(x.baseY, 8) + x.texturas + (sus ? '  <-- SUSPEITO' : '')); }
     say(bad ? bad + ' GLB(s) suspeito(s)' : 'todos os GLBs abrem, têm malha, base em y=0'); const mbTot = v.reduce((s, x) => s + (x.mb || 0), 0); say('tamanho total: ' + mbTot.toFixed(1) + ' MB');
-    if (!A['no-sheet']) { const n = Math.min(12, madeIds.length), pick = madeIds.length <= 12 ? madeIds : Array.from({ length: n }, (_, i) => madeIds[Math.round(i * (madeIds.length - 1) / (n - 1))]); const lines = await call('sheet', { ids: pick, out: pack + '_contato.png', cols: A.cols ? +A.cols : 4 }); say('folha de contato: assets/_inventario/' + pack + '_contato.png (' + pick.length + ' modelos)'); }
+    if (!A['no-sheet']) { const n = Math.min(12, madeIds.length), pick = madeIds.length <= 12 ? madeIds : Array.from({ length: n }, (_, i) => madeIds[Math.round(i * (madeIds.length - 1) / (n - 1))]); const lines = await call('sheet', { ids: pick, out: pack + '_contato.png', cols: A.cols ? +A.cols : 4, ref: !A['no-ref'] }); say('folha de contato: assets/_inventario/' + pack + '_contato.png (' + pick.length + ' modelos)'); }
   }
   srv.server.close();
 }
@@ -252,7 +252,7 @@ async function cmdVerify() {
   const ids = spec.split(',').flatMap(s => s.endsWith('*') ? all.filter(i => i.startsWith(s.slice(0, -1))) : [s]);
   const srv = await boot(ASSETS); await call('setup', { texIndex: { names: {}, stems: {}, mtl: [], all: [] } });
   const v = await call('verify', { ids }); for (const x of v) say(x.erro ? x.id + ' ERRO ' + x.erro : pad(x.id, 36) + pad(x.mb + ' MB', 10) + pad(x.meshes + ' malhas', 11) + pad(x.tris + ' tris', 11) + dimsStr(x.dims) + ' m  base y=' + x.baseY + '  ' + x.texturas);
-  if (A.out) await call('sheet', { ids: ids.slice(0, 24), out: path.basename(String(A.out)), cols: A.cols ? +A.cols : 4 });
+  if (A.out) await call('sheet', { ids: ids.slice(0, 24), out: path.basename(String(A.out)), cols: A.cols ? +A.cols : 4, ref: !A['no-ref'] });
   srv.server.close();
 }
 

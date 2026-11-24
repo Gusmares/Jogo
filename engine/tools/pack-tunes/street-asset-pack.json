@@ -1,0 +1,23 @@
+{
+  "_doc": "street-asset-pack: FBX em cm, escala base 0,005. targets (h = altura final em m, len = maior lado horizontal, max = maior dimensão). Chaves = slug original do inspect.",
+  "names": {
+    "bottle_2": "Garrafa deitada", "bottle": "Garrafa",
+    "shard": "Caco de vidro 1", "shard_2": "Caco de vidro 2", "shard_3": "Caco de vidro 3", "shard_4": "Caco de vidro 4",
+    "cup_1": "Copo de papel", "cup_2": "Copo de papel caído",
+    "base": "Cone de trânsito", "warning": "Placa de alerta", "no_waiting": "Placa proibido parar", "ponto": "Placa de pare", "give_way": "Placa dê a preferência",
+    "trashbag": "Saco de lixo", "trashbag_2": "Saco de lixo 2",
+    "metal_barreira_1": "Barreira de metal 1", "metal_barreira_2": "Barreira de metal 2",
+    "metal_barreira_damaged_1": "Barreira de metal danificada 1", "metal_barreira_damaged_2": "Barreira de metal danificada 2",
+    "red_barreira": "Barreira vermelha", "concrete_barreira": "Barreira de concreto",
+    "cardboard_caixa": "Caixa de papelão", "cardboard_caixa_2_cardboard_2": "Caixa de papelão 2",
+    "barril": "Tambor de obra", "hidrante": "Hidrante", "poste_1": "Haste de placa 1", "poste_2": "Haste de placa 2", "lixeira": "Lixeira"
+  },
+  "targets": {
+    "bottle": { "h": 0.28 }, "bottle_2": { "max": 0.28 },
+    "base": { "h": 0.7 },
+    "warning": { "h": 2.6 }, "no_waiting": { "h": 2.6 }, "ponto": { "h": 2.6 }, "give_way": { "h": 2.6 },
+    "hidrante": { "h": 0.8 }, "lixeira": { "h": 1.0 }, "barril": { "h": 0.9 },
+    "concrete_barreira": { "h": 1.0 }, "poste_1": { "h": 2.4 }, "poste_2": { "h": 2.4 }
+  },
+  "colors": {}
+}
