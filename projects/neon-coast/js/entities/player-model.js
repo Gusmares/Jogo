@@ -130,6 +130,8 @@ function updatePlayerActor(dt, spd, onGround, gy) {
       overlay = ovc; ovT = (weapons.sinceShot < 0.4 && !A.holdFire) ? weapons.sinceShot * 1.8 : ovt;            // pernas andando; braços na pose de mira (e no recuo)
     }
   }
+  else if (player.skidT > 0 && spd > 1.5 && hasClipP('Run_stopR')) { clip = 'Run_stopR'; loop = false; rate = 1.25; }        // meia-volta correndo: derrapa antes de virar
+  else if (player.stopT > 0 && spd > 1.2 && hasClipP('Run_stop')) { clip = 'Run_stop'; loop = false; rate = 1.1; }           // soltou a corrida: freada
   else if (spd > 6.5) { clip = 'sprint_civi'; rate = clamp(spd / 7.5, 0.6, 1.5); }
   else if (spd > 2.8) { clip = 'run_player'; rate = clamp(spd / 4.8, 0.6, 1.5); }
   else if (spd > 0.5) { clip = 'WALK_player'; rate = clamp(spd / 1.8, 0.6, 1.6); }
@@ -143,6 +145,10 @@ function updatePlayerActor(dt, spd, onGround, gy) {
   else a.ap.update(dt);
   if (ok) applyAimPitch(a, (armed && !restHold && typeof weapons !== 'undefined' && !wAnim(ws).melee) ? weapons.pitch : 0);
   if (ok && armed && ws && weapons.reloading <= 0 && !wAnim(ws).melee) { const A = wAnim(ws); if (!restHold) alignWeaponArm(a, A); else if (A.twoHand && A.lhand) leftHandIK(a, A); }
+  /* inclinação na curva/arrancada e cabeça olhando para onde a câmera olha (estilo GTA IV) */
+  a.group.rotation.order = 'YXZ'; const freeBody = !player.dead && !air && !emoteOn && player.stun <= 0;
+  a.group.rotation.z = freeBody ? (player.lean || 0) : 0; a.group.rotation.x = freeBody ? (player.pitchLean || 0) : 0;
+  if (ok && typeof headLook === 'function') { const aimingHead = armed && !restHold; headLook(a, freeBody && !aimingHead && spd < 7 ? clamp(wrap(cam.a - player.h), -1.15, 1.15) * 0.8 : 0); }
   if (ok) plantActor(a, player.dead ? player.y : p.y);
 }
 loadPlayerOutfit(0, false);

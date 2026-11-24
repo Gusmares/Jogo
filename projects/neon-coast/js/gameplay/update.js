@@ -16,7 +16,24 @@ function updateFoot(dt){
   else{player.stam=Math.min(100,player.stam+(l>0?10:16)*dt);if(player.exhausted&&player.stam>25)player.exhausted=false;}
   const wade=Hq(player.x,player.z)<WL;
   const sp=(wantSprint?9:aimingNow?2.7:4.8)*(wade?0.6:1),tx=l>0?dx/l*sp:0,tz=l>0?dz/l*sp:0,k=Math.min(1,dt*(player.y>gy0+0.1?3:12));
-  if(stunned){player.vx=player.vz=0;}else{player.vx+=(tx-player.vx)*k;player.vz+=(tz-player.vz)*k;}
+  /* movimento com inércia (estilo GTA IV): a pé e sem mirar, o personagem acelera aos poucos, faz a curva com raio (quanto mais rápido, mais aberta),
+     freia escorregando ao soltar e, numa virada brusca correndo, freia antes de virar. Mirando (ou no ar) continua direto, como antes. */
+  if(player.mv===undefined)player.mv=0;
+  const h0=player.h;
+  if(stunned){player.vx=player.vz=0;player.mv=0;}
+  else if(aimingNow||player.y>gy0+0.1){player.vx+=(tx-player.vx)*k;player.vz+=(tz-player.vz)*k;player.mv=Math.hypot(player.vx,player.vz);player.skidT=0;}
+  else{
+    const want=l>0?sp:0,wantH=l>0?Math.atan2(dx,dz):player.h,diff=wrap(wantH-player.h);
+    const sharp=l>0&&Math.abs(diff)>2.3&&player.mv>3.6;                 // meia-volta correndo: primeiro freia (derrapada)
+    if(sharp&&!(player.skidT>0))player.skidT=0.45;
+    const turnRate=player.mv<1.2?12:lerp(9,3.8,clamp((player.mv-1.2)/7.8,0,1));
+    if(l>0&&!sharp)player.h+=clamp(diff,-turnRate*dt,turnRate*dt);
+    const target=sharp?0:want*(1-0.35*smooth(0.6,1.6,Math.abs(diff))*(player.mv>2?1:0)),acc=target>player.mv?(player.mv<2?7.5:wantSprint?5:6):(sharp?17:l>0?7:9.5);
+    if(l===0&&player.mv>4.2&&!(player.stopT>0))player.stopT=0.55;     // soltou a corrida: freada
+    player.mv+=clamp(target-player.mv,-acc*dt,acc*dt);
+    player.vx=Math.sin(player.h)*player.mv;player.vz=Math.cos(player.h)*player.mv;
+  }
+  player.skidT=Math.max(0,(player.skidT||0)-dt);player.stopT=l>0?0:Math.max(0,(player.stopT||0)-dt);
   const ox=player.x,oz=player.z;let nx=ox+player.vx*dt,nz=oz+player.vz*dt;
   const step=Math.hypot(nx-ox,nz-oz);
   if(step>1e-5&&wasGround){const rise=footGround(nx,nz)-gy0;if(rise>STEP_UP&&rise>0.95*step){nx=ox;nz=oz;player.vx=player.vz=0;}}
@@ -24,14 +41,19 @@ function updateFoot(dt){
   const p={x:nx,z:nz};pushOut(p,0.5,nearby(p.x,p.z));
   for(const c of cars)for(const[cx,cz]of carCircles(c)){const ddx=p.x-cx,ddz=p.z-cz,d=Math.hypot(ddx,ddz),rr_=0.5+c.cr;if(d<rr_&&d>1e-4){p.x+=ddx/d*(rr_-d);p.z+=ddz/d*(rr_-d);}}
   if(typeof forNear==='function')forNear(p.x,p.z,1.2,o=>{if(o.ph==='hit'||o.ph==='dead'||o.ph==='down')return;const dx=p.x-o.x,dz=p.z-o.z,d=Math.hypot(dx,dz),min=0.5+(o.r||0.34);if(d<min&&d>1e-4){const w=(o.fixed||o.anchored)?1:0.5;p.x+=dx/d*(min-d)*w;p.z+=dz/d*(min-d)*w;}});
+  if(!aimingNow&&dt>0){const moved=Math.hypot(p.x-ox,p.z-oz)/dt;if(moved<player.mv*0.6)player.mv=Math.max(moved,0);}   // bateu na parede: perde a velocidade
   player.x=p.x;player.z=p.z;
+  /* corpo inclinado para dentro da curva e para a frente ao arrancar (como os grupos de movimento do IV) */
+  {const tr=dt>0?wrap(player.h-h0)/dt:0,acc=dt>0?(player.mv-(player.mvPrev||0))/dt:0;player.mvPrev=player.mv;
+   const lt=(aimingNow||stunned)?0:clamp(-tr*player.mv*0.045,-0.2,0.2),pt=(aimingNow||stunned)?0:clamp(acc*0.018,-0.09,0.1);
+   player.lean=(player.lean||0)+(lt-(player.lean||0))*Math.min(1,dt*7);player.pitchLean=(player.pitchLean||0)+(pt-(player.pitchLean||0))*Math.min(1,dt*5);}
   const gy=footGround(player.x,player.z);let jumped=false;
   if(keys.Space&&wasGround&&!stunned){player.vy=7.5;jumped=true;}
   player.vy-=24*dt;player.y+=player.vy*dt;
   if(player.y<gy||(wasGround&&!jumped&&player.vy<=0&&player.y-gy<0.5)){player.y=gy;player.vy=0;}
   const spd=Math.hypot(player.vx,player.vz);
   if(aimingNow)player.h+=wrap(cam.a-player.h)*Math.min(1,dt*18);
-  else if(spd>0.4)player.h+=wrap(Math.atan2(player.vx,player.vz)-player.h)*Math.min(1,dt*14);
+  else if(spd>0.4&&player.y>gy+0.1)player.h+=wrap(Math.atan2(player.vx,player.vz)-player.h)*Math.min(1,dt*14);   // no chão, a direção vem do movimento com inércia
   if(stunned&&player.grabbedBy)player.h+=wrap(Math.atan2(player.grabbedBy.x-player.x,player.grabbedBy.z-player.z)-player.h)*Math.min(1,dt*8);
   player.phase+=spd*dt*2.4;animPerson(player.mesh,player.phase,Math.min(spd/6,1)*0.9);
   const wy=(player.y<gy+0.3&&gy<WL)?Math.min(0.55,0.15+(WL-gy)*0.8):0;
@@ -83,6 +105,7 @@ function updateAICar(c,dt){
       if(st!==0&&toLine>-1.2&&(st===2||toLine>brake+1.5))lightStop=Math.max(0,toLine);}}
   let target=blocked?0:c.cruise*(1-Math.min(0.55,Math.abs(diff)*0.6));
   if(lightStop<99)target=Math.min(target,lightStop<0.6?0:Math.sqrt(2*4.2*Math.max(0,lightStop-0.4)));
+  {const mood=typeof aiDriverMood==='function'?aiDriverMood(c,dt,target):null;if(mood)target=blocked?0:mood[0];}   // motorista com medo/irritado (ped-ai.js): foge acelerando, para para largar o carro ou descer
   if(usesCarPhysics(c)){driveCarAI(c,dt,target,diff);return;}
   c.speed+=clamp(target-c.speed,-24*dt,6*dt);if(c.speed>0.3)c.h+=clamp(diff*3,-1.7,1.7)*dt;c.steer=clamp(diff,-0.5,0.5);driveCar(c,dt);
 }

@@ -43,7 +43,26 @@ const UNIT_CLIPS = {
 const PATROL_WANT = { rp: 2, rocam: 2, tor: 1 };                                  // ronda (sem procurado)
 const CHASE_WANT = { 1: { rp: 3, rocam: 2 }, 2: { rp: 3, rocam: 2, ft: 2, baep: 1, civil: 1 }, 3: { rp: 3, rocam: 2, ft: 2, baep: 1, civil: 1, rota: 2, tor: 1 } };
 
-const police = { heat: 0, crimeCd: 0, arrestT: 0, lastStars: 0, why: '' };
+const police = { heat: 0, crimeCd: 0, arrestT: 0, lastStars: 0, why: '', seen: true, lkp: null, unseenT: 0, searchR: 0, seeT: 0 };
+/* ---------- área de busca (como no GTA IV) ----------
+   A polícia só sabe onde você está se ALGUÉM DELA te vê (viatura ou policial a pé, com linha de visão: prédios bloqueiam).
+   Perdeu de vista: vai para o último lugar onde te viu e procura dentro de um círculo que cresce com as estrelas.
+   Fora do círculo e sem ser visto, o procurado esfria rápido; dentro dele, devagar. Se te virem de novo, o círculo vai junto. */
+const searchRadius = s => 55 + 45 * s;                                   // 1★ 100 m · 2★ 145 m · 3★ 190 m
+/* linha de visão entre dois pontos: caixas de colisão altas (prédios, muros) no caminho bloqueiam */
+function losClear(ax, az, bx, bz) {
+  const d = Math.hypot(bx - ax, bz - az), n = Math.ceil(d / 5);
+  for (let i = 1; i < n; i++) {
+    const t = i / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t;
+    for (const b of nearby(x, z)) if ((b.h === undefined || b.h > 2.6) && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1) return false;
+  }
+  return true;
+}
+function policeSees(px, pz) {
+  for (const c of copCars()) { if (!c.chase) continue; const d = Math.hypot(px - c.x, pz - c.z); if (d < 28 || (d < 150 && losClear(c.x, c.z, px, pz))) return true; }
+  for (const o of officers) { const d = Math.hypot(px - o.x, pz - o.z); if (d < 20 || (d < 90 && losClear(o.x, o.z, px, pz))) return true; }
+  return false;
+}
 const wantedStars = () => police.heat >= 5 ? 3 : police.heat >= 3 ? 2 : police.heat >= 1 ? 1 : 0;
 const copCars = () => cars.filter(c => c.police && c.ai);
 const nodeIdx = v => clamp(Math.round((v - roadC(0)) / P), 0, N);
@@ -70,7 +89,7 @@ function crime(pts, why, witnessed) {
 function carHitCrime(pc, other) {
   if (police.crimeCd > 0 || Math.abs(pc.speed) < 8) return;
   if (other.cop && other.ai) { police.crimeCd = 2; crime(2, 'colisão com viatura'); }
-  else if (other.ai && !other.ems) { police.crimeCd = 2; crime(1, 'colisão com veículo', true); }
+  else if (other.ai && !other.ems) { police.crimeCd = 2; crime(1, 'colisão com veículo', true); if (typeof aiCarHit === 'function') aiCarHit(pc, other); }
 }
 
 /* ---------- criação de viaturas ---------- */
@@ -95,7 +114,8 @@ function spawnUnit(kind, chasing) {
   const ready = unitModelReady(kind);
   if (!ready.length) { prefetchUnit(kind); return null; }
   const id = ready[Math.floor(Math.random() * ready.length)], type = vehReady[id], U = UNITS[kind];
-  const px = player.car ? player.car.x : player.x, pz = player.car ? player.car.z : player.z;
+  const rx = player.car ? player.car.x : player.x, rz = player.car ? player.car.z : player.z;
+  const lost = chasing && police.lkp && !police.seen, px = lost ? police.lkp.x : rx, pz = lost ? police.lkp.z : rz;   // sem te ver, o reforço vai para a área de busca, não para onde você está
   let x, z, h, from = null, to = null;
   if (kind === 'tor' && !chasing && !inRioSide(px)) { x = -4.2; z = R2(HALF + 40, HALF + SWD - 100); h = 0; }
   else {
@@ -105,7 +125,7 @@ function spawnUnit(kind, chasing) {
       const ax = roadC(i), az = roadC(j), bx = roadC(b[0]), bz = roadC(b[1]); let dx = bx - ax, dz = bz - az; const l = Math.hypot(dx, dz); dx /= l; dz /= l;
       const t = R2(0.3, 0.7); x = lerp(ax, bx, t) + (-dz) * 4.2; z = lerp(az, bz, t) + dx * 4.2; h = Math.atan2(dx, dz); from = [i, j]; to = b;
       const d = Math.hypot(x - px, z - pz);
-      ok = d > 110 && !(chasing && d > 330) && !cars.some(o => Math.hypot(o.x - x, o.z - z) < 9);
+      ok = (lost ? d > 40 && d < police.searchR * 1.4 && Math.hypot(x - rx, z - rz) > 110 : d > 110 && !(chasing && d > 330)) && !cars.some(o => Math.hypot(o.x - x, o.z - z) < 9);
     }
     if (!ok) return null;
   }
@@ -167,6 +187,14 @@ function updatePoliceChase(c, dt) {
     c.atGate = Math.hypot(c.x - g.x, c.z - g.z) < 26 && Math.abs(c.speed) < 4; return;
   }
   c.atGate = false;
+  if (!police.seen && police.lkp) {                                    // perdeu de vista: busca dentro do círculo
+    if (!c.searchP || Math.hypot(c.x - c.searchP[0], c.z - c.searchP[1]) < 14 || (c.searchT = (c.searchT || 0) - dt) <= 0) {
+      const a = Math.random() * 6.28, r = Math.random() * police.searchR * 0.8; c.searchP = [police.lkp.x + Math.sin(a) * r, police.lkp.z + Math.cos(a) * r]; c.searchT = 14;
+      if (c.searchP === null || Math.random() < 0.4) c.searchP = [police.lkp.x, police.lkp.z];
+    }
+    driveToward(c, dt, c.searchP[0], c.searchP[1], (c.chaseSpeed || 24) * 0.65, 6, 12); return;
+  }
+  c.searchP = null;
   driveToward(c, dt, px, pz, c.chaseSpeed || 24, 5, Math.abs(pc ? pc.speed : 5) + 6);
 }
 /* TOR em ronda: vai e volta pela rodovia (estrada elevada até o pântano), sempre na mão certa */
@@ -269,8 +297,14 @@ function updatePolice(dt) {
       if (c.torPatrol && !c.chase && c.z < HALF + 5) removeCar(c);        // TOR que voltou à cidade: some e a ronda renasce na rodovia
     }
     if (chasing) {
-      police.heat = Math.max(0, police.heat - (policeNear(100) ? 0.012 : favelaMask(px, pz) > 0.2 ? 0.035 : 0.25) * dt);      // no morro a polícia demora a chegar e o procurado esfria devagar
-      if (police.heat <= 0) { toast('Você escapou da polícia', 2200); clearOfficers(); for (const c of cars) if (c.chase) { c.chase = false; if (!c.torPatrol) snapToRoad(c); } }
+      police.seeT -= dt;
+      if (police.seeT <= 0) { police.seeT = 0.3; police.seen = !police.lkp || policeSees(px, pz) || police.heat > police.lastHeat + 0.01; police.lastHeat = police.heat; }
+      if (police.seen) { police.lkp = { x: px, z: pz }; police.unseenT = 0; }
+      else police.unseenT += dt;
+      police.searchR = searchRadius(Math.max(1, stars));
+      const outside = Math.hypot(px - police.lkp.x, pz - police.lkp.z) > police.searchR, fav = favelaMask(px, pz) > 0.2;
+      police.heat = Math.max(0, police.heat - (police.seen ? 0.004 : outside ? 0.3 : fav ? 0.02 : 0.006) * dt);   // visto: quase não esfria · fora do círculo: esfria rápido
+      if (police.heat <= 0) { police.lkp = null; police.seen = true; toast('Você despistou a polícia', 2200); clearOfficers(); for (const c of cars) if (c.chase) { c.chase = false; if (!c.torPatrol) snapToRoad(c); } }
     }
     /* composição das viaturas: ronda quando tudo calmo; por nível de procurado em ocorrência */
     spawnT -= dt;
@@ -330,7 +364,8 @@ function updatePolice(dt) {
 }
 function policeHud() {
   const s = wantedStars(), el = $('wanted');
-  el.textContent = s ? '★'.repeat(s) + '☆'.repeat(3 - s) + (police.arrestT > 0.2 ? '  ABORDADO!' : '') : '';
+  const lost = s && !police.seen && police.lkp, blink = lost && Math.floor(performance.now() / 400) % 2;
+  el.textContent = s ? (blink ? '☆'.repeat(3) : '★'.repeat(s) + '☆'.repeat(3 - s)) + (police.arrestT > 0.2 ? '  ABORDADO!' : lost ? '  PROCURANDO' : '') : '';   // estrelas piscam enquanto a polícia procura (como no IV)
   const kinds = [...new Set(copCars().filter(c => c.chase).map(c => UNITS[c.unit].label))];
   $('units').textContent = kinds.join(' · ');
 }

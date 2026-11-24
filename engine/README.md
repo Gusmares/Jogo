@@ -45,6 +45,9 @@ O projeto também tem um `package.json` com `"main"` apontando para o app Electr
 ## Física estilo GTA IV
 A física dos carros tem um **modo GTA IV** (padrão; F7 no jogo alterna com o modo NEON). Ele usa o `handling.dat` da cópia local do GTA IV: `node engine/tools/gta4-handling.js` lê `research/gta4/*/data/handling.dat` (fora do git) e gera `<projeto>/assets/physics/gta4-handling.json`. O estudo completo — o que cada campo faz, por que o IV tem aquele jeito, como foi adaptado, medidas e o que dá para ajustar — está em [`docs/fisica-gta4.md`](docs/fisica-gta4.md).
 
+## IA e movimento estilo GTA IV
+Pedestres com personalidade e jeito de andar próprios, reações a eventos (tiro, briga, batida, atropelamento, roubo de carro…), motoristas que fogem, largam o carro ou descem irritados, polícia com linha de visão e círculo de busca, e movimento do jogador com inércia. Estudo e medidas em [`docs/ia-gta4.md`](docs/ia-gta4.md). Para testar IA dentro do jogo: `npx electron projects/neon-coast/tools/run-game-script.js <script.js>` (o script pode usar `__run(segundos)`).
+
 ## Comandos (na raiz do repositório)
 | Comando | O que faz |
 |---|---|

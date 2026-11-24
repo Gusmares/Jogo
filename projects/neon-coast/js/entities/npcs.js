@@ -67,6 +67,7 @@ function makeNpc(o) {
   const a = acquireActor(), n = Object.assign({ x: 0, z: 0, y: 0, h: Math.random() * 6.28, vx: 0, vz: 0, vy: 0, hp: 100, ph: 'normal', mode: 'walker', t: 0, wait: 0, clip: '', animAcc: 0, gait: GAITS[Math.floor(Math.random() * GAITS.length)],
     speed: R2(1.25, 1.85), noDodge: Math.random() < 0.08, actor: a, nav: null, anchored: false, panicT: 0, cluck: 0, stuck: 0, lx: 0, lz: 0, id: Math.random() }, o);
   n.y = npcGround(n); a.group.userData.npc = n; a.group.position.set(n.x, n.y + a.footOffset * a.group.scale.x, n.z); a.group.rotation.y = n.h;
+  if (typeof pedInit === 'function') pedInit(n);                     // personalidade e jeito de andar (ped-ai.js)
   peds.push(n); return n;
 }
 function removeNpc(n) {
@@ -121,7 +122,7 @@ function npcPanic(x, z, r) {
 function releaseNpc(n) { if (n.anchored) { n.anchored = false; n.mode = 'walker'; n.nav = null; n.sitH = n.layH = false; n.y = npcGround(n); n.clip = ''; } }
 function npcShot(n, dmg) {
   if (n.ph === 'dead') return;
-  n.hp -= dmg; npcPanic(n.x, n.z, 30);
+  n.hp -= dmg; if (typeof aiEvent === 'function') aiEvent(n.hp <= 0 ? 'dead' : 'shot', n.x, n.z, { src: n }); else npcPanic(n.x, n.z, 30);
   if (n.hp <= 0) { knock(n, Math.sin(player.h) * 2, Math.cos(player.h) * 2, 2, null, 0); crime(2, 'homicídio', true); }
 }
 /* atingido por um carro (ou tiro letal): arremessado, cai e levanta ou morre */
@@ -263,6 +264,7 @@ function aimedAt(n) {                                              // arma apont
 }
 function behave(n, dt) {
   if (n.aimedT > 0) n.aimedT -= dt;
+  if (typeof pedReactBehave === 'function' && pedReactBehave(n, dt)) return;     // reagindo a um evento (ped-ai.js)
   if (n.anchored) {                                                  // cena fixa: só troca de animação de vez em quando e reage ao jogador
     n.actT -= dt; const cfg = ACT[n.act]; if (n.actT <= 0 && cfg) sceneClip(n, cfg, false);
     if (!player.dead && !n.sitH && !n.layH) { const dx = player.x - n.x, dz = player.z - n.z; if (dx * dx + dz * dz < 9 && n.act !== 'dance') n.h += wrap(Math.atan2(dx, dz) - n.h) * Math.min(1, dt * 1.5); }
@@ -279,7 +281,7 @@ function behave(n, dt) {
     if (n.dodgeT > 0) { dx = n.dodgeX; dz = n.dodgeZ; }
     const av = avoid(n); dx += av[0] * 0.8; dz += av[1] * 0.8; const m = Math.hypot(dx, dz) || 1;
     n.h += wrap(Math.atan2(dx, dz) - n.h) * Math.min(1, dt * 12);
-    moveNpc(n, dx / m, dz / m, n.dodgeT > 0 ? 5.6 : 5.0, dt); if (n.dodgeT > 0) n.dodgeT -= dt;
+    moveNpc(n, dx / m, dz / m, n.dodgeT > 0 ? 5.6 : n.pers ? 3.6 + n.pers.agile * 0.4 : 5.0, dt); if (n.dodgeT > 0) n.dodgeT -= dt;
     npcPlay(n, n.panicRun || (n.panicRun = Math.random() < 0.5 ? 'sprint_panic' : 'run_civi'), true, 1.1, 0.15);
     if (npcCarHits(n)) return;
     return;
@@ -296,7 +298,7 @@ function behave(n, dt) {
   n.h += wrap(Math.atan2(dx, dz) - n.h) * Math.min(1, dt * 7);
   moveNpc(n, dx, dz, sp, dt);
   const spd = Math.hypot(n.vx, n.vz);
-  if (spd > 0.35) npcPlay(n, n.gait[0], true, clamp(spd / n.gait[1], 0.5, 1.5), 0.25); else npcPlay(n, 'IDLE_stance', true, 1, 0.3);
+  if (spd > 0.35) npcPlay(n, n.gait[0], true, clamp(spd / n.gait[1], 0.5, 1.5), 0.25); else npcPlay(n, n.nav && n.nav.crossWait && n.crossClip ? n.crossClip : 'IDLE_stance', true, 1, 0.3);   // esperando o sinal: olha para os dois lados
   npcCarHits(n);
 }
 const pickCower = n => n.cowerClip || (n.cowerClip = pickClip(['cower', 'handscower', 'DUCK_cower']));
@@ -322,6 +324,7 @@ function drawNpc(n, dt, dcam) {
   if (n.animAcc >= interval && !(stuck && n.animStopped)) { a.ap.update(Math.min(n.animAcc, 0.25)); n.animAcc = 0; updated = true; if (stuck && n.t > 3) n.animStopped = true; } else if (stuck) { /* deitado: não precisa animar */ }
   if (!stuck) n.animStopped = false;
   a.group.rotation.y = n.h;
+  if (typeof pedPose === 'function' && dcam < 60) pedPose(n, a, dt, updated);   // cabeça olhando + inclinação nas curvas
   if (n.anchored && (n.sitH || n.layH)) {
     placeByPelvis(a, n.x, (n.sitH ? n.seatY + SIT_PELVIS : npcGround(n) + (n.fixedY !== undefined ? 0 : 0) + 0.2), n.z, n.h, sc);
   } else {
@@ -396,7 +399,7 @@ function markPedsAhead() {
 function updateNpcs(dt) {
   if (!npcsReady || paused) return;
   npcFrame++; const cam = camera.position;
-  manageNpcs(dt); buildNpcGrid(); markPedsAhead();
+  manageNpcs(dt); buildNpcGrid(); markPedsAhead(); if (typeof updatePedAI === 'function') updatePedAI(dt);
   for (const n of peds.slice()) {
     updateNpc(n, dt, cam);
     drawNpc(n, dt, Math.hypot(n.x - cam.x, n.z - cam.z));

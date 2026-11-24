@@ -54,9 +54,11 @@ function plantOnGround(a, y) { if (typeof plantActor === 'function') plantActor(
 
 /* ---------- começo ---------- */
 function startEnterCar(c) {
+  const victim = c.ai && c.driver && !c.driverGone && !c.cop && !c.ems && !(c.officers > 0);   // tem motorista: ele é puxado para fora (ped-ai.js)
   const wasAI = c.ai; c.ai = false; c.chase = false; c.police = false; c.ems = null; c.torPatrol = false;
   if (c.rider) c.rider.group.visible = false; if (c.driver) c.driver.group.visible = false; c.driverGone = true;
   if (c.cop) crime(3, 'roubo de viatura'); else if (wasAI) crime(1, 'roubo de carro', true);
+  if (victim && typeof aiCarjacked === 'function') aiCarjacked(c);
   const cl = transClips(c), car = !isBikeCar(c);
   player.trans = { kind: 'in', c, phase: 'walk', t: 0, u: 0, cl, clip: findClip(cl.enter) ? cl.enter : null, open: car && findClip('car_open_lhs') ? 'car_open_lhs' : null };
   player.vx = player.vz = 0;
