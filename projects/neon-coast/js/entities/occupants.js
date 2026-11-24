@@ -56,8 +56,12 @@ function animateSeatedActor(a, c, dt) {
 function updateNpcDriver(c, dcam, dt) {
   const near = dcam < 75 && !(c.officers > 0) && !c.driverGone && c !== player.car;
   if (near && !c.driver) {
-    const ids = c.unit ? unitSkinReady(c.unit) : PLAYER_SKINS.filter(id => skinReady[id]); if (!ids.length) return;
-    const a = makeSeatedActor(skinReady[ids[Math.floor(Math.random() * ids.length)]], isBikeCar(c));
+    // motorista civil: uma das roupas dos pedestres (quem desce do carro, rendido ou puxado no roubo, é a mesma pessoa que dirigia)
+    let type = c.driverType || null;
+    if (!type && !c.unit && !c.cop && typeof pedestrianTypes !== 'undefined' && pedestrianTypes.length) type = pedestrianTypes[Math.floor(Math.random() * pedestrianTypes.length)];
+    if (!type) { const ids = c.unit ? unitSkinReady(c.unit) : PLAYER_SKINS.filter(id => skinReady[id]); if (!ids.length) return; type = skinReady[ids[Math.floor(Math.random() * ids.length)]]; }
+    c.driverType = type;
+    const a = makeSeatedActor(type, isBikeCar(c));
     seatActor(a, c.mesh.userData.tilt, vehicleSeat(c), 1);
     c.driver = a;
   }

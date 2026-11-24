@@ -58,11 +58,31 @@ Arquivos: `projects/neon-coast/js/entities/ped-ai.js` (novo), `npcs.js`, `police
 
 **Jogador**: inércia (até correr em ~0,7 s; do sprint para em ~4 m / 0,9 s com `Run_stop`), curva com raio, **meia-volta derrapando** (`Run_stopR`), corpo inclinado na curva (até ~9°) e para a frente ao arrancar, **cabeça acompanhando a câmera**. Mirando, o movimento continua direto (andar de lado).
 
+## Roubo de carro e animações (segunda rodada)
+Arquivos: `anim.js` (velocidade e caminho da raiz dos clipes, sincronia de passo), `npcs.js`, `ped-ai.js`, `vehicle-anim.js`, `occupants.js`.
+
+**Como o GTA faz e como ficou aqui**
+- **Os clipes de carro são gravados a partir da porta.** No `ped.ifp`, a raiz de `CAR_getin_LHS` vai de (0, 0, 0) até (0,95, 0,49, −0,35): o banco fica 0,95 m para dentro e 0,49 m à frente da porta. `CAR_jackedLHS` começa exatamente nesse ponto e termina em (−2,25, −0,81, −0,85), deitado no chão 2,25 m para fora. O jogo agora usa esse caminho da raiz (`clipRootAt`), girado pela direção do carro, para levar a pélvis do banco até o chão. Por isso a pessoa sai do carro e cai como no original. A altura passa da altura do banco (que muda de carro para carro) para a do chão quando o corpo já saiu.
+- **Roubo**: anda até a porta, abre (`CAR_open_LHS`), **puxa o motorista** (`CAR_pullout_LHS`, 2,3 s) enquanto ele sai com `CAR_jackedLHS` (2,9 s), entra (`CAR_getin_LHS`) e a vítima **levanta** (`getup`). A troca entre os dois clipes deitados é alinhada pela direção pélvis→cabeça (`matchLying`), sem girar o corpo (medido: 0°).
+- **Porta trancada** (15%, uma vez por carro): `CAR_doorlocked_LHS` e o motorista arranca fugindo.
+- **A vítima é a mesma pessoa**: os motoristas civis usam as roupas dos pedestres, e quem desce é o mesmo.
+- **O que a vítima faz** (pela coragem 1–5, como no IV): foge e depois **liga para a polícia** (“O dono do carro ligou para a polícia”, que dá procurado mesmo sem viatura por perto); se você estiver armado, se encolhe ou levanta as mãos; os corajosos (e quem é de facção) **correm atrás do carro**. Se você parar, ele abre a porta, **te arranca do banco** (você cai, perde 4 de vida e levanta) e **vai embora com o carro**, fugindo. Se o carro some (mais de 45 m, ou rápido demais), ele xinga (`fucku`, `urb_angry`) e liga. Se você largar o carro, **ele volta, entra e sai dirigindo**. E **guarda rancor**: se te encontrar a pé depois, tira satisfação (ou foge e liga).
+- **Motorista rendido ou irritado** desce do carro com `CAR_getout_LHS`, com a porta abrindo, em vez de aparecer do lado de fora. Rendido sob a arma, os medrosos ficam de mãos para cima.
+
+**Animação dos pedestres (lógica do SA/IV)**
+- **Sem pé deslizando**: cada clipe tem a velocidade em que foi gravado (quanto a raiz anda por segundo: `WALK_civi` 1,52 m/s, `run_civi` 4,30, `sprint_panic` 5,90, `WOMAN_walkold` 0,59…). O pedestre anda nessa velocidade e o clipe toca na razão real/gravada (medido: média 0,94, nenhum fora de 0,75–1,3).
+- **Troca de passo sincronizada**: andar → correr → disparar entra na mesma fase do ciclo (como o *move group* do SA).
+- **Arranque** (`WALK_start`) depois de ficar parado e **freada** (`Run_stop`) no fim de uma fuga.
+- **Parado com o jeito da pessoa**: `woman_idlestance`, `idlestance_old`, `Idlestance_fat`.
+- **Celular**: ~12% andam com o celular na orelha (camada só no braço direito, `phone_talk`), mais devagar e às vezes distraídos (não desviam de carro). Guardam o celular quando se assustam.
+- **Tiro**: ferido, o corpo **acusa o lado do impacto** (`HIT_front`, `HIT_back`, `HIT_L`, `HIT_R`) e foge mais devagar; morto, **cai com a animação certa** (`KO_shot_front`, `KO_shot_stom`, de costas `KO_skid_front`, tiro na cabeça `KO_shot_face`) em vez de ser arremessado. O valente de facção ferido parte para cima.
+
 ## Medidas (testes dentro do jogo, `tools/run-game-script.js`)
+- Roubo: andar → abrir → puxar → entrar → dirigindo; a vítima sai do banco (pélvis a 0,6–0,9 m do chão), termina deitada a ~3,9 m do carro (pélvis a 0,2 m) e levanta. Perseguição forçada: tirou o jogador, entrou e o carro andou 22–48 m em 4 s. Carro largado: a vítima abriu, entrou e saiu dirigindo (39 m em 4 s). Porta trancada: tenta, solta, o carro foge.
 - Tiro perto do jogador, pessoas até 100 m: 29 fugiram, 16 se encolheram, 9 saíram apressadas, 7 não ligaram.
 - Briga: 5 formaram roda a 3,6–6,1 m, 1 foi tirar satisfação, 1 ligou para a polícia, o resto olhou ou saiu.
 - Atropelamento: 9 pararam para olhar, 2 ligaram (vira procurado “denunciado por testemunha”), 4 fugiram.
 - Polícia: some do círculo → viaturas procurando (3–5), estrelas piscando, procurado zerado em ~10 s fora do círculo.
 
 ## Ainda não feito (próximos passos)
-Gesto de mãos para cima dentro do carro; pedestres armados/gangues revidando tiros (estilos de combate); relacionamentos entre gangues e polícia (`Relationships.dat`); população por horário (`popcycle.dat`); reações a tiro com tropeço por direção (`HIT_L/R/front/back`) para imitar o Euphoria; o círculo de busca desenhado no minimapa (o HUD é da área do ChatGPT: `police.lkp` e `police.searchR` estão prontos para ele usar).
+Gesto de mãos para cima dentro do carro; pedestres armados/gangues revidando tiros (estilos de combate); relacionamentos entre gangues e polícia (`Relationships.dat`); população por horário (`popcycle.dat`); roubo pelo lado do passageiro e passageiros nos carros; giro no lugar (`Turn_L/R`, `turn_180`); o círculo de busca desenhado no minimapa (o HUD é da área do ChatGPT: `police.lkp` e `police.searchR` estão prontos para ele usar).

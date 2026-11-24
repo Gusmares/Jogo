@@ -41,6 +41,28 @@ function findClip(name) {                    // procura o clipe pelo nome em tod
   return null;
 }
 const ifpReady = {};
+/* velocidade natural de um clipe de locomoção: quanto a raiz anda por segundo na própria animação (o SA usa esse valor para casar
+   passo e deslocamento). Tocar o clipe na razão velocidade real / natural tira o "pé deslizando". */
+const clipSpeedCache = {};
+function clipSpeed(name) {
+  const k = name.toLowerCase(); if (k in clipSpeedCache) return clipSpeedCache[k];
+  const c = findClip(name); if (!c) return 0;
+  let v = 0; const r = c.nodes.find(n => n.bone === 0 && n.trans && n.frames > 1);
+  if (r) { const f = r.frames - 1, span = r.times[f] - r.times[0]; if (span > 0) v = Math.hypot(r.trans[f * 3] - r.trans[0], r.trans[f * 3 + 1] - r.trans[1]) / span; }
+  return clipSpeedCache[k] = v;
+}
+/* deslocamento da raiz do clipe no tempo t, nos eixos do GTA (x direita, y frente, z cima). Os clipes de carro (puxar, ser puxado, entrar)
+   são gravados a partir do ponto da porta, então esse caminho leva o corpo do banco ao chão exatamente como no jogo original. */
+function clipRootAt(name, t, out) {
+  out = out || [0, 0, 0]; out[0] = out[1] = out[2] = 0;
+  const c = findClip(name); if (!c) return out;
+  const r = c.nodes.find(n => n.bone === 0 && n.trans); if (!r) return out;
+  const ts = r.times, n = r.frames; t = clamp(t, 0, ts[n - 1]);
+  let i = 0; while (i < n - 1 && ts[i + 1] <= t) i++;
+  const j = Math.min(i + 1, n - 1), span = ts[j] - ts[i], k = span > 1e-6 ? clamp((t - ts[i]) / span, 0, 1) : 0;
+  for (let q = 0; q < 3; q++) out[q] = lerp(r.trans[i * 3 + q], r.trans[j * 3 + q], k);
+  return out;
+}
 
 /* ---------- amostragem ---------- */
 const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _aq1 = new THREE.Quaternion(), _aq2 = new THREE.Quaternion();
@@ -76,7 +98,10 @@ class AnimPlayer {
     opts = opts || {};
     if (name === this.name && !opts.restart) return true;
     const clip = findClip(name); if (!clip) return false;
-    this.prev = this.cur; this.prevTime = this.time; this.cur = clip; this.time = opts.start || 0; this.fade = 0; this.fadeT = opts.fade === undefined ? 0.2 : opts.fade;
+    let start = opts.start || 0;
+    // sincronia de passo (como o "move group" do SA): andar -> correr -> disparar começa na mesma fase do ciclo, o pé não troca no meio
+    if (opts.sync && this.cur && this.loop && this.cur.duration > 0 && clip.duration > 0) start = (this.time % this.cur.duration) / this.cur.duration * clip.duration;
+    this.prev = this.cur; this.prevTime = this.time; this.cur = clip; this.time = start; this.fade = 0; this.fadeT = opts.fade === undefined ? 0.2 : opts.fade;
     this.loop = opts.loop !== false; this.name = name; this.speed = opts.speed || 1; return true;
   }
   wrapT(clip, t) { return clip.duration > 0 ? (this.loop ? t % clip.duration : Math.min(t, clip.duration)) : 0; }

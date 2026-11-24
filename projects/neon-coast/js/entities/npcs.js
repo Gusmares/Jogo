@@ -35,15 +35,16 @@ const ringPoint = (bi, bj, s) => { const q = perimPoint(s, 26); return [blockC(b
 const RING_L = 4 * 52;
 
 /* ---------- atores (reaproveitados) ---------- */
-function acquireActor() {
-  let a = npcPool.pop();
+function acquireActor(type) {
+  let a = null;
+  if (type) { const i = npcPool.findIndex(x => x.type === type); if (i >= 0) a = npcPool.splice(i, 1)[0]; } else a = npcPool.pop();
   if (!a) {
-    const t = pedestrianTypes[Math.floor(Math.random() * pedestrianTypes.length)];
+    const t = type || pedestrianTypes[Math.floor(Math.random() * pedestrianTypes.length)];
     a = makeActor(t, true); a.clips = {}; a.baseMats = [t.atlasMat || t.mats[0]];
     a.mesh.material = a.baseMats[0].clone(); a.mesh.material.skinning = true;
     scene.add(a.group);
   }
-  const tn = TINTS[Math.floor(Math.random() * TINTS.length)];
+  const tn = type ? TINTS[0] : TINTS[Math.floor(Math.random() * TINTS.length)];
   { const m = a.mesh.material; m.color.setRGB(tn[0], tn[1], tn[2]); }
   a.group.visible = true; a.group.scale.setScalar(R2(0.94, 1.06)); a.group.rotation.set(0, 0, 0); a.ap.name = ''; a.ap.cur = null; a.ap.prev = null; a.ap.overlay = null; a.ap.fade = 1;
   return a;
@@ -57,14 +58,27 @@ function releaseActor(a) {
 function npcPlay(n, name, loop, speed, fade) {
   const a = n.actor; if (!a.ap) return;
   if (n.clip === name && !n.clipRestart) { a.ap.speed = speed || 1; return; }
-  n.clip = name; n.clipRestart = false;
+  n.clip = name; n.clipRestart = false; n.clipMove = false;
   a.ap.play(hasClip(name) ? name : 'IDLE_stance', { loop: loop !== false, fade: fade === undefined ? 0.25 : fade, restart: true }); a.ap.speed = speed || 1;
   if (loop !== false) a.ap.time = Math.random() * 3;                // desencontra os ciclos para a multidão não andar sincronizada
 }
+/* locomoção como no SA: o clipe toca na razão velocidade real / velocidade gravada na animação (o pé não desliza) e, ao trocar
+   andar <-> correr <-> disparar, o novo ciclo entra na mesma fase do passo. Depois do arranque (WALK_start) o andar começa do zero. */
+function npcMove(n, name, spd, fade) {
+  const a = n.actor; if (!a.ap) return;
+  if (!hasClip(name)) name = 'WALK_civi';
+  const nat = clipSpeed(name) || 1.5, rate = clamp(spd / nat, 0.4, 1.7);
+  if (n.clip === name && !n.clipRestart) { a.ap.speed = rate; return; }
+  const sync = !!n.clipMove, fromStart = n.clip === 'WALK_start';
+  n.clip = name; n.clipRestart = false; n.clipMove = true;
+  a.ap.play(name, { loop: true, fade: fade === undefined ? 0.25 : fade, restart: true, sync }); a.ap.speed = rate;
+  if (!sync) a.ap.time = fromStart ? 0 : Math.random() * 3;
+}
+const clipDur = (name, def) => { const c = findClip(name); return c ? c.duration : (def || 1); };
 
 /* ---------- criação ---------- */
 function makeNpc(o) {
-  const a = acquireActor(), n = Object.assign({ x: 0, z: 0, y: 0, h: Math.random() * 6.28, vx: 0, vz: 0, vy: 0, hp: 100, ph: 'normal', mode: 'walker', t: 0, wait: 0, clip: '', animAcc: 0, gait: GAITS[Math.floor(Math.random() * GAITS.length)],
+  const a = acquireActor(o && o.skin), n = Object.assign({ x: 0, z: 0, y: 0, h: Math.random() * 6.28, vx: 0, vz: 0, vy: 0, hp: 100, ph: 'normal', mode: 'walker', t: 0, wait: 0, clip: '', animAcc: 0, gait: GAITS[Math.floor(Math.random() * GAITS.length)],
     speed: R2(1.25, 1.85), noDodge: Math.random() < 0.08, actor: a, nav: null, anchored: false, panicT: 0, cluck: 0, stuck: 0, lx: 0, lz: 0, id: Math.random() }, o);
   n.y = npcGround(n); a.group.userData.npc = n; a.group.position.set(n.x, n.y + a.footOffset * a.group.scale.x, n.z); a.group.rotation.y = n.h;
   if (typeof pedInit === 'function') pedInit(n);                     // personalidade e jeito de andar (ped-ai.js)
@@ -120,10 +134,23 @@ function npcPanic(x, z, r) {
   }
 }
 function releaseNpc(n) { if (n.anchored) { n.anchored = false; n.mode = 'walker'; n.nav = null; n.sitH = n.layH = false; n.y = npcGround(n); n.clip = ''; } }
+/* baleado (estilo GTA): ferido, o corpo acusa o tiro pelo lado de onde veio (HIT_front/back/L/R) e a pessoa foge; morto, cai com a
+   animação de queda certa (de frente, de costas ou pelo tiro na cabeça) em vez de ser arremessado */
 function npcShot(n, dmg) {
   if (n.ph === 'dead') return;
   n.hp -= dmg; if (typeof aiEvent === 'function') aiEvent(n.hp <= 0 ? 'dead' : 'shot', n.x, n.z, { src: n }); else npcPanic(n.x, n.z, 30);
-  if (n.hp <= 0) { knock(n, Math.sin(player.h) * 2, Math.cos(player.h) * 2, 2, null, 0); crime(2, 'homicídio', true); }
+  const rel = wrap(Math.atan2(player.x - n.x, player.z - n.z) - n.h);                // de onde veio o tiro, em relação ao corpo
+  if (n.hp <= 0) { npcKillShot(n, dmg, rel); crime(2, 'homicídio', true); return; }
+  if (n.ph === 'hit' || n.ph === 'down' || n.ph === 'getup' || n.busy) return;
+  releaseNpc(n); n.ev = null;
+  const clip = Math.abs(rel) < 0.8 ? 'HIT_front' : Math.abs(rel) > 2.3 ? 'HIT_back' : rel > 0 ? 'HIT_L' : 'HIT_R';
+  n.ph = 'flinch'; n.t = 0; n.flinchT = clipDur(clip, 0.6) * 0.9; n.vx = n.vz = 0; n.wounded = true; n.clipRestart = true; npcPlay(n, clip, false, 1, 0.06);
+}
+function npcKillShot(n, dmg, rel) {
+  releaseNpc(n); n.busy = false; n.pelvisAt = null; n.carSeq = null; n.jack = null;
+  const back = Math.abs(rel) > 2.3, clip = dmg >= 150 ? 'KO_shot_face' : back ? 'KO_skid_front' : pickClip(['KO_shot_front', 'KO_shot_stom']);
+  n.dead = true; n.deadT = 0; n.ph = 'dead'; n.t = 0; n.vx = n.vz = 0; n.clipRestart = true; npcPlay(n, clip, false, 1, 0.08); n.stillAfter = clipDur(clip, 2) + 0.3;
+  npcPanic(n.x, n.z, 28);
 }
 /* atingido por um carro (ou tiro letal): arremessado, cai e levanta ou morre */
 function knock(n, vx, vz, speed, car, dmg) {
@@ -251,6 +278,9 @@ function updateNpc(n, dt, cam) {
     case 'down': n.downT -= dt; if (n.downT <= 0) { n.ph = 'getup'; n.t = 0; n.clipRestart = true; npcPlay(n, n.getupClip, false, 1, 0.1); } break;
     case 'getup': if (n.t > ((findClip(n.getupClip) || { duration: 1.2 }).duration / 1) * 0.95 + 0.1) { n.ph = 'panic'; n.panicT = R2(4, 8); n.fx = n.x - Math.sin(n.h) * 3; n.fz = n.z - Math.cos(n.h) * 3; n.cower = false; n.clip = ''; } break;
     case 'dead': n.deadT += dt; break;
+    case 'flinch': n.vx *= 0.8; n.vz *= 0.8;                         // acusou o tiro: depois foge (o valente da facção parte para cima)
+      if (n.t > n.flinchT) { n.clip = ''; if (n.pers && n.pers.gang && n.pers.brave >= 5 && typeof pedReact === 'function') pedReact(n, { id: -3, type: 'fight', x: player.x, z: player.z, pri: 3, player: true }, 'confront'); else { n.ph = 'panic'; n.panicT = R2(8, 14); n.fx = player.x; n.fz = player.z; n.cower = false; n.evPri = 3; } }
+      break;
     default: behave(n, dt);
   }
   n.y = n.ph === 'hit' ? n.y : lerp(n.y, npcGround(n), Math.min(1, dt * 12));
@@ -275,30 +305,42 @@ function behave(n, dt) {
     return;
   }
   if (n.ph === 'panic') {
-    n.panicT -= dt; if (n.panicT <= 0) { n.ph = 'normal'; n.nav = null; n.clip = ''; return; }
+    n.panicT -= dt;
+    if (n.panicT <= 0) {
+      if (!n.cower && !(n.stopT > 0) && !n.stopDone && Math.hypot(n.vx, n.vz) > 3 && hasClip('Run_stop')) { n.stopT = clipDur('Run_stop', 0.9) * 0.85; n.stopDone = true; n.clipRestart = true; npcPlay(n, 'Run_stop', false, 1, 0.12); }
+      if (n.stopT > 0) { n.stopT -= dt; const v = Math.max(0, Math.hypot(n.vx, n.vz) - dt * 5.5); moveNpc(n, Math.sin(n.h), Math.cos(n.h), v, dt); return; }   // freada: escorrega até parar
+      n.stopDone = false; n.ph = 'normal'; n.nav = null; n.clip = '';
+      if (n.afterPanic && typeof pedReact === 'function') { const ev = n.afterPanic; n.afterPanic = null; pedReact(n, ev, 'call'); }
+      return;
+    }
     if (n.cower) { n.vx *= 0.8; n.vz *= 0.8; npcPlay(n, pickCower(n), true, 1, 0.2); return; }
     let dx = n.x - n.fx, dz = n.z - n.fz, l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
     if (n.dodgeT > 0) { dx = n.dodgeX; dz = n.dodgeZ; }
     const av = avoid(n); dx += av[0] * 0.8; dz += av[1] * 0.8; const m = Math.hypot(dx, dz) || 1;
     n.h += wrap(Math.atan2(dx, dz) - n.h) * Math.min(1, dt * 12);
-    moveNpc(n, dx / m, dz / m, n.dodgeT > 0 ? 5.6 : n.pers ? 3.6 + n.pers.agile * 0.4 : 5.0, dt); if (n.dodgeT > 0) n.dodgeT -= dt;
-    npcPlay(n, n.panicRun || (n.panicRun = Math.random() < 0.5 ? 'sprint_panic' : 'run_civi'), true, 1.1, 0.15);
+    const run = n.panicRun || (n.panicRun = Math.random() < 0.5 ? 'sprint_panic' : 'run_civi');
+    const runSp = (clipSpeed(run) || 4.6) * (n.pers ? 0.86 + n.pers.agile * 0.05 : 1) * (n.wounded ? 0.8 : 1);
+    moveNpc(n, dx / m, dz / m, n.dodgeT > 0 ? Math.max(5.6, runSp) : runSp, dt); if (n.dodgeT > 0) n.dodgeT -= dt;
+    npcMove(n, run, Math.hypot(n.vx, n.vz) || runSp, 0.15);
     if (npcCarHits(n)) return;
     return;
   }
   if (dodgeCars(n, dt)) return;
   if (aimedAt(n)) return;
   if (n.wait > 0) {                                                  // parado: espera, olha em volta
-    n.wait -= dt; n.vx *= 0.8; n.vz *= 0.8; moveNpc(n, 0, 0, 0, dt); npcPlay(n, n.waitClip || 'IDLE_stance', true, 1, 0.3); if (npcCarHits(n)) return; return;
+    n.wait -= dt; n.vx *= 0.8; n.vz *= 0.8; moveNpc(n, 0, 0, 0, dt); npcPlay(n, n.waitClip === 'IDLE_stance' ? (n.idleClip || 'IDLE_stance') : (n.waitClip || n.idleClip || 'IDLE_stance'), true, 1, 0.3);
+    if (n.wait <= 0 && hasClip('WALK_start') && !(n.pers && /velh|gord/.test(n.pers.style))) n.startT = clipDur('WALK_start', 0.27);   // arranque antes de andar
+    if (npcCarHits(n)) return; return;
   }
   const dir = steerWalker(n, dt), av = avoid(n);
   let dx = dir[0] + av[0] * 1.2, dz = dir[1] + av[1] * 1.2; const m = Math.hypot(dx, dz) || 1; dx /= m; dz /= m;
   const crowd = Math.min(1, m);                                      // gente à frente: desacelera
-  const sp = n.speed * (n.nav && n.nav.kind === 'wp' && favelaMask(n.x, n.z) > 0.2 ? 0.85 : 1) * clamp(0.45 + crowd * 0.55, 0.45, 1);
+  let sp = n.speed * (n.nav && n.nav.kind === 'wp' && favelaMask(n.x, n.z) > 0.2 ? 0.85 : 1) * clamp(0.45 + crowd * 0.55, 0.45, 1) * (n.phone ? 0.85 : 1);
   n.h += wrap(Math.atan2(dx, dz) - n.h) * Math.min(1, dt * 7);
+  if (n.startT > 0) { n.startT -= dt; sp *= 0.55; moveNpc(n, dx, dz, sp, dt); if (n.clip !== 'WALK_start') { n.clipRestart = true; npcPlay(n, 'WALK_start', false, 1, 0.15); } npcCarHits(n); return; }
   moveNpc(n, dx, dz, sp, dt);
   const spd = Math.hypot(n.vx, n.vz);
-  if (spd > 0.35) npcPlay(n, n.gait[0], true, clamp(spd / n.gait[1], 0.5, 1.5), 0.25); else npcPlay(n, n.nav && n.nav.crossWait && n.crossClip ? n.crossClip : 'IDLE_stance', true, 1, 0.3);   // esperando o sinal: olha para os dois lados
+  if (spd > 0.35) npcMove(n, n.gait[0], spd, 0.25); else npcPlay(n, n.nav && n.nav.crossWait && n.crossClip ? n.crossClip : (n.idleClip || 'IDLE_stance'), true, 1, 0.3);   // esperando o sinal: olha para os dois lados
   npcCarHits(n);
 }
 const pickCower = n => n.cowerClip || (n.cowerClip = pickClip(['cower', 'handscower', 'DUCK_cower']));
@@ -321,11 +363,14 @@ function drawNpc(n, dt, dcam) {
   n.animAcc += dt; const interval = dcam < 28 ? 0 : dcam < 65 ? 1 / 30 : dcam < 115 ? 1 / 15 : 1 / 8;
   const sc = a.group.scale.x, stuck = n.ph === 'down' || n.ph === 'dead';
   let updated = false;
-  if (n.animAcc >= interval && !(stuck && n.animStopped)) { a.ap.update(Math.min(n.animAcc, 0.25)); n.animAcc = 0; updated = true; if (stuck && n.t > 3) n.animStopped = true; } else if (stuck) { /* deitado: não precisa animar */ }
+  if (n.pelvisAt) n.animAcc = Math.max(n.animAcc, interval);         // sequência de carro: anima todo quadro, para o corpo seguir o caminho
+  if (typeof pedOverlay === 'function') pedOverlay(n, a);
+  if (n.animAcc >= interval && !(stuck && n.animStopped)) { a.ap.update(Math.min(n.animAcc, 0.25)); n.animAcc = 0; updated = true; if (stuck && n.t > (n.stillAfter || 3)) n.animStopped = true; } else if (stuck) { /* deitado: não precisa animar */ }
   if (!stuck) n.animStopped = false;
   a.group.rotation.y = n.h;
   if (typeof pedPose === 'function' && dcam < 60) pedPose(n, a, dt, updated);   // cabeça olhando + inclinação nas curvas
-  if (n.anchored && (n.sitH || n.layH)) {
+  if (n.pelvisAt) { const P = n.pelvisAt; placeByPelvis(a, P.x, P.y, P.z, n.h, sc); }
+  else if (n.anchored && (n.sitH || n.layH)) {
     placeByPelvis(a, n.x, (n.sitH ? n.seatY + SIT_PELVIS : npcGround(n) + (n.fixedY !== undefined ? 0 : 0) + 0.2), n.z, n.h, sc);
   } else {
     a.group.position.set(n.x, n.y + a.footOffset * sc, n.z);
