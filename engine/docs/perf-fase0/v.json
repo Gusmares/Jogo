@@ -1,0 +1,246 @@
+{
+ "cenario": "v",
+ "janela": {
+  "w": 1264,
+  "h": 655,
+  "dpr": 1,
+  "canvas": [
+   1264,
+   655
+  ]
+ },
+ "gl": {
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "versao": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "timerQuery": true
+ },
+ "funcoesMedidas": [
+  "updateSky",
+  "applySwamp",
+  "updateFoot",
+  "updateVehicleTransition",
+  "updateCarDoors",
+  "updateCars",
+  "stepCars",
+  "updateDamageEffects",
+  "updatePeds",
+  "updateNpcs",
+  "manageNpcs",
+  "updatePedAI",
+  "updatePigeons",
+  "updateGators",
+  "updatePolice",
+  "updateOfficers",
+  "updateEms",
+  "updatePlayerSeat",
+  "updateWeapons",
+  "updateObjective",
+  "updateCamera",
+  "updateVegetationCulling",
+  "updateTrafficLights",
+  "manageTraffic",
+  "drawMinimap",
+  "updateAudio",
+  "updateRadio",
+  "updateMenuPreview",
+  "updatePhonePreview",
+  "updateMapGens",
+  "postRender"
+ ],
+ "nome": "Estresse (máximo de gente e carros + polícia)",
+ "variantes": {
+  "base": {
+   "quadros": 208,
+   "fps": 51.9,
+   "intervaloMs": {
+    "med": 19.27,
+    "p95": 33.4,
+    "max": 49.9,
+    "n": 205
+   },
+   "cpuQuadroMs": {
+    "med": 18.19,
+    "p95": 22,
+    "max": 45,
+    "n": 205
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 205
+   },
+   "gpuTimerMs": {
+    "med": 8.34,
+    "p95": 9.6,
+    "max": 38.22,
+    "n": 206
+   }
+  },
+  "sem_sombra": {
+   "quadros": 237,
+   "fps": 59.5,
+   "intervaloMs": {
+    "med": 16.81,
+    "p95": 16.8,
+    "max": 49.9,
+    "n": 234
+   },
+   "cpuQuadroMs": {
+    "med": 15.75,
+    "p95": 17,
+    "max": 51.8,
+    "n": 234
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 234
+   },
+   "gpuTimerMs": {
+    "med": 7.52,
+    "p95": 8.36,
+    "max": 9.73,
+    "n": 235
+   }
+  },
+  "escala_0.5": {
+   "quadros": 222,
+   "fps": 55.4,
+   "intervaloMs": {
+    "med": 18.04,
+    "p95": 33.3,
+    "max": 50,
+    "n": 219
+   },
+   "cpuQuadroMs": {
+    "med": 16.96,
+    "p95": 20.1,
+    "max": 41.7,
+    "n": 219
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 219
+   },
+   "gpuTimerMs": {
+    "med": 7.94,
+    "p95": 9.04,
+    "max": 16.36,
+    "n": 220
+   }
+  },
+  "sem_bloom": {
+   "quadros": 234,
+   "fps": 58.5,
+   "intervaloMs": {
+    "med": 17.1,
+    "p95": 16.8,
+    "max": 33.4,
+    "n": 231
+   },
+   "cpuQuadroMs": {
+    "med": 16.27,
+    "p95": 18.2,
+    "max": 20.3,
+    "n": 231
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 231
+   },
+   "gpuTimerMs": {
+    "med": 7.94,
+    "p95": 8.7,
+    "max": 10.47,
+    "n": 232
+   }
+  },
+  "sem_pos_processamento": {
+   "quadros": 235,
+   "fps": 58.7,
+   "intervaloMs": {
+    "med": 17.03,
+    "p95": 16.8,
+    "max": 50,
+    "n": 232
+   },
+   "cpuQuadroMs": {
+    "med": 15.99,
+    "p95": 17.4,
+    "max": 47.9,
+    "n": 232
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 232
+   },
+   "gpuTimerMs": {
+    "med": 8.36,
+    "p95": 9.33,
+    "max": 18.13,
+    "n": 233
+   }
+  },
+  "so_logica_sem_render": {
+   "quadros": 241,
+   "fps": 60,
+   "intervaloMs": {
+    "med": 16.67,
+    "p95": 16.8,
+    "max": 16.9,
+    "n": 238
+   },
+   "cpuQuadroMs": {
+    "med": 5.6,
+    "p95": 6.8,
+    "max": 18,
+    "n": 238
+   },
+   "finishMs": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 238
+   },
+   "gpuTimerMs": {
+    "med": 0,
+    "p95": 0,
+    "max": 0,
+    "n": 239
+   }
+  }
+ },
+ "censo": {
+  "meshes": 2536,
+  "visiveis": 1128,
+  "skinned": 148,
+  "instanced": 678,
+  "instancias": 94812,
+  "luzes": 6,
+  "objetosNaCena": 8573,
+  "materiais": 1175,
+  "shadowCasters": 374,
+  "geometrias": 1002,
+  "texturas": 485,
+  "programas": 101,
+  "peds": 128,
+  "pedsAndando": 55,
+  "carros": 80,
+  "carrosIA": 46,
+  "carrosEstacionados": 26,
+  "viaturas": 8,
+  "jacares": 0,
+  "policiaCalor": 0,
+  "hora": 13.5,
+  "heapMB": 521
+ },
+ "quadrosDespausados": 0
+}

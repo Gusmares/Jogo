@@ -1,0 +1,27 @@
+# Instalador do NEON ENGINE: reaproveita dist/NEON ENGINE-win32-x64 (prepackaged).
+appId: br.neoncoast.engine
+productName: NEON ENGINE
+copyright: NEON ENGINE
+directories:
+  output: dist/instalador
+electronVersion: 45.4.1
+extraMetadata:
+  name: neon-engine
+  version: 0.2.0
+  description: NEON ENGINE
+win:
+  target:
+    - target: nsis
+      arch: x64
+  signAndEditExecutable: false
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: NEON ENGINE
+  runAfterFinish: false
+  deleteAppDataOnUninstall: false
+  artifactName: NEON-ENGINE-Setup-${version}.exe
+publish: null

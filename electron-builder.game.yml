@@ -1,0 +1,24 @@
+# Instalador do jogo NEON COAST: reaproveita a pasta gerada por `npm run build` (prepackaged), sem reempacotar.
+appId: br.neoncoast.game
+productName: NEON COAST
+copyright: NEON COAST
+directories:
+  output: dist/instalador
+electronVersion: 45.4.1
+win:
+  target:
+    - target: nsis
+      arch: x64
+  # sem "icon": usa o padrão do Electron (não há .ico do jogo no projeto)
+  signAndEditExecutable: false
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: NEON COAST
+  runAfterFinish: false
+  deleteAppDataOnUninstall: false
+  artifactName: NEON-COAST-Setup-${version}.exe
+publish: null

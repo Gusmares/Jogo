@@ -19,11 +19,14 @@
     "assets:interface": "node projects/neon-coast/tools/prepare-interface-assets.js",
     "test:physics": "node projects/neon-coast/tools/test-car-physics.js",
     "test:physics-world": "electron projects/neon-coast --physics-selftest",
-    "mods": "node projects/neon-coast/tools/mods-inventory.js --organizar"
+    "mods": "node projects/neon-coast/tools/mods-inventory.js --organizar",
+    "installer": "node engine/tools/build-game.js projects/neon-coast && electron-builder --win --prepackaged \"dist/NEON COAST-win32-x64\" --config electron-builder.game.yml",
+    "installer:engine": "node engine/tools/build-editor.js && electron-builder --win --prepackaged \"dist/NEON ENGINE-win32-x64\" --config electron-builder.engine.yml"
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",
     "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
     "meshoptimizer": "^1.3.0",
     "pngjs": "^7.0.0",
     "three": "^0.128.0"
