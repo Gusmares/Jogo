@@ -92,11 +92,15 @@ function edReconcile() {
   if (ED.map.spawn) want.set('spawn', [ED.map.spawn, 'spawn']);
   for (const [id, root] of [...ED.roots]) if (!want.has(id)) { edDispose(root); ED.roots.delete(id); }
   for (const [id, [def, kind]] of want) {
-    const root = ED.roots.get(id), js = JSON.stringify(def);
+    const root = ED.roots.get(id); let js = JSON.stringify(def);
     if (!root) { edPlaceRoot(id, def, kind); continue; }
     if (root.userData.json === js) { root.userData.def = def; continue; }
     if (edShape(JSON.parse(root.userData.json), kind) !== edShape(def, kind)) { const keep = ED.sel === id; edDispose(root); ED.roots.delete(id); edPlaceRoot(id, def, kind); if (keep) edAttach(); }
-    else { root.userData.def = def; root.userData.json = js; edApply(root, def, kind); }
+    else {
+      /* item gerado por ferramenta (tag, ex. 'packs-auto' de tools/scatter-packs.js) que o usuário mexeu passa a ser DO USUÁRIO: perde a tag e sobrevive a uma nova geração */
+      if (kind === 'object' && def.tag) { try { const old = JSON.parse(root.userData.json); if (old.tag === def.tag && JSON.stringify([old.pos, old.rot, old.scale]) !== JSON.stringify([def.pos, def.rot, def.scale])) { delete def.tag; js = JSON.stringify(def); } } catch (e) { /* json antigo ilegível: mantém */ } }
+      root.userData.def = def; root.userData.json = js; edApply(root, def, kind);
+    }
   }
   edWorldSync();
   if (ED.sel && !ED.roots.has(ED.sel) && !wEnt(ED.sel)) ED.sel = null;
@@ -302,7 +306,7 @@ function edDelete() {
 function edDuplicate() {
   const id = ED.sel; if (isW(id)) { edToast('Prédios do mapa original ainda não duplicam: use um objeto da biblioteca.'); return; }
   const def = id && id !== 'spawn' && edDef(id); if (!def) return;
-  const copy = JSON.parse(JSON.stringify(def)), kind = edKind(id); copy.id = edNewId(kind === 'vehicle' ? 'v' : 'o');
+  const copy = JSON.parse(JSON.stringify(def)), kind = edKind(id); delete copy.tag; copy.id = edNewId(kind === 'vehicle' ? 'v' : 'o');
   const r = ED.roots.get(id), bb = new THREE.Box3().setFromObject(r), w = Math.max(1, bb.max.x - bb.min.x);
   copy.pos = [r2(copy.pos[0] + w + (ED.snap ? ED.snapMove : 0.5)), copy.pos[1], copy.pos[2]];
   edChange(() => (kind === 'vehicle' ? ED.map.vehicles : ED.map.objects).push(copy)); edReconcile(); edSelect(copy.id); edToast('Duplicado');

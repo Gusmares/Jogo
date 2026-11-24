@@ -120,7 +120,7 @@ function mapNeedGLTF() {
 }
 function mapLoadGLB(id) {
   if (!MAP_GLB.has(id)) MAP_GLB.set(id, mapNeedGLTF().then(() => new Promise((ok, fail) => new THREE.GLTFLoader().load('assets/objects/' + id + '/model.glb', g => {
-    g.scene.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) if (m.map) m.map.anisotropy = 4; } });
+    g.scene.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) if (m.map) { m.map.anisotropy = 4; m.map.encoding = THREE.LinearEncoding; m.map.needsUpdate = true; } } });   // o jogo desenha em espaço linear (sem outputEncoding sRGB): textura de pack decodificada como sRGB saía escura demais (copas pretas)
     ok(g.scene); }, undefined, fail))));
   return MAP_GLB.get(id);
 }
@@ -128,7 +128,7 @@ function mapBuildObject(def) {
   const root = new THREE.Group(); root.userData.def = def; mapApplyTransform(root, def);
   if (def.type === 'gltf') {
     root.userData.ready = mapLoadGLB(def.ref).then(src => { const v = src.clone(true); root.add(v); root.userData.visual = v; return root; })
-      .catch(e => { console.warn('Mapa: modelo 3D', def.ref, e); const v = mapMissing(); root.add(v); root.userData.visual = v; return root; });
+      .catch(e => { if (window.NEON_EDITOR) { console.warn('Mapa: modelo 3D', def.ref, e); const v = mapMissing(); root.add(v); root.userData.visual = v; } else mapNoteMissing(def.ref); return root; });   // no jogo, modelo que não existe (assets não commitados) é só ignorado; o editor mostra a caixa magenta
     return root;
   }
   if (def.type === 'model') {
@@ -187,30 +187,64 @@ function mapAddCollider(root, def) {
   addCollider({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, h: bb.max.y, y0: bb.min.y, map: true });
 }
 const mapObjects = [];
-/* vegetação pintada no editor ("veg": 1): plantas iguais viram instâncias, em blocos de 200 m que somem de longe (como a vegetação do mapa) */
+/* ---------------- objetos 3D repetidos em LOTE (instâncias) ----------------
+   Qualquer objeto do mapa com "veg": 1 (vegetação, pincel do editor) ou "batch": 1 (props: lixeira, banco, rocha…) é desenhado assim:
+   o mesmo modelo repetido vira InstancedMesh (um por submalha/material do GLB), agrupado por célula de MAP_INST_CELL m, com corte por distância
+   (o alcance cresce com o tamanho do modelo) e por frustum (VEG_CHUNKS / updateVegetationCulling, foliage-lib.js). Nunca um Mesh clonado por objeto.
+   O objeto continua uma def normal em maps/world.json: o editor move/gira/apaga/desfaz a def (cada uma vira um grupo próprio no editor) e o jogo reconstrói o lote ao abrir o mapa.
+   Se o GLB não existir (outro PC, assets/ não vai para o git) o lote inteiro é ignorado em silêncio (só um aviso no console, uma vez por modelo). */
+const MAP_INST_CELL = 200, MAP_MISSING = new Set();
+function mapNoteMissing(ref) { if (!MAP_MISSING.has(ref)) { MAP_MISSING.add(ref); console.info('Mapa: modelo 3D "' + ref + '" não encontrado — objetos ignorados'); } }
+/* material do lote: sem normal map (folhagem de pack vem com escala 1,5-4, forte demais sem envMap); um clone por material (cache). */
+const MAP_INST_MATS = new Map(), MAP_FOLIAGE = [];
+function mapInstMat(m) {
+  if (Array.isArray(m)) return m.map(mapInstMat); if (!m.normalMap && !(m.alphaTest > 0)) return m;
+  let c = MAP_INST_MATS.get(m); if (c) return c; c = m.clone(); c.normalMap = null;
+  if (m.alphaTest > 0 && m.map) { c.emissiveMap = m.map; c.emissive.setScalar(1); c.emissiveIntensity = 0.25; MAP_FOLIAGE.push(c); }   // cartões de folha: o lado na sombra ficava quase preto (ambiente fraco); a cor da própria folha emite um pouco, só de dia
+  c.needsUpdate = true; MAP_INST_MATS.set(m, c); return c;
+}
+if (!window.NEON_EDITOR) setInterval(() => { if (!MAP_FOLIAGE.length) return; const k = 0.02 + 0.28 * (typeof dayF === 'number' ? dayF : 1); for (const c of MAP_FOLIAGE) c.emissiveIntensity = k; }, 500);
 function buildVegGroup(defs) {
-  const d0 = defs[0], tmpl = mapBuildObject({ type: d0.type, ref: d0.ref, p: d0.p });
-  tmpl.userData.ready.then(() => {
+  const d0 = defs[0], isG = d0.type === 'gltf';
+  const tmplP = isG ? mapLoadGLB(d0.ref) : (() => { const t = mapBuildObject({ type: d0.type, ref: d0.ref, p: d0.p }); return t.userData.ready.then(() => t); })();
+  const onMissing = e => { if (isG) mapNoteMissing(d0.ref); else console.warn('Mapa: lote', d0.ref, e); };
+  tmplP.then(tmpl => {
     tmpl.updateMatrixWorld(true); const meshes = []; tmpl.traverse(o => { if (o.isMesh) meshes.push(o); });
-    const cells = new Map(); for (const d of defs) { const k = Math.floor(d.pos[0] / 200) + ',' + Math.floor(d.pos[2] / 200); let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(d); }
+    if (!meshes.length) return;
+    const bb = new THREE.Box3().setFromObject(tmpl), bs = bb.getSize(new THREE.Vector3()), sY = defs.reduce((a, d) => a + (d.scale ? d.scale[1] : 1), 0) / defs.length;
+    const H = bs.y * sY, fp = Math.max(bs.x, bs.z) * sY;                              // altura e maior lado típicos (m) já na escala do mapa
+    const range = d0.range || clamp(50 + Math.max(H, fp * 0.6) * 28, 80, 240);        // modelo maior aparece de mais longe: capim e props ~80 m, arbusto ~95 m, árvore de 7 m+ ~240 m (teto: cada lote visível custa chamadas de desenho)
+    const castBig = isG ? H >= 8 : true;                                              // só árvore grande projeta sombra (e só de perto: 80 m, foliage-lib.js); capim, flores, arbustos e props pequenos não
+    const cells = new Map(); for (const d of defs) { const k = Math.floor(d.pos[0] / MAP_INST_CELL) + ',' + Math.floor(d.pos[2] / MAP_INST_CELL); let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(d); }
     const R = new THREE.Object3D(), m = new THREE.Matrix4();
     for (const l of cells.values()) {
       let cx = 0, cz = 0; l.forEach(d => { cx += d.pos[0]; cz += d.pos[2]; }); cx /= l.length; cz /= l.length; let r = 0; l.forEach(d => { r = Math.max(r, Math.hypot(d.pos[0] - cx, d.pos[2] - cz)); });
       for (const ms of meshes) {
-        const im = new THREE.InstancedMesh(ms.geometry, ms.material, l.length);
+        const im = new THREE.InstancedMesh(ms.geometry, mapInstMat(ms.material), l.length);
         l.forEach((d, i) => { mapApplyTransform(R, d); R.updateMatrix(); im.setMatrixAt(i, m.multiplyMatrices(R.matrix, ms.matrixWorld)); });
-        const mats = Array.isArray(ms.material) ? ms.material : [ms.material]; im.castShadow = !mats.some(x => x.transparent || x.alphaTest > 0) || d0.type === 'prefab'; im.receiveShadow = true; im.frustumCulled = false; scene.add(im);
-        if (typeof VEG_CHUNKS !== 'undefined') VEG_CHUNKS.push({ mesh: im, cx, cz, r: r + 12, range: d0.type === 'gltf' ? 220 : 520, cast: im.castShadow });
+        im.instanceMatrix.setUsage(THREE.StaticDrawUsage); im.matrixAutoUpdate = false;
+        const cast = castBig; const leaf = (Array.isArray(ms.material) ? ms.material : [ms.material]).some(x => x.alphaTest > 0);   // folhagem com alpha não recebe sombra (evita acne em folha dupla face); trunco e props recebem
+        im.castShadow = cast; im.receiveShadow = !leaf; im.frustumCulled = false; scene.add(im);   // folhagem com alpha: a sombra usa o mesmo corte (alphaTest) do material
+        if (typeof VEG_CHUNKS !== 'undefined') VEG_CHUNKS.push({ ref: d0.ref, n: l.length, mesh: im, cx, cz, r: r + Math.max(6, fp * 0.5), range: isG ? range : 520, cast });
       }
     }
     const F = d0.type === 'prefab' ? MAP_PREFABS[d0.ref] : null;
     if (F && F.col) for (const d of defs) { const s = d.scale ? Math.max(d.scale[0], d.scale[2]) : 1, rr_ = F.col * s; if (d.solid !== false) addCollider({ x0: d.pos[0] - rr_, x1: d.pos[0] + rr_, z0: d.pos[2] - rr_, z1: d.pos[2] + rr_, h: d.pos[1] + 8, y0: d.pos[1], map: true }); }
-  });
+    else if (isG) {                                                                   // colisão de modelo 3D em lote: tronco redondo (árvore alta) ou caixa do modelo (prop/rocha ≥ 0,8 m); mato e lixo miúdo não colidem
+      const tree = !!d0.veg, solid = tree ? H >= 5 : (H >= 0.8 && fp >= 0.3);
+      if (solid) for (const d of defs) {
+        if (d.solid === false) continue; const s = d.scale || [1, 1, 1], p = d.pos, yaw = ((d.rot || [0, 0, 0])[1]) * DEG;
+        if (tree) { const rr_ = clamp(0.012 * bs.y * s[1] + 0.22, 0.28, 0.6); addCollider({ x0: p[0] - rr_, x1: p[0] + rr_, z0: p[2] - rr_, z1: p[2] + rr_, h: p[1] + bs.y * s[1], y0: p[1], map: true }); }
+        else { const w = bs.x * s[0], dd = bs.z * s[2], c = Math.abs(Math.cos(yaw)), sn = Math.abs(Math.sin(yaw)), hx = (w * c + dd * sn) / 2, hz = (w * sn + dd * c) / 2;
+          addCollider({ x0: p[0] - hx, x1: p[0] + hx, z0: p[2] - hz, z1: p[2] + hz, h: p[1] + bs.y * s[1], y0: p[1], map: true }); }
+      }
+    }
+  }, onMissing).catch(e => console.warn('Mapa: lote', d0.ref, e));
 }
 function buildMapObjects() {
   const list = Array.isArray(MAPDATA.objects) ? MAPDATA.objects : [], veg = new Map();
   for (const def of list) {
-    if (def.veg && (def.type === 'gltf' || def.type === 'prefab')) { const k = def.type + '|' + def.ref + '|' + JSON.stringify(def.p || null); let l = veg.get(k); if (!l) veg.set(k, l = []); l.push(def); continue; }
+    if ((def.veg || def.batch) && (def.type === 'gltf' || def.type === 'prefab')) { const k = def.type + '|' + def.ref + '|' + JSON.stringify(def.p || null); let l = veg.get(k); if (!l) veg.set(k, l = []); l.push(def); continue; }
     const root = mapBuildObject(def); scene.add(root); mapObjects.push(root);
     root.userData.ready.then(() => { const f = mapFlags(def); if (f.solid) mapAddCollider(root, def); if (f.walk) mapAddSurface(root, def, f); });
   }

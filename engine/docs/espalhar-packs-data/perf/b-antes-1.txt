@@ -1,0 +1,283 @@
+
+RESULTADO {
+ "cenario": "b",
+ "janela": {
+  "w": 1264,
+  "h": 655,
+  "dpr": 1,
+  "canvas": [
+   1264,
+   655
+  ]
+ },
+ "gl": {
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "versao": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "timerQuery": true
+ },
+ "funcoesMedidas": [
+  "updateSky",
+  "applySwamp",
+  "updateFoot",
+  "updateVehicleTransition",
+  "updateCarDoors",
+  "updateCars",
+  "stepCars",
+  "updateDamageEffects",
+  "updatePeds",
+  "updateNpcs",
+  "manageNpcs",
+  "updatePedAI",
+  "updatePigeons",
+  "updateGators",
+  "updatePolice",
+  "updateOfficers",
+  "updateEms",
+  "updatePlayerSeat",
+  "updateWeapons",
+  "updateObjective",
+  "updateCamera",
+  "updateVegetationCulling",
+  "updateTrafficLights",
+  "manageTraffic",
+  "drawMinimap",
+  "updateAudio",
+  "updateRadio",
+  "updateMenuPreview",
+  "updatePhonePreview",
+  "updateMapGens",
+  "postRender"
+ ],
+ "nome": "Avenida movimentada dirigindo",
+ "sim10s": {
+  "quadros": 600,
+  "quadroTotalMs": {
+   "med": 13.01,
+   "p95": 17.9,
+   "max": 53.7,
+   "n": 600
+  },
+  "fases": {
+   "updateCars": {
+    "med": 3.01,
+    "p95": 4.3,
+    "max": 5.9,
+    "n": 600
+   },
+   "stepCars": {
+    "med": 2.77,
+    "p95": 4,
+    "max": 5.5,
+    "n": 600,
+    "aninhada": true
+   },
+   "updateDamageEffects": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePeds": {
+    "med": 1.56,
+    "p95": 2.4,
+    "max": 3.6,
+    "n": 600
+   },
+   "updateNpcs": {
+    "med": 1.49,
+    "p95": 2.3,
+    "max": 3.4,
+    "n": 600,
+    "aninhada": true
+   },
+   "manageNpcs": {
+    "med": 0.03,
+    "p95": 0.2,
+    "max": 1.5,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePedAI": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePigeons": {
+    "med": 0.06,
+    "p95": 0.1,
+    "max": 0.7,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePolice": {
+    "med": 0.13,
+    "p95": 0.3,
+    "max": 0.8,
+    "n": 600
+   },
+   "updatePlayerSeat": {
+    "med": 0.04,
+    "p95": 0.1,
+    "max": 0.2,
+    "n": 600
+   },
+   "updateWeapons": {
+    "med": 0.02,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600
+   },
+   "updateObjective": {
+    "med": 0.07,
+    "p95": 0.2,
+    "max": 0.5,
+    "n": 600
+   },
+   "updateCamera": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.2,
+    "n": 600
+   },
+   "updateVegetationCulling": {
+    "med": 0.13,
+    "p95": 0.2,
+    "max": 0.5,
+    "n": 600
+   },
+   "manageTraffic": {
+    "med": 0.01,
+    "p95": 0,
+    "max": 0.7,
+    "n": 600
+   },
+   "drawMinimap": {
+    "med": 0.11,
+    "p95": 0.2,
+    "max": 0.3,
+    "n": 600
+   },
+   "updateAudio": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600
+   },
+   "updateRadio": {
+    "med": 0.03,
+    "p95": 0.1,
+    "max": 0.2,
+    "n": 600
+   },
+   "postRender": {
+    "med": 7.81,
+    "p95": 11.6,
+    "max": 48.3,
+    "n": 600
+   }
+  },
+  "resumoMs": {
+   "total": 13.01,
+   "render_postRender": 7.81,
+   "ui_minimapa_radio_audio": 0.15,
+   "logica_resto": 5.06
+  },
+  "drawCalls": {
+   "cenaComSombra": 585,
+   "cenaSemSombra": 436,
+   "tudoNoQuadro": 489
+  },
+  "triangulos": {
+   "cenaComSombra": 1181858,
+   "cenaSemSombra": 959359
+  },
+  "heapMB": {
+   "ini": 472,
+   "fim": 501
+  },
+  "renderMsComSombra": 8.58,
+  "renderMsSemSombra": 7.42
+ },
+ "pilotoAuto": {
+  "vmax_ms": 34.5,
+  "vmedia_ms": 23.3,
+  "reposicoes": 0
+ },
+ "censo": {
+  "meshes": 1895,
+  "visiveis": 549,
+  "skinned": 104,
+  "instanced": 678,
+  "instancias": 94725,
+  "luzes": 6,
+  "objetosNaCena": 6117,
+  "materiais": 791,
+  "shadowCasters": 341,
+  "geometrias": 609,
+  "texturas": 377,
+  "programas": 61,
+  "peds": 72,
+  "pedsAndando": 12,
+  "carros": 60,
+  "carrosIA": 29,
+  "carrosEstacionados": 22,
+  "viaturas": 6,
+  "jacares": 0,
+  "policiaCalor": 0,
+  "hora": 13.5,
+  "heapMB": 501
+ },
+ "tempoReal": {
+  "quadros": 268,
+  "fps": 54.8,
+  "intervaloMs": {
+   "med": 18.24,
+   "p95": 16.9,
+   "max": 116.6,
+   "n": 265
+  },
+  "cpuQuadroMs": {
+   "med": 13.83,
+   "p95": 22,
+   "max": 49.9,
+   "n": 265
+  },
+  "gpuTimerMs": {
+   "med": 7.73,
+   "p95": 10.73,
+   "max": 33.55,
+   "n": 266
+  }
+ },
+ "tempoRealFinish": {
+  "quadros": 254,
+  "fps": 50.7,
+  "intervaloMs": {
+   "med": 19.72,
+   "p95": 33.4,
+   "max": 133.1,
+   "n": 251
+  },
+  "cpuQuadroMs": {
+   "med": 16.53,
+   "p95": 31.9,
+   "max": 126.2,
+   "n": 251
+  },
+  "finishMs": {
+   "med": 0.01,
+   "p95": 0.1,
+   "max": 0.1,
+   "n": 251
+  }
+ },
+ "censoDepois": {
+  "peds": 100,
+  "carros": 72,
+  "heapMB": 429
+ },
+ "quadrosDespausados": 0
+}

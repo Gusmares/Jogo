@@ -1,0 +1,259 @@
+
+RESULTADO {
+ "cenario": "e",
+ "janela": {
+  "w": 1264,
+  "h": 655,
+  "dpr": 1,
+  "canvas": [
+   1264,
+   655
+  ]
+ },
+ "gl": {
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "versao": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "timerQuery": true
+ },
+ "funcoesMedidas": [
+  "updateSky",
+  "applySwamp",
+  "updateFoot",
+  "updateVehicleTransition",
+  "updateCarDoors",
+  "updateCars",
+  "stepCars",
+  "updateDamageEffects",
+  "updatePeds",
+  "updateNpcs",
+  "manageNpcs",
+  "updatePedAI",
+  "updatePigeons",
+  "updateGators",
+  "updatePolice",
+  "updateOfficers",
+  "updateEms",
+  "updatePlayerSeat",
+  "updateWeapons",
+  "updateObjective",
+  "updateCamera",
+  "updateVegetationCulling",
+  "updateTrafficLights",
+  "manageTraffic",
+  "drawMinimap",
+  "updateAudio",
+  "updateRadio",
+  "updateMenuPreview",
+  "updatePhonePreview",
+  "updateMapGens",
+  "postRender"
+ ],
+ "nome": "Estresse (máximo de gente e carros + polícia)",
+ "sim10s": {
+  "quadros": 600,
+  "quadroTotalMs": {
+   "med": 16.65,
+   "p95": 18.8,
+   "max": 122.4,
+   "n": 600
+  },
+  "fases": {
+   "updateFoot": {
+    "med": 0.14,
+    "p95": 0.2,
+    "max": 0.7,
+    "n": 600
+   },
+   "updateCars": {
+    "med": 4.08,
+    "p95": 4.6,
+    "max": 47.3,
+    "n": 600
+   },
+   "stepCars": {
+    "med": 3.72,
+    "p95": 4.3,
+    "max": 46.9,
+    "n": 600,
+    "aninhada": true
+   },
+   "updateDamageEffects": {
+    "med": 0.03,
+    "p95": 0.1,
+    "max": 0.6,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePeds": {
+    "med": 2.16,
+    "p95": 2.8,
+    "max": 4.8,
+    "n": 600
+   },
+   "updateNpcs": {
+    "med": 2.09,
+    "p95": 2.7,
+    "max": 4.7,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePedAI": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePigeons": {
+    "med": 0.07,
+    "p95": 0.2,
+    "max": 0.7,
+    "n": 600,
+    "aninhada": true
+   },
+   "updatePolice": {
+    "med": 0.22,
+    "p95": 0.4,
+    "max": 1.1,
+    "n": 600
+   },
+   "updateWeapons": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600
+   },
+   "updateObjective": {
+    "med": 0.06,
+    "p95": 0.2,
+    "max": 0.3,
+    "n": 600
+   },
+   "updateCamera": {
+    "med": 0.01,
+    "p95": 0.1,
+    "max": 0.1,
+    "n": 600
+   },
+   "updateVegetationCulling": {
+    "med": 0.17,
+    "p95": 0.3,
+    "max": 0.8,
+    "n": 600
+   },
+   "drawMinimap": {
+    "med": 0.11,
+    "p95": 0.2,
+    "max": 0.4,
+    "n": 600
+   },
+   "updateRadio": {
+    "med": 0.06,
+    "p95": 0.1,
+    "max": 3.2,
+    "n": 600
+   },
+   "postRender": {
+    "med": 9.56,
+    "p95": 11.1,
+    "max": 87.6,
+    "n": 600
+   }
+  },
+  "resumoMs": {
+   "total": 16.65,
+   "render_postRender": 9.56,
+   "ui_minimapa_radio_audio": 0.17,
+   "logica_resto": 6.92
+  },
+  "drawCalls": {
+   "cenaComSombra": 902,
+   "cenaSemSombra": 674,
+   "tudoNoQuadro": 754
+  },
+  "triangulos": {
+   "cenaComSombra": 2221187,
+   "cenaSemSombra": 1687488
+  },
+  "heapMB": {
+   "ini": 470,
+   "fim": 505
+  },
+  "renderMsComSombra": 10.67,
+  "renderMsSemSombra": 9
+ },
+ "censo": {
+  "meshes": 3134,
+  "visiveis": 699,
+  "skinned": 145,
+  "instanced": 1394,
+  "instancias": 98573,
+  "luzes": 6,
+  "objetosNaCena": 9180,
+  "materiais": 1225,
+  "shadowCasters": 402,
+  "geometrias": 565,
+  "texturas": 472,
+  "programas": 73,
+  "peds": 133,
+  "pedsAndando": 64,
+  "carros": 94,
+  "carrosIA": 60,
+  "carrosEstacionados": 26,
+  "viaturas": 8,
+  "jacares": 0,
+  "policiaCalor": 0,
+  "hora": 13.5,
+  "heapMB": 505
+ },
+ "tempoReal": {
+  "quadros": 210,
+  "fps": 42.4,
+  "intervaloMs": {
+   "med": 23.59,
+   "p95": 66.6,
+   "max": 150,
+   "n": 207
+  },
+  "cpuQuadroMs": {
+   "med": 19.35,
+   "p95": 35.1,
+   "max": 56.8,
+   "n": 207
+  },
+  "gpuTimerMs": {
+   "med": 8.68,
+   "p95": 12.57,
+   "max": 23.86,
+   "n": 208
+  }
+ },
+ "tempoRealFinish": {
+  "quadros": 289,
+  "fps": 58,
+  "intervaloMs": {
+   "med": 17.25,
+   "p95": 16.8,
+   "max": 50,
+   "n": 286
+  },
+  "cpuQuadroMs": {
+   "med": 16.33,
+   "p95": 18.3,
+   "max": 36,
+   "n": 286
+  },
+  "finishMs": {
+   "med": 0.01,
+   "p95": 0.1,
+   "max": 0.1,
+   "n": 286
+  }
+ },
+ "censoDepois": {
+  "peds": 131,
+  "carros": 90,
+  "heapMB": 619
+ },
+ "quadrosDespausados": 0
+}
