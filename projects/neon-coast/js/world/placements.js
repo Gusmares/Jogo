@@ -204,6 +204,38 @@ function mapInstMat(m) {
   c.needsUpdate = true; MAP_INST_MATS.set(m, c); return c;
 }
 if (!window.NEON_EDITOR) setInterval(() => { if (!MAP_FOLIAGE.length) return; const k = 0.02 + 0.28 * (typeof dayF === 'number' ? dayF : 1); for (const c of MAP_FOLIAGE) c.emissiveIntensity = k; }, 500);
+/* ---------------- colisão dos modelos 3D em lote (packs) ----------------
+   Cada modelo tem "colisor" em assets/objects/<id>/object.json (engine/tools/pack-collide.js): círculos [x,z,r] no plano do modelo, medidos da malha.
+   O jogo usa o MESMO colisor de sempre (addRound = caixa quadrada de meio-lado r, collision.js): o círculo é movido/girado/escalado pela instância.
+   • folhagem rasteira (grama, capim, flor, muda, arbusto <= 1,5 m): NÃO colide; arbusto > 1,5 m: círculo pequeno só no centro (0,12-0,3 m);
+   • árvore (>= 5 m): círculo só no tronco (raio da casca a 1 m do chão, limite 0,15-0,8 m depois da escala), nunca a copa;
+   • rocha, tronco caído e prop: círculos ao longo da pegada real da base (menor que a caixa do modelo);
+   • sem o campo no object.json: folhagem = sem colisor; árvore alta = tronco fino (0,2 m); prop/rocha >= 0,8 m = um círculo central de 35% do menor lado (nunca a caixa). */
+const MAP_META = new Map();
+function mapLoadMeta(id) {
+  if (!MAP_META.has(id)) MAP_META.set(id, new Promise(ok => new THREE.FileLoader().load('assets/objects/' + id + '/object.json', t => { try { ok(JSON.parse(t)); } catch (e) { ok(null); } }, undefined, () => ok(null))));
+  return MAP_META.get(id);
+}
+function mapBatchColliders(defs, d0, bs, fp, meta) {
+  const col = meta && meta.colisor, tree = !!d0.veg, tipo = col ? col.tipo : null;
+  if (tipo === 'nenhum') return;
+  for (const d of defs) {
+    if (d.solid === false) continue; const s = d.scale || [1, 1, 1], p = d.pos, yaw = ((d.rot || [0, 0, 0])[1]) * DEG, sxz = Math.max(s[0], s[2]), H = bs.y * s[1];
+    let circ = null, lo = 0, hi = 1e9;
+    if (col) {
+      if (tipo === 'tronco') { circ = col.c; lo = 0.15; hi = 0.8; }
+      else if (tipo === 'arbusto') { if (H > 1.5) { circ = col.c; lo = 0.12; hi = 0.3; } }
+      else circ = col.c;
+    } else if (tree) { if (H >= 5) { circ = [[0, 0, 0.2 / sxz]]; lo = 0.15; hi = 0.4; } }
+    else if (H >= 0.8 && fp >= 0.3) circ = [[0, 0, 0.35 * Math.min(bs.x, bs.z)]];
+    if (!circ || !circ.length) continue;
+    const cs = Math.cos(yaw), sn = Math.sin(yaw), hTop = p[1] + (col ? col.h : bs.y) * s[1];
+    for (const c of circ) {
+      const r = clamp(c[2] * sxz, lo, hi), lx = c[0] * s[0], lz = c[1] * s[2], x = p[0] + lx * cs + lz * sn, z = p[2] - lx * sn + lz * cs;
+      addCollider({ x0: x - r, x1: x + r, z0: z - r, z1: z + r, h: hTop, y0: p[1], map: true });
+    }
+  }
+}
 function buildVegGroup(defs) {
   const d0 = defs[0], isG = d0.type === 'gltf';
   const tmplP = isG ? mapLoadGLB(d0.ref) : (() => { const t = mapBuildObject({ type: d0.type, ref: d0.ref, p: d0.p }); return t.userData.ready.then(() => t); })();
@@ -230,15 +262,7 @@ function buildVegGroup(defs) {
     }
     const F = d0.type === 'prefab' ? MAP_PREFABS[d0.ref] : null;
     if (F && F.col) for (const d of defs) { const s = d.scale ? Math.max(d.scale[0], d.scale[2]) : 1, rr_ = F.col * s; if (d.solid !== false) addCollider({ x0: d.pos[0] - rr_, x1: d.pos[0] + rr_, z0: d.pos[2] - rr_, z1: d.pos[2] + rr_, h: d.pos[1] + 8, y0: d.pos[1], map: true }); }
-    else if (isG) {                                                                   // colisão de modelo 3D em lote: tronco redondo (árvore alta) ou caixa do modelo (prop/rocha ≥ 0,8 m); mato e lixo miúdo não colidem
-      const tree = !!d0.veg, solid = tree ? H >= 5 : (H >= 0.8 && fp >= 0.3);
-      if (solid) for (const d of defs) {
-        if (d.solid === false) continue; const s = d.scale || [1, 1, 1], p = d.pos, yaw = ((d.rot || [0, 0, 0])[1]) * DEG;
-        if (tree) { const rr_ = clamp(0.012 * bs.y * s[1] + 0.22, 0.28, 0.6); addCollider({ x0: p[0] - rr_, x1: p[0] + rr_, z0: p[2] - rr_, z1: p[2] + rr_, h: p[1] + bs.y * s[1], y0: p[1], map: true }); }
-        else { const w = bs.x * s[0], dd = bs.z * s[2], c = Math.abs(Math.cos(yaw)), sn = Math.abs(Math.sin(yaw)), hx = (w * c + dd * sn) / 2, hz = (w * sn + dd * c) / 2;
-          addCollider({ x0: p[0] - hx, x1: p[0] + hx, z0: p[2] - hz, z1: p[2] + hz, h: p[1] + bs.y * s[1], y0: p[1], map: true }); }
-      }
-    }
+    else if (isG) mapLoadMeta(d0.ref).then(meta => mapBatchColliders(defs, d0, bs, fp, meta));   // colisão de modelo 3D em lote (ver mapBatchColliders)
   }, onMissing).catch(e => console.warn('Mapa: lote', d0.ref, e));
 }
 function buildMapObjects() {
@@ -249,6 +273,41 @@ function buildMapObjects() {
     root.userData.ready.then(() => { const f = mapFlags(def); if (f.solid) mapAddCollider(root, def); if (f.walk) mapAddSurface(root, def, f); });
   }
   for (const defs of veg.values()) buildVegGroup(defs);
+}
+/* ---------------- capim, tufos e samambaias dos packs no lugar da procedural (vegetation.js: PACK_VEG, VEGREC_G) ----------------
+   Cada tufo/mancha procedural vira UM modelo dos packs (dois, se a mancha tinha 5+ tufos) na mesma posição; sem arquivo no mapa (não é editável, como já não era).
+   Grupos de plantas com paleta por célula de 200 m (poucas espécies por célula = poucas chamadas de desenho); modelos leves (< 2 mil triângulos). */
+const PACK_GRASS = {   // [modelo, escala mín, máx, peso] — as texturas dos packs são escuras; os modelos mais verdes pesam mais
+  ground: [['sp_grama_blades', 2.2, 3.4, 1.6], ['gp_green_tall_patch', 1.5, 2.4, 1], ['gp_green_alpha_tall_grama_6', 3.0, 5.0, 1], ['vp_tundra_grama_var_g', 1.5, 2.4, 0.7], ['sp_5_folha_ground_planta', 1.2, 2.0, 0.8], ['gp_mid_tall_patch', 1.5, 2.4, 0.3], ['gp_green_alpha_tall_grama_4', 3.0, 5.0, 0.3]],
+  park: [['sp_grama_blades', 1.6, 2.6, 1.6], ['sp_5_folha_ground_planta', 1.0, 1.6, 1], ['gp_green_tall_patch', 1.0, 1.7, 1], ['vp_tundra_grama_var_g', 1.0, 1.7, 0.5]],
+  dry: [['gp_yellow_tall_patch', 1.4, 2.2, 1.2], ['sp_grama_blades', 2.0, 3.0, 1], ['gp_mid_tall_patch', 1.4, 2.2, 0.8], ['vp_tundra_grama_var_e', 1.4, 2.2, 0.4]],
+  fern: [['sp_5_folha_ground_planta', 1.4, 2.4, 1.4], ['vp_silvery_glade_samambaia_var_e', 2.0, 3.2, 0.6], ['vp_silvery_glade_samambaia_var_g', 2.0, 3.0, 0.6]],
+  flower: [['sp_dandelion', 1.0, 1.8, 1.2], ['sp_dandelion_2', 1.0, 1.8, 1.2], ['vp_chamomile_var_d', 1.0, 1.6, 0.8], ['vp_chamomile_var_e', 1.0, 1.6, 0.8]]
+};
+const PACK_GRASS_KIND = { grass: 'ground', tall: 'ground', dark: 'ground', park: 'park', dry: 'dry', twigs: 'dry', agave: 'dry', fern: 'fern', weeds: 'flower', parkweed: 'flower' };   // categoria da procedural -> grupo
+const PACK_GRASS_NPAL = { ground: 2, park: 2, dry: 1, fern: 1, flower: 1 };
+function buildPackGrass() {
+  const rec = typeof VEGREC_G !== 'undefined' ? VEGREC_G : []; if (!rec.length) return;
+  const seedBase = 20261124, pal = new Map(), groups = new Map(), stat = {};
+  const paletteOf = (grp, cx, cz) => {
+    const key = grp + '|' + cx + ',' + cz; let p = pal.get(key); if (p) return p;
+    const g = mulberry32(Math.floor(hash2(cx * 7 + grp.length * 131, cz * 13 + seedBase % 997) * 4294967296)), pool = PACK_GRASS[grp].slice(); p = [];
+    for (let k = 0; k < Math.min(PACK_GRASS_NPAL[grp], pool.length); k++) { const tot = pool.reduce((a, q) => a + q[3], 0); let r = g() * tot, i = 0; for (; i < pool.length - 1; i++) { r -= pool[i][3]; if (r <= 0) break; } p.push(pool[i]); pool.splice(i, 1); }
+    pal.set(key, p); return p;
+  };
+  for (let i = 0; i < rec.length; i++) {
+    const [kind, x0, z0, h0, n, , rad] = rec[i], grp = PACK_GRASS_KIND[kind]; if (!grp) continue;
+    const cx = Math.floor(x0 / MAP_INST_CELL), cz = Math.floor(z0 / MAP_INST_CELL), p = paletteOf(grp, cx, cz), gr = mulberry32(Math.floor(hash2(i, Math.floor(x0 * 3 + z0)) * 4294967296));
+    const m = n >= 5 ? 2 : 1;
+    for (let k = 0; k < m; k++) {
+      const e = p[Math.floor(gr() * p.length)], a = gr() * Math.PI * 2, d = k ? 1.1 + gr() * 0.9 : 0, x = x0 + Math.cos(a) * d, z = z0 + Math.sin(a) * d;
+      const s = (e[1] + (e[2] - e[1]) * gr()) * (grp === 'park' || grp === 'flower' ? 1 : (0.8 + 0.2 * Math.min(1.5, n / 4))), y = typeof carGroundHeight === 'function' && kind !== 'park' && kind !== 'parkweed' ? Math.min(h0, carGroundHeight(x, z)) : h0;
+      let l = groups.get(e[0]); if (!l) groups.set(e[0], l = []);
+      l.push({ type: 'gltf', ref: e[0], veg: 1, pos: [x, y - 0.03, z], rot: [0, gr() * 360, 0], scale: [s, s * (0.85 + 0.3 * gr()), s] }); stat[grp] = (stat[grp] || 0) + 1;
+    }
+  }
+  for (const defs of groups.values()) buildVegGroup(defs);
+  window.PACK_GRASS_STAT = { registros: rec.length, modelos: groups.size, instancias: Object.values(stat).reduce((a, v) => a + v, 0), porGrupo: stat };
 }
 /* ---------------- geradores de carro ---------------- */
 const mapGens = (Array.isArray(MAPDATA.vehicles) ? MAPDATA.vehicles : []).map(g => ({ def: g, car: null, cd: 0 }));
@@ -323,10 +382,11 @@ function entApply(e, ov) {
 function entBox(e, ov) { entInit(e); return e.box.clone().applyMatrix4(entMatrix(e, ov)); }
 function applyWorldEdits() {
   const W = MAPDATA.world && typeof MAPDATA.world === 'object' ? MAPDATA.world : {}; let miss = 0;
-  for (const [id, ov] of Object.entries(W)) { const e = WENT.byId.get(id); if (e) entApply(e, ov); else miss++; }
+  for (const [id, ov] of Object.entries(W)) { const e = WENT.byId.get(id); if (e) entApply(e, ov); else if (!(typeof PACK_VEG !== 'undefined' && PACK_VEG && VEGREP_IDS.has(id))) miss++; }   // árvore/arbusto procedural trocado pelos packs: a alteração já foi aplicada pelo gerador (scatter-packs.js)
   if (miss) console.warn('Mapa: ' + miss + ' alteração(ões) da cidade original não acharam o prédio (a planta mudou?)');
 }
 
+if (typeof PACK_VEG !== 'undefined' && PACK_VEG) buildPackGrass();   // jogo e editor: o capim dos packs substitui o procedural
 /* ---------------- partida no jogo ---------------- */
 if (!window.NEON_EDITOR) {
   addEventListener('DOMContentLoaded', applyWorldEdits);              // depois de todos os scripts: vale também para o que é criado depois deste arquivo (vida de rua)

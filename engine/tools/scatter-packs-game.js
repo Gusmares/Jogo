@@ -2,6 +2,7 @@
 // Não use direto: o CLI injeta window.__SCATTER = { seed, vegMax, propsMax, avail } antes deste texto.
 // Usa a geometria REAL do jogo (alturas carGroundHeight, CITY_BLOCKS, colisores dos prédios, entidades do street-life.js, favelas, rodovia...)
 // e devolve a lista de objetos { id, type:'gltf', ref, name, pos, rot, scale, veg|batch, tag } e estatísticas. Não grava nada.
+// PRM.mode: 'full' (espalha tudo e troca a procedural) ou 'rep' (só a troca das árvores/arbustos procedurais pelos modelos dos packs, mesmas posições, campo "rep").
 (() => {
   const PRM = window.__SCATTER, A = PRM.avail, TAG = PRM.tag || 'packs-auto';
   const R = mulberry32((PRM.seed >>> 0) || 1), rnd = () => R(), rr = (a, b) => a + (b - a) * R(), ri = (a, b) => Math.floor(rr(a, b + 1));
@@ -77,11 +78,16 @@
       T('vp_narrowleaf_plantain_var_b', 2.0, 3.0), T('vp_lucky_bambu_var_h', 1.3, 2.0), T('sp_5_folha_ground_planta', 1.2, 2.0), T('gp_green_tall_patch', 1.6, 2.6), T('sp_grama_blades', 2.2, 3.4), T('gp_green_alpha_tall_grama_2', 3.0, 5.0), T('sp_ground_cloves', 4, 7)],
     wildGround: [T('gp_mid_tall_patch', 1.8, 3.2), T('gp_yellow_tall_patch', 1.8, 3.2), T('gp_green_tall_patch', 1.8, 3.2), T('gp_green_alpha_tall_grama_4', 3.5, 6), T('gp_green_alpha_tall_grama_6', 3.5, 6), T('sp_grama_blades', 2.4, 4), T('vp_tundra_grama_var_d', 1.8, 3), T('vp_tundra_grama_var_g', 1.6, 2.6),
       T('vp_silvery_glade_samambaia_var_g', 2.0, 3.2), T('vp_narrowleaf_plantain_var_a', 2.2, 3.4)],
+    // troca da vegetação procedural (mesmas posições): espécies por contexto
+    hillTrees: [T('vf_carvalho', 8, 11.5), T('vf_freixo', 7, 10), T('vf_betula_2', 8, 11), T('vf_betula_3', 8, 11), T('vf_macieira', 5, 7, 0.4)],
+    pines: [T('vf_pinheiro', 9, 14), T('vf_abeto', 9, 13, 0.7)],
+    swampTrees: [T('vf_pinheiro', 9, 13), T('vf_conifera_morta_arvore_2', 7, 10, 0.8), T('vf_caducifolia_morta_2', 8, 11, 0.6), T('vf_abeto', 9, 13, 0.5)],
+    repShrubs: [T('vf_caducifolia_muda_2', 1.1, 2.0, 2), T('vf_caducifolia_muda', 1.0, 1.8, 1.5), T('vf_conifera_muda', 1.0, 1.7, 1.5), T('vp_rose_hip_var_h', 1.0, 1.7, 0.4), T('vp_rose_hip_var_b', 1.0, 1.6, 0.4), T('vf_caducifolia_arbusto', 1.2, 2.0, 0.6), T('vf_conifera_arbusto', 1.2, 2.0, 0.5), T('vf_azevinho_arbusto', 1.1, 1.8, 0.4)],
     rocks: [T('vf_rocha_lisa_grande', 0.8, 1.7), T('vf_rocha_com_musgo_grande', 0.8, 1.7), T('vf_rocha_afloramento_lisa_media', 0.5, 1.0, 0.25), T('vf_rocha_afloramento_com_musgo_media', 0.5, 1.0, 0.25)],
     logs: [T('vf_caducifolia_tronco_caido', 0.9, 1.3), T('vf_conifera_morta_tronco_caido', 0.9, 1.3)]
   };
   const PAL = new Map(), cellKey = (x, z) => Math.floor(x / 200) + ',' + Math.floor(z / 200);
-  const NPAL = { urbanTrees: 2, wildTrees: 2, urbanShrubs: 1, wildShrubs: 1, flowers: 1, urbanGround: 2, wildGround: 2, rocks: 1, logs: 1 };
+  const NPAL = { hillTrees: 2, pines: 2, swampTrees: 2, repShrubs: 2, urbanTrees: 2, wildTrees: 2, urbanShrubs: 1, wildShrubs: 1, flowers: 1, urbanGround: 2, wildGround: 2, rocks: 1, logs: 1 };
   function palette(lib, x, z) {
     const ck = lib + '|' + cellKey(x, z); let p = PAL.get(ck); if (p) return p;
     const cand = LIB[lib].filter(e => has(e.id)), hs = hash2(Math.floor(x / 200) * 7 + lib.length * 131, Math.floor(z / 200) * 13 + (PRM.seed | 0)), g = mulberry32(Math.floor(hs * 4294967296));
@@ -266,21 +272,48 @@
     }
   }
 
+  /* ------------------------------------------------------------------ troca da vegetação procedural ------------------------------------------------------------------
+     vegetation.js anota em VEGREC cada árvore/arbusto procedural (mesmas posições, mesma semente do mundo). Aqui cada uma vira um modelo dos packs com o campo "rep" = id da entidade
+     (placements.js liga PACK_VEG quando existe algum objeto com "rep"). Respeita o que o usuário editou: entidade com "del" em world não é trocada; "d/r/s" (mover, girar, escalar)
+     são aplicados; objeto "rep" que o usuário já tem no mapa (sem a tag) não é duplicado. */
+  const REP = { por: {}, apagadas: 0, doUsuario: 0, semModelo: 0, movidas: 0 };
+  function genReplacements() {
+    const W = MAPDATA.world || {}, own = new Set(); for (const o of (MAPDATA.objects || [])) if (o.rep && o.tag !== TAG) own.add(o.rep);
+    const LIBFOR = { 'arvore-rua': 'urbanTrees', arvore: 'hillTrees', pinheiro: 'pines', cipreste: 'swampTrees', arbusto: 'repShrubs' };
+    const out = [];
+    for (const r of VEGREC) {
+      const ov = W[r.id]; if (ov && ov.del) { REP.apagadas++; continue; } if (own.has(r.id)) { REP.doUsuario++; continue; }
+      const lib = LIBFOR[r.k], pl = palette(lib, r.x, r.z); if (!pl.length) { REP.semModelo++; continue; }
+      const e = r.k === 'arvore-rua' ? pl[Math.floor(rnd() * pl.length)] : pickE(pl), a = A[e.id];
+      let x = r.x, z = r.z, yaw = rr(0, 360), s0 = 1, dy = 0;
+      const th = r.k === 'arvore-rua' ? rr(e.a, e.b) * 0.92 * Math.min(1.12, 0.9 + r.s * 0.1) : rr(e.a, e.b), s = th / a.h;
+      if (ov) { const d = ov.d || [0, 0, 0]; x += d[0]; z += d[2]; dy = d[1]; yaw += ov.r || 0; s0 = ov.s || 1; REP.movidas++; }
+      const sc = s * s0, cw = Math.max(a.w, a.l) * sc, h = carGroundHeight(x, z);
+      let y = r.k === 'arvore-rua' && Math.abs(h - r.y) < 0.35 ? r.y : h; const w = cw * (r.k === 'arbusto' ? 0.18 : 0.04);
+      if (w > 0.1) for (const [ax, az] of [[w, 0], [-w, 0], [0, w], [0, -w]]) y = Math.min(y, carGroundHeight(x + ax, z + az));
+      y = y - (r.k === 'arbusto' ? 0.04 : 0.012) * th * s0 + dy;
+      out.push({ id: 'pr' + out.length.toString(36), type: 'gltf', ref: e.id, name: a.name, pos: [+x.toFixed(2), +y.toFixed(2), +z.toFixed(2)], rot: [0, Math.round(yaw % 360), 0], scale: [+sc.toFixed(2), +sc.toFixed(2), +sc.toFixed(2)], veg: 1, tag: TAG, rep: r.id });
+      REP.por[r.k] = (REP.por[r.k] || 0) + 1;
+    }
+    return out;
+  }
+
   /* ------------------------------------------------------------------ execução ------------------------------------------------------------------ */
   const t0 = performance.now();
+  const FULL = PRM.mode !== 'rep';
   // 1) cidades
-  for (const b of CITY_BLOCKS) {
+  if (FULL) for (const b of CITY_BLOCKS) {
     if (isPark(b)) genPark(b); else if (isPlaza(b)) genPlaza(b);
     genSidewalk(b);
   }
   const nCity = count.veg + count.prop;
   // 2) favelas (primeiro: o raio de ação deles é pequeno e o orçamento fora da cidade é grande)
-  for (const F of FAVS) genFavela(F);
+  if (FULL) for (const F of FAVS) genFavela(F);
   // 3) fora da cidade: verges da Dutra, baldios na borda das cidades, encostas e orla
   const outCap = Math.floor(caps.veg * 0.97);
   let tries = 0, patches = { verge: 0, edge: 0, hill: 0, coast: 0 };
   const want = { verge: 34, edge: 40, hill: 26, coast: 26 };
-  while (tries++ < 60000 && count.veg < outCap && (patches.verge < want.verge || patches.edge < want.edge || patches.hill < want.hill || patches.coast < want.coast)) {
+  while (FULL && tries++ < 60000 && count.veg < outCap && (patches.verge < want.verge || patches.edge < want.edge || patches.hill < want.hill || patches.coast < want.coast)) {
     const kindRoll = rnd(); let x, z, kind;
     if (kindRoll < 0.25 && patches.verge < want.verge) { x = rr(HWY.x0 - 40, HWY.x1 + 40); z = HWY.z + (rnd() < 0.5 ? -1 : 1) * rr(RW / 2 + 5, RW / 2 + 36); kind = 'verge'; }
     else if (kindRoll < 0.6 && patches.edge < want.edge) { const c = pickE(CITIES); x = rr(c.cx - c.hx - 160, c.cx + c.hx + 160); z = rr(c.cz - c.hz - 160, c.cz + c.hz + 160); kind = 'edge'; }
@@ -305,10 +338,12 @@
     if (veg) def.veg = 1; else def.batch = 1;
     def.tag = TAG; out.push(def); byRef[it.ref] = (byRef[it.ref] || 0) + 1;
   });
+  const reps = genReplacements(); for (const d of reps) { out.push(d); byRef[d.ref] = (byRef[d.ref] || 0) + 1; }
+  stats.troca = REP; stats.trocaTotal = reps.length;
   stats.contagem = { veg: count.veg, prop: count.prop, cidade: nCity };
   stats.porCategoria = catN; stats.porModelo = byRef; stats.ms = Math.round(performance.now() - t0);
   // chunks (InstancedMesh por modelo x célula de 200 m) e primitivas: estimativa de custo de desenho
-  const chunks = new Map(); for (const it of items) { const k = it.ref + '|' + cellKey(it.x, it.z); chunks.set(k, A[it.ref].prims || 1); }
+  const chunks = new Map(); for (const it of items) { const k = it.ref + '|' + cellKey(it.x, it.z); chunks.set(k, A[it.ref].prims || 1); } for (const d of reps) chunks.set(d.ref + '|' + cellKey(d.pos[0], d.pos[2]), A[d.ref].prims || 1);
   stats.chunks = chunks.size; stats.primitivasNasCelulas = [...chunks.values()].reduce((a, v) => a + v, 0);
   // checagens finais: nada abaixo da água, nada longe do chão
   let bad = 0; for (const it of items) { const g = carGroundHeight(it.x, it.z); if (it.y > g + 0.6 || it.y < g - 1.0) bad++; } stats.alturaSuspeita = bad;

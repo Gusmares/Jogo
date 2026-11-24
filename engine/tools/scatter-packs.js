@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // NEON ENGINE — espalha os modelos dos packs (vegetação e props de rua) pelo mapa, gravando-os em maps/world.json (campo "objects").
-//   node engine/tools/scatter-packs.js [--dry] [--seed N] [--veg-max 2500] [--props-max 800] [--clean] [--project projects/neon-coast] [--tag packs-auto] [--show] [--summary]
+//   node engine/tools/scatter-packs.js [--rep] [--dry] [--seed N] [--veg-max 2500] [--props-max 800] [--clean] [--project projects/neon-coast] [--tag packs-auto] [--show] [--summary]
 // Cada item gerado leva "tag":"packs-auto". Rodar de novo REMOVE só os itens com a tag e recoloca (itens do usuário ficam intactos); --clean só remove.
+// --rep: só a TROCA da vegetação procedural (árvores de rua, carvalhos, ciprestes, pinheiros, arbustos) pelos modelos dos packs, nas mesmas posições (itens com "rep"); os outros itens da tag não são tocados.
 // Antes de gravar faz backup em maps/backup/ e confere que nada além de "objects" mudou no arquivo. --dry mostra o resumo sem gravar nada.
 // Como funciona: abre o jogo de verdade (Electron, janela oculta, via projects/neon-coast/tools/run-game-script.js) com o mapa SEM os itens da tag,
 // roda engine/tools/scatter-packs-game.js dentro dele (que enxerga relevo, calçadas, quadras, colisores, favelas, rodovia) e recebe as posições de volta.
@@ -13,7 +14,7 @@ const flag = n => args.includes('--' + n), opt = (n, d) => { const i = args.inde
 const ROOT = path.resolve(__dirname, '..', '..');
 const PROJECT = path.resolve(ROOT, opt('project', process.env.NEON_PROJECT || 'projects/neon-coast'));
 const TAG = opt('tag', 'packs-auto'), SEED = parseInt(opt('seed', '20261124'), 10), VEG_MAX = parseInt(opt('veg-max', '2500'), 10), PROPS_MAX = parseInt(opt('props-max', '800'), 10);
-const DRY = flag('dry'), CLEAN = flag('clean');
+const DRY = flag('dry'), CLEAN = flag('clean'), REPMODE = flag('rep');
 const MAP = path.join(PROJECT, opt('map', 'maps/world.json')), OBJ = path.join(PROJECT, 'assets', 'objects');
 const say = (...a) => console.log(...a);
 
@@ -40,8 +41,8 @@ function loadAvail() {
 if (!fs.existsSync(MAP)) { console.error('Mapa não encontrado: ' + MAP); process.exit(2); }
 const mapText = fs.readFileSync(MAP, 'utf8'), mapJson = JSON.parse(mapText);
 const objects0 = Array.isArray(mapJson.objects) ? mapJson.objects : [];
-const userObjs = objects0.filter(o => o.tag !== TAG), oldTagged = objects0.length - userObjs.length;
-say('Mapa: ' + path.relative(ROOT, MAP) + ' · objetos do usuário: ' + userObjs.length + ' · itens antigos com a tag "' + TAG + '": ' + oldTagged);
+const mine = o => o.tag === TAG && (!REPMODE || o.rep), userObjs = objects0.filter(o => !mine(o)), oldTagged = objects0.length - userObjs.length;
+say('Mapa: ' + path.relative(ROOT, MAP) + (REPMODE ? ' [modo --rep: só a troca da vegetação procedural]' : '') + ' · objetos fora da regeneração: ' + userObjs.length + ' · itens antigos com a tag "' + TAG + '": ' + oldTagged);
 
 // substitui só o bloco "objects" do texto (todo o resto do arquivo — carro, relevo, world — fica byte a byte igual)
 function withObjects(text, list) {
@@ -55,7 +56,7 @@ async function generate(avail) {
   const tmpMapRel = 'maps/_scatter_tmp.json', tmpMap = path.join(PROJECT, tmpMapRel), tmpScript = path.join(os.tmpdir(), 'neon-scatter-run-' + process.pid + '.js');
   const clean = Object.assign({}, mapJson, { objects: userObjs });
   fs.writeFileSync(tmpMap, JSON.stringify(clean));
-  const prm = { seed: SEED, vegMax: VEG_MAX, propsMax: PROPS_MAX, tag: TAG, avail };
+  const prm = { mode: REPMODE ? 'rep' : 'full', seed: SEED, vegMax: VEG_MAX, propsMax: PROPS_MAX, tag: TAG, avail };
   fs.writeFileSync(tmpScript, 'window.__SCATTER = ' + JSON.stringify(prm) + ';\n' + fs.readFileSync(path.join(__dirname, 'scatter-packs-game.js'), 'utf8'));
   const electron = require(require.resolve('electron', { paths: [ROOT] }));
   const runner = path.join(PROJECT, 'tools', 'run-game-script.js');
@@ -78,6 +79,7 @@ function summarize(defs, stats, avail) {
   const veg = defs.filter(d => d.veg).length, bat = defs.length - veg;
   say('\n== Resumo ==\nsemente ' + SEED + ' · vegetação (veg:1) ' + veg + '/' + VEG_MAX + ' · props e rochas (batch:1) ' + bat + ' (props ' + (stats.contagem ? stats.contagem.prop : '?') + '/' + PROPS_MAX + ')');
   say('modelos distintos usados: ' + new Set(defs.map(d => d.ref)).size + ' · lotes InstancedMesh (modelo x célula 200 m): ' + stats.chunks + ' · primitivas nesses lotes: ' + stats.primitivasNasCelulas);
+  if (stats.troca) say('troca da procedural (rep): ' + stats.trocaTotal + ' ' + JSON.stringify(stats.troca));
   say('patches fora da cidade: ' + JSON.stringify(stats.patches) + ' · altura suspeita: ' + stats.alturaSuspeita + ' · tempo no jogo: ' + stats.ms + ' ms');
   say('por categoria de colocação: ' + JSON.stringify(stats.porCategoria));
   say('rejeições (motivo -> tentativas): ' + JSON.stringify(stats.rejeitado));
@@ -91,7 +93,7 @@ function write(newObjs) {
   const after = JSON.parse(text);
   const strip = m => { const c = Object.assign({}, m); delete c.objects; return JSON.stringify(c); };
   if (strip(after) !== strip(mapJson)) throw new Error('verificação falhou: algo além de "objects" mudou — nada foi gravado');
-  const keep = (after.objects || []).filter(o => o.tag !== TAG);
+  const keep = (after.objects || []).filter(o => !mine(o));
   if (JSON.stringify(keep) !== JSON.stringify(userObjs)) throw new Error('verificação falhou: itens do usuário mudaram — nada foi gravado');
   const bdir = path.join(path.dirname(MAP), 'backup'); fs.mkdirSync(bdir, { recursive: true });
   const bf = path.join(bdir, 'world-' + stamp() + '.json'); fs.writeFileSync(bf, mapText);

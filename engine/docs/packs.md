@@ -41,6 +41,9 @@ Cada modelo vira `assets/objects/<prefixo><id>/model.glb` + `object.json`, o mes
 Para refazer um objeto: apague a pasta `assets/objects/<id>` (ou use `--redo`; o id antigo é mantido) e rode de novo com `--only`.
 Outras mudanças: o casamento de textura por nome agora aceita arquivo truncado pelo exportador (`..._BaseColo.png`, `..._Dama.png`); **metalness é limitado a 0,3** (o jogo não tem envMap: metal cheio sai preto); a folha de contato (`verify --out`) mostra uma figura de referência laranja de **1,75 m** ao lado de cada modelo e as medidas L×A×C (`--no-ref` desliga).
 
+## Colisor por modelo (depois do split)
+`node engine/tools/pack-collide.js` mede a malha de cada `model.glb` e grava `"colisor"` (círculos x,z) no `object.json`; o jogo usa isso em vez da caixa do modelo (árvore = só tronco, capim/arbusto baixo = nenhum, rocha/prop = pegada da base). Rode depois de importar um pack. Detalhes: `engine/docs/espalhar-packs.md`, seção Colisão.
+
 ## Como ele separa os modelos
 1. Atravessa invólucros de um filho só. Irmãos com nome próprio (não genérico: `Cube`, `Sphere`, `Mesh`…) que não são "partes" (`trunk`, `leaves`, `lid`…) viram um modelo cada; irmãos de mesmo nome-base que se tocam (`Dumpster`, `Dumpster pCube3`) viram um só.
 2. Peças de nome genérico (o orelhão: esferas, cubos, cilindros) são agrupadas pela caixa que se sobrepõe/encosta.

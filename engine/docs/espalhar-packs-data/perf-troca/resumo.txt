@@ -1,0 +1,24 @@
+cenário/modo  n  drawComSombradrawSemSombratriComSombra   materiais    texturas  instancias  malhasInst     casters    renderMsrenderComSombraMs    quadroMs       gpuMs         fps         p95      maxInt        heap
+a antes       2           737         575   1928594.5         970       425.5     97748.5        1272         361        8.54        8.91       13.32        7.96        59.3        16.8       41.95         524
+a depois      2           722       545.5     1674785       937.5       412.5       39554        1551         357        8.13         8.6       12.82        8.42        58.3        16.8        41.6       512.5
+b antes       4           626      475.25  1286326.25      921.75         440       97684        1272      362.75        7.21        7.55       12.03        8.72       55.58       20.93      124.97      495.25
+b depois      4        542.25         407  1286502.25       972.5      443.25    39508.25        1551         353        7.46        8.04       12.48        6.88       56.17       25.05       66.65      464.25
+e antes       1           819         639     1710226        1276         463       97663        1272         383        9.28        9.81       15.84        7.62        48.4          50       133.3         686
+e depois      2         705.5         495   1758682.5        1038       437.5       39566        1551         382        8.71        9.29       15.07        7.73       47.25        58.3       133.4       562.5
+
+por execução:
+a antes 1 draw 757/596 render 8.86 (c/ sombra 9.22) fps 59
+a antes 2 draw 717/554 render 8.21 (c/ sombra 8.59) fps 59.6
+a depois 1 draw 721/542 render 8.41 (c/ sombra 8.89) fps 56.8
+a depois 2 draw 723/549 render 7.84 (c/ sombra 8.3) fps 59.8
+b antes 1 draw 607/457 render 7.01 (c/ sombra 7.24) fps 53.9
+b antes 2 draw 572/449 render 6.73 (c/ sombra 6.92) fps 57.6
+b antes 3 draw 655/490 render 7.71 (c/ sombra 8.23) fps 55.1
+b antes 4 draw 670/505 render 7.41 (c/ sombra 7.8) fps 55.7
+b depois 1 draw 575/430 render 8.05 (c/ sombra 8.75) fps 52.5
+b depois 2 draw 545/414 render 7.41 (c/ sombra 8.28) fps 57.6
+b depois 3 draw 534/395 render 7.74 (c/ sombra 8.3) fps 56.4
+b depois 4 draw 515/389 render 6.65 (c/ sombra 6.81) fps 58.2
+e antes 1 draw 819/639 render 9.28 (c/ sombra 9.81) fps 48.4
+e depois 1 draw 731/509 render 8.9 (c/ sombra 9.47) fps 45.4
+e depois 2 draw 680/481 render 8.51 (c/ sombra 9.11) fps 49.1

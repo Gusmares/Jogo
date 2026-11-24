@@ -1,0 +1,3 @@
+
+SCRIPT TEMPO ESGOTADO
+SCRIPT FALHOU Render frame was disposed before the request completed
