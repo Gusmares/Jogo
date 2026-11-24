@@ -9,7 +9,7 @@ module.exports = function engineApi(opts) {
   let jobSeq = 0;
   const send = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
   const body = (req, max = 600e6) => new Promise((ok, fail) => { let n = 0, over = false; const parts = []; req.on('data', d => { if (over) return; n += d.length; if (n > max) { over = true; parts.length = 0; fail(new Error('pedido grande demais (máximo ' + Math.round(max / 1024) + ' KB)')); req.resume(); } else parts.push(d); }); req.on('end', () => { if (over) return; try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString('utf8')) : {}); } catch (e) { fail(new Error('JSON inválido: ' + e.message)); } }); req.on('error', fail); });
-  const SOCKETS_FILE = path.join(root, 'data', 'sockets.json'), { socketsValidate, LIM: SOCKETS_LIM } = require(path.join(__dirname, '..', 'tools', 'sockets-validate.js'));      // caminho FIXO: nunca vem do cliente
+  const SOCKETS_FILE = path.join(root, 'data', 'sockets.json'), { socketsValidate, LIM: SOCKETS_LIM } = require(path.join(engineTools, 'sockets-validate.js'));      // caminho FIXO: nunca vem do cliente
   const sameOrigin = req => {                                           // true se Host (e Origin, quando existe) são o endereço local desta engine
     const port = req.socket && req.socket.localPort, hosts = ['127.0.0.1:' + port, 'localhost:' + port], h = req.headers.host, o = req.headers.origin;
     if (!port || typeof h !== 'string' || !hosts.includes(h.toLowerCase())) return false;
