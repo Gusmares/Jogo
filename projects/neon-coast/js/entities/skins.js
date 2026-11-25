@@ -63,6 +63,7 @@ function makeActor(type, useLod) {
   a.setLod = l => { if (!a.lodOn || l === a.lod) return; a.lod = l; mesh.geometry = type.lods[l - 1]; };
   a.ap = typeof AnimPlayer === 'function' ? new AnimPlayer(a) : null;   // animações reais do GTA SA (.ifp)
   group.position.y = a.footOffset;      // pés no chão quando o grupo está em y=0 (ajuste de altura é feito por quem posiciona)
+  if (typeof rigHook === 'function') rigHook(a, lodOn);      // esqueleto estendido (dedos), se houver assets/rigs/<skin>.rig.json — js/entities/rig-extend.js
   return a;
 }
 
@@ -80,6 +81,7 @@ function poseActor(a, deltas) {
     const Rp = info.parent >= 0 ? R[info.parent] : null;
     a.bones[i].quaternion.copy(Rp ? _qi.copy(Rp).invert().multiply(R[i]) : R[i]);
   }
+  if (a.rig && typeof rigApply === 'function') rigApply(a, true);      // ossos dos dedos (rig estendido)
 }
 function targetPose(mode, ph) {
   const s = Math.sin(ph), c = Math.cos(ph), t = {};

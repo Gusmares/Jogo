@@ -47,6 +47,7 @@ async function skEnsure0() {
 }
 function skSetOn(v) {
   if (v === SK.on) return;
+  if (v && typeof AE !== 'undefined' && AE.on && !aeSetOn(false)) return;           // editor de animação aberto: sai dele antes (pergunta se há alterações não salvas)
   if (v) {
     edCancelPlacing(); edSelect(null); if (TT.on) ttSetOn(false); if (VB.on) vbSetOn(false); if (ED.top) edSetTop(false);
     SK.on = true; SK.ready = false; SK.loading = true; SK.createdActor = false; SK.tok++; document.body.classList.add('ed-sk'); const b = document.getElementById('edSocket'); if (b) b.classList.add('on');

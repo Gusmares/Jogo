@@ -9,7 +9,7 @@ function parseIfp(buf) {
   const dv = new DataView(buf), u8 = new Uint8Array(buf);
   const str = (o, n) => { let s = ''; for (let i = 0; i < n && u8[o + i]; i++) s += String.fromCharCode(u8[o + i]); return s; };
   if (str(0, 4) !== 'ANP3') throw new Error('arquivo IFP não é ANP3');
-  const pack = str(8, 24), count = dv.getInt32(32, true), anims = {}; let p = 36;
+  const pack = str(8, 24), count = dv.getInt32(32, true), anims = Object.create(null); let p = 36;
   for (let a = 0; a < count; a++) {
     const name = str(p, 24); p += 24;
     const numNodes = dv.getInt32(p, true), dataSize = dv.getInt32(p + 4, true); p += 12;
@@ -43,12 +43,13 @@ function findClip(name) {                    // procura o clipe pelo nome em tod
 const ifpReady = {};
 /* velocidade natural de um clipe de locomoção: quanto a raiz anda por segundo na própria animação (o SA usa esse valor para casar
    passo e deslocamento). Tocar o clipe na razão velocidade real / natural tira o "pé deslizando". */
-const clipSpeedCache = {};
+const clipSpeedCache = Object.create(null), CLIP_SPEED_MAX = 15;      // teto (m/s) para clipes editáveis: um clipe com a raiz mal gravada não pode lançar NPCs (ped-ai/npcs usam clipSpeed como velocidade)
 function clipSpeed(name) {
   const k = name.toLowerCase(); if (k in clipSpeedCache) return clipSpeedCache[k];
   const c = findClip(name); if (!c) return 0;
   let v = 0; const r = c.nodes.find(n => n.bone === 0 && n.trans && n.frames > 1);
   if (r) { const f = r.frames - 1, span = r.times[f] - r.times[0]; if (span > 0) v = Math.hypot(r.trans[f * 3] - r.trans[0], r.trans[f * 3 + 1] - r.trans[1]) / span; }
+  if (c._eid && v > CLIP_SPEED_MAX) v = CLIP_SPEED_MAX;
   return clipSpeedCache[k] = v;
 }
 /* deslocamento da raiz do clipe no tempo t, nos eixos do GTA (x direita, y frente, z cima). Os clipes de carro (puxar, ser puxado, entrar)

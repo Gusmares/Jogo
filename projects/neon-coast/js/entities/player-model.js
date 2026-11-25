@@ -145,6 +145,7 @@ function updatePlayerActor(dt, spd, onGround, gy) {
   else a.ap.update(dt);
   if (ok) applyAimPitch(a, (armed && !restHold && typeof weapons !== 'undefined' && !wAnim(ws).melee) ? weapons.pitch : 0);
   if (ok && armed && ws && weapons.reloading <= 0 && !wAnim(ws).melee) { const A = wAnim(ws); if (!restHold) alignWeaponArm(a, A); else if (A.twoHand && A.lhand) leftHandIK(a, A); }
+  if (ok && typeof animIkFinal === 'function') animIkFinal(a);          // IK por clipe (anim-edit.js): vale por cima do alinhamento da arma
   /* inclinação na curva/arrancada e cabeça olhando para onde a câmera olha (estilo GTA IV) */
   a.group.rotation.order = 'YXZ'; const freeBody = !player.dead && !air && !emoteOn && player.stun <= 0;
   a.group.rotation.z = freeBody ? (player.lean || 0) : 0; a.group.rotation.x = freeBody ? (player.pitchLean || 0) : 0;

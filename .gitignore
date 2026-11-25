@@ -19,3 +19,6 @@ engine/app/engine.json
 
 # Pesquisa local (arquivos de jogos de terceiros: NUNCA vão para o GitHub)
 research/
+
+# NEON ENGINE: cópias de segurança dos dados editáveis (sockets, animações); data/anims/*.json em si É versionado
+projects/*/data/.backup/

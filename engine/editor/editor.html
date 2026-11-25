@@ -33,6 +33,7 @@
       <button id="edTerrain" class="toggle" title="Esculpir o terreno (B)"><svg viewBox="0 0 24 24"><path d="M2 20l6-9 4 5 3-4 7 8z"/></svg> Terreno</button>
       <button id="edVeg" class="toggle" title="Pincel de vegetação (V)"><svg viewBox="0 0 24 24"><path d="M12 22V11M12 11c-4 0-7-3-7-8 4 0 7 3 7 8zM12 14c3 0 6-2 6-6-3 0-6 2-6 6z"/></svg> Vegetação</button>
       <button id="edSocket" class="toggle" title="Sockets e anexos de arma (K)"><svg viewBox="0 0 24 24"><path d="M3 12h9l2-3h7v4h-5l-2 3H7v4H3z"/></svg> Sockets</button>
+      <button id="edAnim" class="toggle" title="Editor de animação do esqueleto (Y)"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v6M12 10l-5 3M12 10l5 3M12 14l-4 7M12 14l4 7"/></svg> Animação</button>
       <button id="edPlan">Planta da cidade</button>
       <button id="edImport" title="Trazer modelos 3D: FBX, GLB/glTF, OBJ, DAE, STL, PLY, 3DS ou DFF do GTA SA">Importar</button>
       <button id="edExport" title="Exportar seleção, objetos ou uma região do mapa em GLB/OBJ">Exportar</button>
@@ -62,6 +63,8 @@
       <div id="edInspector"><p class="ed-empty">Nada selecionado.</p></div>
     </section>
   </aside>
+
+  <section id="aeTime" aria-label="Linha do tempo da animação"><div id="aeTlResize" title="Arraste para mudar a altura"></div><div id="aeTlHead"></div><div id="aeTlWrap"><canvas id="aeTlCv" tabindex="0"></canvas></div></section>
 
   <footer id="edStatus"><span id="edStCursor">—</span><span id="edStZone"></span><span id="edStCam"></span><span class="ed-spacer"></span><span id="edStHelp">Botão direito + WASD voa · Q/E desce/sobe · Shift rápido · roda = velocidade · F foca</span><span id="edStFps"></span></footer>
 </div>

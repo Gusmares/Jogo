@@ -33,5 +33,6 @@ Hoje `publish: null` e o jogo não usa `electron-updater`. Para ligar:
 ## Medido (24/11/2026)
 - `NEON-COAST-Setup-1.0.0.exe`: 1310 MB (~1,3 GB; o jogo empacotado tem ~2,1 GB com os assets locais). Instalação silenciosa levou ~54 s (descompactar 1,3 GB). Para "segundos" de verdade, é preciso reduzir os assets (fase de conteúdo/otimização).
 - `NEON-ENGINE-Setup-0.2.0.exe`: 116 MB. Atenção: o editor lê a engine/projeto pelo caminho gravado em `engine.json` (pasta do repositório); o instalador da engine só funciona neste PC enquanto o repositório estiver no mesmo lugar.
+- `assets/rigs` (rigs de dedos gerados por `skeleton-extend.js`) agora está em `build.include`: sem essa pasta o jogo empacotado ficaria sem dedos animados (`rig-extend.js` cai em silêncio no esqueleto de 32 ossos). Custo: +18 MB na pasta empacotada (rigs de todas as skins), sem mudança relevante no Setup final (~1,3 GB).
 - Limite do NSIS: instaladores > 2 GB falham; o do jogo está a ~65% disso.
 - O Setup do jogo contém assets de terceiros (GTA SA/mods): uso pessoal, não publicar.

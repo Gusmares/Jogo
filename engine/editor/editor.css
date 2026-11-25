@@ -169,3 +169,38 @@ body.ed-sk #edRight .ed-sec.grow h3 { display: none; }
 #edSkBar.anim { border-color: var(--acc); color: #ffd0e5; }
 #edSkBar[hidden] { display: none; }
 body.ed-sk #viewport canvas#c { cursor: grab; }
+
+/* editor de animação (anim-editor.js) */
+#edAnim.dirty::after { content: "●"; color: var(--acc2); margin-left: 2px; }
+#aeTime { grid-area: tl; display: none; flex-direction: column; min-height: 0; background: var(--panel); border-top: 1px solid var(--line); position: relative; }
+#aeTlResize { height: 5px; cursor: ns-resize; background: var(--line); flex: none; } #aeTlResize:hover { background: var(--acc); }
+#aeTlHead { display: flex; align-items: center; gap: 4px; padding: 4px 8px; flex: none; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+#aeTlHead button { padding: 3px 8px; } #aeTlHead .ae-time { width: 66px; padding: 3px 5px; font: 12px var(--mono); } #aeTlHead .ae-fr { color: var(--dim); font: 11.5px var(--mono); } #aeTlHead select { padding: 3px 4px; }
+#aeTlWrap { flex: 1; min-height: 0; position: relative; overflow: hidden; } #aeTlCv { display: block; outline: none; cursor: default; }
+body.ed-ae #edApp { grid-template: "top top top" 46px "left view right" 1fr "tl tl tl" var(--ae-h, 260px) "st st st" 24px / 300px 1fr 350px; }
+body.ed-ae #aeTime { display: flex; }
+body.ed-ae #edLeft > *:not(#aeLeft) { display: none; }
+body.ed-ae #edRight .ed-sec:first-child { display: none; }
+body.ed-ae #edRight .ed-sec.grow h3 { display: none; }
+body.ed-ae #viewport canvas#c { cursor: grab; }
+#aeLeft { display: flex; flex-direction: column; gap: 6px; min-height: 0; flex: 1; }
+#aeLeft section { display: flex; flex-direction: column; gap: 5px; min-height: 0; } #aeLeft .ae-s1 { flex: 1.9; } #aeLeft .ae-s2 { flex: 1; border-top: 1px solid var(--line); padding-top: 6px; }
+#aeLeft h4 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+#aeLeft input[type=search] { width: 100%; } .ae-list { flex: 1; overflow: auto; min-height: 90px; background: var(--field); border: 1px solid var(--line); border-radius: var(--r); padding: 3px; }
+.ae-sec-t { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); padding: 5px 4px 2px; } .ae-none { color: var(--faint); font-size: 11.5px; padding: 4px; }
+.ae-item { width: 100%; justify-content: flex-start; padding: 2px 6px; border-color: transparent; background: transparent; font-size: 12px; gap: 5px; } .ae-item small { margin-left: auto; color: var(--faint); font-size: 10.5px; } .ae-item.on { background: rgba(255, 46, 136, 0.14); border-color: var(--acc); color: #fff; }
+.ae-badge { font-style: normal; font-size: 9.5px; padding: 0 5px; border-radius: 8px; border: 1px solid var(--line2); color: var(--dim); } .ae-badge.sub { border-color: #3a6ea8; color: #9cc8f5; } .ae-badge.bad { border-color: var(--bad); color: #ffb3b3; }
+.ae-form { display: flex; flex-direction: column; gap: 4px; flex: none; } .ae-form input[type=text] { width: 100%; } .ae-lab { font-size: 11px; color: var(--dim); } .ae-fhead { display: flex; flex-direction: column; } .ae-fhead small { color: var(--faint); font: 11px var(--mono); }
+.ae-sub { font-size: 11.5px; color: #9cc8f5; background: rgba(58, 110, 168, 0.14); border: 1px solid #3a6ea8; border-radius: var(--r); padding: 4px 7px; }
+.ae-bone { display: flex; align-items: center; gap: 4px; padding: 1px 4px; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; } .ae-bone:hover { background: var(--panel2); } .ae-bone.on { background: rgba(255, 196, 0, 0.18); color: #fff; }
+.ae-bone small { color: var(--faint); font-size: 10px; margin-left: auto; overflow: hidden; text-overflow: ellipsis; } .ae-arrow { width: 12px; color: var(--dim); text-align: center; flex: none; } .ae-key { color: #ff5fa8; font-style: normal; font-size: 9px; flex: none; }
+.ae-panel { display: flex; flex-direction: column; gap: 6px; } .ae-act0 { margin-top: 2px; } .ae-act0 button { padding: 5px 7px; }
+.ae-det { border: 1px solid var(--line); border-radius: var(--r); background: rgba(255, 255, 255, 0.015); } .ae-det > summary { cursor: pointer; padding: 5px 8px; font-weight: 600; font-size: 12px; color: var(--dim); list-style: none; } .ae-det > summary::before { content: "▸ "; } .ae-det[open] > summary::before { content: "▾ "; } .ae-det[open] > summary { color: #fff; border-bottom: 1px solid var(--line); }
+.ae-body { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 4px; } .ae-body .ed-field { grid-template-columns: 78px 1fr; } .ae-body select, .ae-body input[type=text], .ae-body textarea { width: 100%; } .ae-body textarea { background: var(--field); border: 1px solid var(--line2); border-radius: var(--r); padding: 4px 6px; color: inherit; font: inherit; resize: vertical; user-select: text; }
+.ae-inl { display: flex; gap: 4px; min-width: 0; } .ae-inl input { flex: 1; min-width: 0; } .ae-inl button { padding: 4px 6px; font-size: 11.5px; }
+.ae-bonehead b { color: #fff; font-size: 13px; } .ae-bonehead small { color: var(--faint); font: 11px var(--mono); } .ae-info { font-size: 12px; color: var(--dim); } .ae-info b { color: #fff; font-family: var(--mono); }
+.ae-ik { border: 1px solid var(--line); border-radius: var(--r); padding: 5px 7px; margin-bottom: 6px; background: var(--panel2); display: flex; flex-direction: column; gap: 3px; } .ae-ik.on { border-color: #3a6ea8; } .ae-ikh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .ae-ikh button { padding: 2px 7px; margin-left: auto; }
+.ae-dist { font: 11px var(--mono); color: var(--ok); flex-basis: 100%; } .ae-dist.bad { color: var(--acc2); }
+.ae-ev { display: grid; grid-template-columns: 62px 1fr 26px; gap: 4px; margin-bottom: 3px; } .ae-ev button { padding: 0; justify-content: center; }
+#edAeBar { position: absolute; left: 10px; top: 10px; z-index: 3; pointer-events: none; padding: 5px 12px; border-radius: 16px; background: rgba(12, 14, 18, 0.88); border: 1px solid var(--acc); color: #ffd0e5; font-size: 12px; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#edAeBar[hidden] { display: none; }
